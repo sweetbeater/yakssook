@@ -1,28 +1,47 @@
 // 약 쏘옥 Service Worker
-// firebase-messaging 라이브러리 없이 push 이벤트 직접 처리
-// → onBackgroundMessage 중복 문제 완전 해결
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-self.addEventListener('push', e => {
-  if (!e.data) return;
-  let payload;
-  try { payload = e.data.json(); } catch { return; }
+const FB_CONFIG = {
+  apiKey: "AIzaSyArCJz3f9WKjIl9N-nzFtQzy7EAE8KjnAM",
+  authDomain: "yakssook-c924f.firebaseapp.com",
+  projectId: "yakssook-c924f",
+  storageBucket: "yakssook-c924f.firebasestorage.app",
+  messagingSenderId: "1053954576861",
+  appId: "1:1053954576861:web:1b8aab71b34a5a2897e634"
+};
 
+firebase.initializeApp(FB_CONFIG);
+const messaging = firebase.messaging();
+
+// 최근 표시한 tag+시간 기록 (5초 내 중복 차단)
+const recentNotifs = new Map();
+
+function shouldShow(tag) {
+  const now = Date.now();
+  const last = recentNotifs.get(tag) || 0;
+  if (now - last < 5000) return false; // 5초 내 같은 tag 차단
+  recentNotifs.set(tag, now);
+  return true;
+}
+
+messaging.onBackgroundMessage(payload => {
   const n = payload.notification || {};
   const d = payload.data || {};
   const title = n.title || d.title || '약 쏘옥';
   const body  = n.body  || d.body  || '';
   const tag   = d.tag   || 'yakssook';
 
-  e.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon: '/yakssook/icon-192.png',
-      badge: '/yakssook/icon-192.png',
-      tag,
-      renotify: true,
-      data: d,
-    })
-  );
+  if (!shouldShow(tag)) return; // 중복 차단
+
+  return self.registration.showNotification(title, {
+    body,
+    icon: '/yakssook/icon-192.png',
+    badge: '/yakssook/icon-192.png',
+    tag,
+    renotify: true,
+    data: d,
+  });
 });
 
 self.addEventListener('notificationclick', e => {
