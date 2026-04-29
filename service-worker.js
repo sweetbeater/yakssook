@@ -14,25 +14,12 @@ const FB_CONFIG = {
 firebase.initializeApp(FB_CONFIG);
 const messaging = firebase.messaging();
 
-// 최근 표시한 tag+시간 기록 (5초 내 중복 차단)
-const recentNotifs = new Map();
-
-function shouldShow(tag) {
-  const now = Date.now();
-  const last = recentNotifs.get(tag) || 0;
-  if (now - last < 5000) return false; // 5초 내 같은 tag 차단
-  recentNotifs.set(tag, now);
-  return true;
-}
-
+// data-only 메시지 수신 → 브라우저 자동표시 없음 → 여기서만 1번
 messaging.onBackgroundMessage(payload => {
-  const n = payload.notification || {};
   const d = payload.data || {};
-  const title = n.title || d.title || '약 쏘옥';
-  const body  = n.body  || d.body  || '';
+  const title = d.title || '약 쏘옥';
+  const body  = d.body  || '';
   const tag   = d.tag   || 'yakssook';
-
-  if (!shouldShow(tag)) return; // 중복 차단
 
   return self.registration.showNotification(title, {
     body,
