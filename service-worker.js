@@ -14,19 +14,24 @@ const FB_CONFIG = {
 firebase.initializeApp(FB_CONFIG);
 const messaging = firebase.messaging();
 
-// ── 백그라운드 FCM 수신 ──
-// Functions에서 notification 필드 없이 data만 보내므로
-// 브라우저 자동 알림 표시가 안 되고 여기서만 1번 표시
+// notification 필드가 있으면 브라우저가 자동 표시 → onBackgroundMessage는 실행 안 됨
+// 단, webpush.notification.tag를 지정해두면 자동 표시 시에도 tag가 적용되어 중복 덮어쓰기됨
+// → onBackgroundMessage는 notification 없는 data-only 메시지에만 실행되므로
+//    현재 구조(notification 있음)에서는 이 핸들러 불필요
+// 하지만 만약의 경우를 위해 유지 (notification + data 둘 다 처리)
 messaging.onBackgroundMessage(payload => {
+  const n = payload.notification || {};
   const d = payload.data || {};
-  const title = d.title || '약 쏘옥';
-  const body = d.body || '';
-  const tag = d.tag || 'yakssook';
-  const icon = d.icon || '/yakssook/icon-192.png';
 
+  const title = n.title || d.title || '약 쏘옥';
+  const body  = n.body  || d.body  || '';
+  const tag   = d.tag   || 'yakssook';
+
+  // notification 필드가 있으면 브라우저가 이미 자동 표시했을 수 있음
+  // tag가 같으면 덮어쓰기되므로 중복 없음
   self.registration.showNotification(title, {
     body,
-    icon,
+    icon: '/yakssook/icon-192.png',
     badge: '/yakssook/icon-192.png',
     tag,
     renotify: true,
@@ -34,7 +39,6 @@ messaging.onBackgroundMessage(payload => {
   });
 });
 
-// ── 알림 클릭 시 앱 포커스 ──
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(
@@ -47,6 +51,5 @@ self.addEventListener('notificationclick', e => {
   );
 });
 
-// ── 설치/활성화 ──
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
