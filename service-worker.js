@@ -39,7 +39,7 @@ messaging.onBackgroundMessage(payload => {
     icon: '/yakssook/icon-192.png',
     badge: '/yakssook/icon-192.png',
     tag,
-    renotify: true,
+    renotify: false,
     data: d,
   });
 });
