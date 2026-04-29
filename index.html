@@ -989,7 +989,10 @@ setTimeout(()=>showOnboard(),800);
 }catch(e){console.error(e);}
 $('auth-wrap').classList.remove('show');$('main-wrap').classList.add('show');
 buildAddForm();renderCodeDigits();syncMyUI();
-registerSW().catch(e=>console.warn(e));await initMsg();startListeners();
+registerSW().catch(e=>console.warn(e));await initMsg();
+if(!window._listenersStarted){window._listenersStarted=true;startListeners();}
+else{// 토큰 갱신 등으로 재호출 시 리스너 재시작
+unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];startListeners();}
 updateGuestBanner();
 hideLoad();hideSplash();
 }else{
@@ -1092,7 +1095,7 @@ if(val){p.textContent=val;document.querySelectorAll('#icon-grid .iopt').forEach(
 else p.textContent='✏️';
 };
 const startListeners = function(){
-unsubs.forEach(u=>u&&u());unsubs=[];
+unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
 unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
 unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
 unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
@@ -1107,35 +1110,37 @@ unsubs.push(onSnapshot(doc(db,'users',p.uid),snap=>{if(snap.exists()){const d=sn
 });
 }));
 unsubs.push(onSnapshot(query(collection(db,'users',uid,'notifications'),where('read','==',false)),s=>{
+if(!window._firedNotifs)window._firedNotifs=new Set();
 s.docChanges().forEach(async c=>{
 if(c.type==='added'){
-const d=c.doc.data();const age=d.createdAt?Date.now()-d.createdAt.toMillis():99999;
-if(age<15000){
+const docId=c.doc.id;
+if(window._firedNotifs.has(docId)){await setDoc(c.doc.ref,{read:true},{merge:true});return;}
+window._firedNotifs.add(docId);
+const d=c.doc.data();
+const age=d.createdAt?Date.now()-d.createdAt.toMillis():0;
+if(age>15000){await setDoc(c.doc.ref,{read:true},{merge:true});return;}
 playSound('notif');
 const nm=d.fromName||'파트너';
-// 토스트
 if(d.type==='checked'&&notif.partnerCheck)toast(`💚 ${nm}님이 ${d.medName||'약'} 복용 완료! 건강 지켜요 🌟`);
 if(d.type==='poke')toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);
 if(d.type==='praise')toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);
-// 푸시 알림: SW를 통해 showNotification으로 통일 (new Notification 사용 안 함 → 중복 방지)
 if(Notification.permission==='granted'){
-  const titles={'checked':'약 쏘옥 💚','poke':'약 쏘옥 👉','praise':'약 쏘옥 🌟'};
-  const bodies={
-    'checked':`${nm}님이 ${d.medName||'약'}을 복용했어요!`,
-    'poke':d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,
-    'praise':d.msg?.replace('○○',nm)||`${nm}님이 칭찬해줬어요!`
-  };
-  const tags={'checked':'ys-checked','poke':'ys-poke','praise':'ys-praise'};
-  if((d.type!=='checked'||notif.partnerCheck)&&titles[d.type]){
-    navigator.serviceWorker.ready.then(sw=>{
-      sw.showNotification(titles[d.type],{
-        body:bodies[d.type],
-        icon:location.origin+BASE_PATH+'/icon-192.png',
-        tag:tags[d.type],
-        renotify:true
-      });
-    }).catch(()=>{});
-  }
+const titles={'checked':'약 쏘옥 💚','poke':'약 쏘옥 👉','praise':'약 쏘옥 🌟'};
+const bodies={
+'checked':`${nm}님이 ${d.medName||'약'}을 복용했어요!`,
+'poke':d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,
+'praise':d.msg?.replace('○○',nm)||`${nm}님이 칭찬해줬어요!`
+};
+const tags={'checked':'ys-checked','poke':'ys-poke','praise':'ys-praise'};
+if((d.type!=='checked'||notif.partnerCheck)&&titles[d.type]){
+navigator.serviceWorker.ready.then(sw=>{
+sw.showNotification(titles[d.type],{
+body:bodies[d.type],
+icon:location.origin+BASE_PATH+'/icon-192.png',
+tag:tags[d.type],
+renotify:true
+});
+}).catch(()=>{});
 }
 }
 await setDoc(c.doc.ref,{read:true},{merge:true});
