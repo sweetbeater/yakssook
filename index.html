@@ -8,6 +8,77 @@
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="약 쏘옥"/>
+<script>
+// 카카오톡 인앱 브라우저 감지 → 외부 브라우저로 유도
+(function(){
+  const ua = navigator.userAgent.toLowerCase();
+  const isKakao = ua.indexOf('kakaotalk') > -1;
+  const isNaver = ua.indexOf('naver') > -1;
+  const isLine = ua.indexOf('line') > -1;
+  const isInApp = isKakao || isNaver || isLine;
+  if(!isInApp) return;
+
+  // iOS
+  if(/iphone|ipad|ipod/.test(ua)){
+    // Safari로 열기 유도 (카카오 특수 스킴)
+    if(isKakao){
+      window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(window.location.href);
+      return;
+    }
+  }
+  // Android
+  if(/android/.test(ua)){
+    if(isKakao){
+      window.location.href = 'intent://' + window.location.href.replace(/https?:\/\//i,'') + '#Intent;scheme=https;package=com.android.chrome;end';
+      return;
+    }
+  }
+  // 그 외: 안내 페이지 표시
+  document.addEventListener('DOMContentLoaded', function(){
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:#F0FBF6;font-family:'Apple SD Gothic Neo',sans-serif;text-align:center">
+        <div style="font-size:56px;margin-bottom:16px">💊</div>
+        <div style="font-size:20px;font-weight:700;color:#085041;margin-bottom:10px">약 쏘옥</div>
+        <div style="font-size:14px;color:#424242;line-height:1.7;margin-bottom:28px">카카오톡 브라우저에서는<br>일부 기능이 제한돼요.<br><b>Safari 또는 Chrome</b>에서 열어주세요!</div>
+        <div style="background:#fff;border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.08);word-break:break-all;font-size:13px;color:#1D9E75;font-weight:600">${window.location.href}</div>
+        <div style="font-size:12px;color:#757575;line-height:1.8">위 주소를 복사해서<br>Safari 또는 Chrome에 붙여넣으세요</div>
+        <button onclick="navigator.clipboard.writeText('${window.location.href}').then(()=>alert('주소가 복사됐어요!'))" style="margin-top:20px;padding:14px 28px;border-radius:999px;background:#1D9E75;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer">주소 복사하기</button>
+      </div>`;
+  });
+})();
+</script>
+<script>
+// 카카오톡 인앱 브라우저 감지 → 안내 화면 표시
+(function(){
+  const ua = navigator.userAgent.toLowerCase();
+  const isKakao = ua.includes('kakaotalk') || ua.includes('kakao');
+  const isFacebook = ua.includes('fban') || ua.includes('fbav');
+  const isInApp = isKakao || isFacebook;
+  if(isInApp){
+    document.write(`
+      <style>*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo',sans-serif}</style>
+      <div style="min-height:100vh;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
+        <div style="font-size:56px;margin-bottom:16px">💊</div>
+        <div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>
+        <div style="font-size:15px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:32px">
+          카카오톡 브라우저에서는<br>정상적으로 작동하지 않아요.<br><b style="color:#fff">Safari나 Chrome</b>으로 열어주세요!
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:20px;width:100%;max-width:300px;margin-bottom:20px">
+          <div style="font-size:13px;color:rgba(255,255,255,.9);line-height:2">
+            📱 <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>→ Safari로 열기<br><br>
+            🤖 <b style="color:#fff">Android</b>: 우측 상단 ⋮<br>→ 다른 브라우저로 열기
+          </div>
+        </div>
+        <button onclick="window.open('${window.location.href}','_blank')" 
+          style="padding:16px 32px;border-radius:999px;background:#fff;color:#1D9E75;font-size:16px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">
+          브라우저로 열기 시도 →
+        </button>
+      </div>
+    `);
+    throw new Error('inapp browser');
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;max-width:100%}
