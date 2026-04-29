@@ -364,7 +364,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .order-btn:disabled{opacity:.3;cursor:not-allowed}
 
 /* ONBOARDING */
-.onboard-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#085041 0%,#1D9E75 100%);z-index:500;display:flex;align-items:center;justify-content:center}
+.onboard-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#085041 0%,#1D9E75 100%);z-index:9990;display:flex;align-items:center;justify-content:center}
 .onboard-card{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border-radius:28px;padding:40px 28px 36px;width:calc(100% - 48px);max-width:380px;border:1px solid rgba(255,255,255,.18)}
 .onboard-step{display:none}
 .onboard-step.active{display:block}
@@ -648,17 +648,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 <div class="ni on" id="n-home" onclick="go('home')"><div class="ni-ic">🏠</div><div class="ni-lb">홈</div></div>
 <div class="ni" id="n-connect" onclick="go('connect')"><div class="ni-ic">🔗</div><div class="ni-lb">연결</div></div>
 <div class="ni" id="n-my" onclick="go('my')"><div class="ni-ic">👤</div><div class="ni-lb">내 정보</div></div>
-</div>
-</div>
-<div class="onboard-overlay" id="onboard" style="display:none">
-<div class="onboard-card">
-<div class="onboard-dots" id="odots"></div>
-<div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
-<div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
-<div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
-<div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
-<div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
-<button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
 </div>
 </div>
 <div class="modal-overlay" id="modal-edit-med" style="display:none">
@@ -1393,7 +1382,12 @@ hideLoad();
 toast(`💚 ${pName}님과 연결됐어요!`);
 // 연결 직후 알림 권한 요청
 setTimeout(()=>promptPushAfterConnect(pName), 800);
-}catch(err){toast('연결 실패: '+err.message);}finally{hideLoad();}
+}catch(err){
+const msg=err.code==='permission-denied'
+  ?'연결 실패: Firebase 보안 규칙 미적용 상태예요. Console에서 규칙을 업데이트해주세요.'
+  :'연결 실패: '+err.message;
+toast(msg);
+}finally{hideLoad();}
 };
 window.removePartner=async uid2=>{if(!confirm('파트너 연결을 해제할까요?'))return;showLoad('연결 해제 중...');try{await deleteDoc(doc(db,'users',uid,'partners',uid2));await deleteDoc(doc(db,'users',uid2,'partners',uid));toast('연결이 해제되었어요.');}catch{toast('해제 실패');}finally{hideLoad();}};
 window.copyCode=()=>{const msg=`나랑 약 쏘옥해~! 💊\n초대 코드: ${ucode}\n👉 ${APP_URL}`;try{navigator.clipboard.writeText(msg);}catch(e){}toast('💌 초대 메시지가 복사됐어요! 카카오톡으로 보내보세요');};
@@ -1523,5 +1517,16 @@ const tick = function(){const d=new Date();$('clock').textContent=`${d.getHours(
 tick();setInterval(tick,30000);
 window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 </script>
+<div class="onboard-overlay" id="onboard" style="display:none">
+<div class="onboard-card">
+<div class="onboard-dots" id="odots"></div>
+<div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
+<div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
+<div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
+<div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
+<div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
+<button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
+</div>
+</div>
 </body>
 </html>
