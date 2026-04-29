@@ -1113,12 +1113,30 @@ const d=c.doc.data();const age=d.createdAt?Date.now()-d.createdAt.toMillis():999
 if(age<15000){
 playSound('notif');
 const nm=d.fromName||'파트너';
-if(d.type==='checked'&&notif.partnerCheck){
-toast(`💚 ${nm}님이 ${d.medName} 복용 완료! 건강 지켜요 🌟`);
-if(Notification.permission==='granted')new Notification('약 쏘옥 💚',{body:`${nm}님이 오늘도 약을 잘 챙겼어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys'});
+// 토스트
+if(d.type==='checked'&&notif.partnerCheck)toast(`💚 ${nm}님이 ${d.medName||'약'} 복용 완료! 건강 지켜요 🌟`);
+if(d.type==='poke')toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);
+if(d.type==='praise')toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);
+// 푸시 알림: SW를 통해 showNotification으로 통일 (new Notification 사용 안 함 → 중복 방지)
+if(Notification.permission==='granted'){
+  const titles={'checked':'약 쏘옥 💚','poke':'약 쏘옥 👉','praise':'약 쏘옥 🌟'};
+  const bodies={
+    'checked':`${nm}님이 ${d.medName||'약'}을 복용했어요!`,
+    'poke':d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,
+    'praise':d.msg?.replace('○○',nm)||`${nm}님이 칭찬해줬어요!`
+  };
+  const tags={'checked':'ys-checked','poke':'ys-poke','praise':'ys-praise'};
+  if((d.type!=='checked'||notif.partnerCheck)&&titles[d.type]){
+    navigator.serviceWorker.ready.then(sw=>{
+      sw.showNotification(titles[d.type],{
+        body:bodies[d.type],
+        icon:location.origin+BASE_PATH+'/icon-192.png',
+        tag:tags[d.type],
+        renotify:true
+      });
+    }).catch(()=>{});
+  }
 }
-if(d.type==='poke'){toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 👉',{body:d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-poke'});}
-if(d.type==='praise'){toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 🌟',{body:d.msg?.replace('○○',nm)||`${nm}님이 오늘 약 잘 먹은 걸 칭찬해줬어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-praise'});}
 }
 await setDoc(c.doc.ref,{read:true},{merge:true});
 }
@@ -1448,7 +1466,11 @@ if(!('Notification'in window))return;
 try{
 if(!msgInited){
 messaging=getMessaging(fbApp);
-onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title||'알림'}: ${body||''}`);});
+onMessage(messaging,p=>{
+  // 포그라운드: toast만 표시. 푸시 알림은 Firestore onSnapshot에서 SW.showNotification으로 통일
+  const{title,body}=p.notification||{};
+  if(title||body)toast(`🔔 ${title||'알림'}: ${body||''}`);
+});
 msgInited=true;
 }
 if(Notification.permission==='granted')await refreshFCM();
@@ -1513,8 +1535,43 @@ let tt;
 const toast = function(msg){clearTimeout(tt);$('toast-msg').textContent=msg;$('toast').classList.add('show');tt=setTimeout(()=>$('toast').classList.remove('show'),3800);}
 const showLoad = function(msg){$('load-msg').textContent=msg||'처리 중...';$('loading').classList.add('show');}
 const hideLoad = function(){$('loading').classList.remove('show');}
-const tick = function(){const d=new Date();$('clock').textContent=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;}
-tick();setInterval(tick,30000);
+const tick = function(){
+const d=new Date();
+$('clock').textContent=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+// 시간 기반 로컬 알림 체크
+if(notif.selfAlarm&&Notification.permission==='granted'&&meds.length){
+  const hh=d.getHours(),mm=d.getMinutes(),dow=WDS[d.getDay()],tk=todayKey();
+  meds.filter(m=>m.days?.includes(dow)&&m.timeExact&&m.alarm&&m.alarm!=='-1').forEach(m=>{
+    const[mh,mmin]=m.timeExact.split(':').map(Number);
+    const alarmMin=parseInt(m.alarm)||0;
+    // 알림 시각 = 복용시각 - alarmMin
+    const targetMin=mh*60+mmin-alarmMin;
+    const nowMin=hh*60+mm;
+    // 현재 분이 알림 시각과 일치하고, 아직 복용 안 했으면 알림
+    if(nowMin===targetMin&&!(logs[tk]||{})[m.id]){
+      const notifKey=`local-${tk}-${m.id}`;
+      if(!sessionStorage.getItem(notifKey)){
+        sessionStorage.setItem(notifKey,'1');
+        navigator.serviceWorker.ready.then(sw=>{
+          sw.showNotification('약 쏘옥 💊',{
+            body:`${m.name} 복용 시간이에요!${alarmMin>0?` (${alarmMin}분 전 알림)`:''}`,
+            icon:location.origin+BASE_PATH+'/icon-192.png',
+            tag:`local-${m.id}`,
+            renotify:true
+          });
+        }).catch(()=>{});
+      }
+    }
+  });
+}
+}
+tick();
+// 매 분 정각에 tick 실행 (알림 타이밍 정확도 향상)
+(function scheduleTick(){
+  const now=new Date();
+  const msToNext=60000-now.getSeconds()*1000-now.getMilliseconds();
+  setTimeout(()=>{tick();setInterval(tick,60000);},msToNext);
+})();
 window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 </script>
 <div class="onboard-overlay" id="onboard" style="display:none">
