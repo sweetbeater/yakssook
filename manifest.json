@@ -1,23 +1,24 @@
 {
   "name": "약 쏘옥",
   "short_name": "약쏘옥",
-  "description": "묻지 않아도 알 수 있는 마음의 평화",
-  "start_url": "/",
+  "description": "파트너와 함께하는 약 복용 관리",
+  "start_url": "/yakssook/",
+  "scope": "/yakssook/",
   "display": "standalone",
-  "background_color": "#1D9E75",
+  "background_color": "#085041",
   "theme_color": "#1D9E75",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.svg",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.svg",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
