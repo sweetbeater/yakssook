@@ -1529,9 +1529,32 @@ const buildAddForm = function(){
 
 const buildPushBanner = function(show){const a=$('push-banner');if(!a)return;a.innerHTML=show?`<div class="push-banner"><p>🔔 알림을 켜면 파트너 복용 시 바로 알림이 와요!</p><button class="push-btn-sm" onclick="requestPush()">알림 켜기</button></div>`:'';}
 const setPushUI = function(on){$('push-txt').textContent=on?'🔔 알림 켜짐':'알림 꺼짐';$('push-txt').style.color=on?'var(--t400)':'var(--tx3)';$('fb-dot').classList.toggle('on',on);buildPushBanner(!on);updatePushToggleUI();}
-const registerSW = async ()=>{if(!('serviceWorker'in navigator))return;try{await navigator.serviceWorker.register('/service-worker.js');}catch(e){}}
-const initMsg = async ()=>{if(!('Notification'in window))return;try{messaging=getMessaging(fbApp);onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title}: ${body}`);});if(Notification.permission==='granted')await refreshFCM();setPushUI(Notification.permission==='granted');}catch(e){}}
-const refreshFCM = async ()=>{if(!messaging||!uid)return;try{const sw=await navigator.serviceWorker.ready;const token=await getToken(messaging,{vapidKey:VAPID,serviceWorkerRegistration:sw});if(token){await setDoc(doc(db,'users',uid),{fcmToken:token},{merge:true});setPushUI(true);}}catch(e){}}
+const SW_PATH='/yakssook/service-worker.js';
+const registerSW = async ()=>{
+  if(!('serviceWorker'in navigator))return;
+  try{await navigator.serviceWorker.register(SW_PATH);}catch(e){console.warn('SW 등록 실패:',e);}
+};
+const swReadyWithTimeout = (ms=8000)=>Promise.race([
+  navigator.serviceWorker.ready,
+  new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),ms))
+]);
+const initMsg = async ()=>{
+  if(!('Notification'in window))return;
+  try{
+    messaging=getMessaging(fbApp);
+    onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title}: ${body}`);});
+    if(Notification.permission==='granted')await refreshFCM();
+    setPushUI(Notification.permission==='granted');
+  }catch(e){console.warn('initMsg 실패:',e);}
+};
+const refreshFCM = async ()=>{
+  if(!messaging||!uid)return;
+  try{
+    const sw=await swReadyWithTimeout();
+    const token=await getToken(messaging,{vapidKey:VAPID,serviceWorkerRegistration:sw});
+    if(token){await setDoc(doc(db,'users',uid),{fcmToken:token},{merge:true});setPushUI(true);}
+  }catch(e){console.warn('FCM 토큰 갱신 실패:',e);}
+};
 const updatePushToggleUI = function(){
   const lb=$('push-toggle-lb');const item=$('push-toggle-item');if(!lb)return;
   const on=Notification.permission==='granted';
@@ -1553,7 +1576,27 @@ window.togglePushNotif=async()=>{
   }
   updatePushToggleUI();
 };
-window.requestPush=async()=>{if(!('Notification'in window)){toast('이 브라우저는 알림을 지원하지 않아요.');return;}if(Notification.permission==='denied'){toast('브라우저 설정에서 알림을 허용해주세요.');return;}showLoad('알림 권한 요청 중...');try{const p=await Notification.requestPermission();if(p==='granted'){await registerSW();await refreshFCM();toast('🔔 푸시 알림이 켜졌어요!');updatePushToggleUI();}else toast('알림 허용이 필요해요.');}catch{toast('알림 설정 실패');}finally{hideLoad();}};
+window.requestPush=async()=>{
+  if(!('Notification'in window)){toast('이 브라우저는 알림을 지원하지 않아요.');return;}
+  if(Notification.permission==='denied'){toast('브라우저 설정에서 알림을 허용해주세요.');return;}
+  showLoad('알림 권한 요청 중...');
+  let granted=false;
+  try{
+    const p=await Notification.requestPermission();
+    granted=(p==='granted');
+    if(!granted){toast('알림 허용이 필요해요.');return;}
+  }catch(e){toast('알림 설정 실패');return;}
+  finally{hideLoad();}
+  // 권한 허용 후 SW/FCM 등록 (별도 try-catch)
+  showLoad('알림 등록 중...');
+  try{
+    await registerSW();
+    await refreshFCM();
+    toast('🔔 푸시 알림이 켜졌어요!');
+    updatePushToggleUI();
+  }catch(e){toast('알림 등록 실패: '+e.message);}
+  finally{hideLoad();}
+};
 
 let tt;
 const toast = function(msg){clearTimeout(tt);$('toast-msg').textContent=msg;$('toast').classList.add('show');tt=setTimeout(()=>$('toast').classList.remove('show'),3800);}
