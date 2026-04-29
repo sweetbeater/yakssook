@@ -1,27 +1,7 @@
 // 약 쏘옥 Service Worker
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+// firebase-messaging 라이브러리 없이 push 이벤트 직접 처리
+// → onBackgroundMessage 중복 문제 완전 해결
 
-const FB_CONFIG = {
-  apiKey: "AIzaSyArCJz3f9WKjIl9N-nzFtQzy7EAE8KjnAM",
-  authDomain: "yakssook-c924f.firebaseapp.com",
-  projectId: "yakssook-c924f",
-  storageBucket: "yakssook-c924f.firebasestorage.app",
-  messagingSenderId: "1053954576861",
-  appId: "1:1053954576861:web:1b8aab71b34a5a2897e634"
-};
-
-firebase.initializeApp(FB_CONFIG);
-const messaging = firebase.messaging();
-
-// onBackgroundMessage를 등록하되 showNotification은 호출하지 않음
-// → Firebase SDK가 브라우저 자동 표시를 가로채서 여기로 보내지만 아무것도 안 함
-// → 대신 push 이벤트에서 직접 1번만 표시
-messaging.onBackgroundMessage(() => {
-  // 의도적으로 비워둠: push 이벤트에서 처리
-});
-
-// push 이벤트: 실제 알림 표시 (1번만)
 self.addEventListener('push', e => {
   if (!e.data) return;
   let payload;
