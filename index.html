@@ -15,33 +15,62 @@
 <meta name="apple-mobile-web-app-title" content="약쏘옥"/>
 <script>
 (function(){
-const ua = navigator.userAgent.toLowerCase();
-const isKakao = ua.includes('kakaotalk') || ua.includes('kakao');
-const isFacebook = ua.includes('fban') || ua.includes('fbav');
-const isInApp = isKakao || isFacebook;
-if(isInApp){
-document.write(`
-<style>*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo',sans-serif}</style>
-<div style="min-height:100vh;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
-<div style="font-size:56px;margin-bottom:16px">💊</div>
-<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>
-<div style="font-size:15px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:32px">
-카카오톡 브라우저에서는<br>정상적으로 작동하지 않아요.<br><b style="color:#fff">Safari나 Chrome</b>으로 열어주세요!
-</div>
-<div style="background:rgba(255,255,255,.15);border-radius:16px;padding:20px;width:100%;max-width:300px;margin-bottom:20px">
-<div style="font-size:13px;color:rgba(255,255,255,.9);line-height:2">
-📱 <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>→ Safari로 열기<br><br>
-🤖 <b style="color:#fff">Android</b>: 우측 상단 ⋮<br>→ 다른 브라우저로 열기
-</div>
-</div>
-<button onclick="window.open('${window.location.href}','_blank')" 
-style="padding:16px 32px;border-radius:999px;background:#fff;color:#1D9E75;font-size:16px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">
-브라우저로 열기 시도 →
-</button>
-</div>
-`);
-throw new Error('inapp browser');
-}
+  var ua=navigator.userAgent.toLowerCase();
+  var url=location.href;
+  var isKakao=ua.includes('kakaotalk')||ua.includes('kakao');
+  var isFB=ua.includes('fban')||ua.includes('fbav');
+  var isNaver=ua.includes('naver');
+  if(!isKakao&&!isFB&&!isNaver)return;
+
+  var isIOS=/iphone|ipad|ipod/.test(ua);
+  var isAnd=/android/.test(ua);
+
+  // iOS 카카오 → Safari 강제 오픈
+  if(isIOS&&isKakao){
+    location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);
+    setTimeout(showGuide,1500);
+    return;
+  }
+  // Android 카카오 → Chrome intent
+  if(isAnd&&isKakao){
+    location.href='intent://'+url.replace(/https?:\/\//,'')+
+      '#Intent;scheme=https;package=com.android.chrome;end';
+    setTimeout(showGuide,1500);
+    return;
+  }
+  showGuide();
+
+  function showGuide(){
+    var guide=document.getElementById('inapp-guide');
+    if(guide){guide.style.display='flex';return;}
+    var d=document.createElement('div');
+    d.id='inapp-guide';
+    d.style.cssText='position:fixed;inset:0;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;z-index:9999;font-family:sans-serif';
+    var guide_html=isIOS
+      ? '&#128241; <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>&rarr; <b style="color:#fff">Safari로 열기</b> 선택'
+      : '&#129302; <b style="color:#fff">Android</b>: 우측 상단 &#8942;<br>&rarr; <b style="color:#fff">다른 브라우저로 열기</b> 선택';
+    d.innerHTML=
+      '<div style="font-size:52px;margin-bottom:12px">&#128138;</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>'+
+      '<div style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:20px">인앱 브라우저에서는 정상 작동하지 않아요.<br><b style="color:#fff">Safari 또는 Chrome</b>으로 열어주세요!</div>'+
+      '<div style="background:rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;width:100%;max-width:300px;margin-bottom:20px;font-size:13px;color:rgba(255,255,255,.9);line-height:2">'+guide_html+'</div>'+
+      '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;width:100%;max-width:300px;margin-bottom:16px;word-break:break-all;font-size:11px;color:rgba(255,255,255,.7)">'+url+'</div>'+
+      '<button id="inapp-copy-btn" style="padding:14px 28px;border-radius:999px;background:#fff;color:#1D9E75;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">&#128279; 주소 복사하기</button>';
+    document.body.appendChild(d);
+    document.getElementById('inapp-copy-btn').addEventListener('click',function(){
+      var btn=this;
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(function(){btn.textContent='✅ 복사됐어요!';}).catch(copy_fallback);
+      }else{copy_fallback();}
+      function copy_fallback(){
+        var t=document.createElement('textarea');
+        t.value=url;t.style.position='fixed';t.style.opacity='0';
+        document.body.appendChild(t);t.focus();t.select();
+        try{document.execCommand('copy');btn.textContent='✅ 복사됐어요!';}catch(e){btn.textContent='주소창에 직접 붙여넣으세요';}
+        document.body.removeChild(t);
+      }
+    });
+  }
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
@@ -615,7 +644,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 <span class="si-lb" id="google-link-lb">Google 계정 연동하기</span>
 <span class="si-arr">›</span>
 </div>
-<div class="sitem" onclick="showChangePwModal()"><span class="si-ic">🔑</span><span class="si-lb">비밀번호 변경</span><span class="si-arr">›</span></div>
+<div class="sitem" id="changepw-row" onclick="showChangePwModal()"><span class="si-ic">🔑</span><span class="si-lb">비밀번호 변경</span><span class="si-arr">›</span></div>
 <div class="sitem" onclick="togglePushNotif()" id="push-toggle-item"><span class="si-ic">🔔</span><span class="si-lb" id="push-toggle-lb">푸시 알림 켜기</span><span class="si-arr">›</span></div>
 <button class="logout-btn" onclick="doLogout()">로그아웃</button>
 <button class="danger-btn" id="delete-account-btn" onclick="showDeleteAccountModal()">⚠️ 회원 탈퇴</button>
@@ -1029,6 +1058,13 @@ if(emailRow)emailRow.style.display='flex';
 }
 const deleteBtn=$('delete-account-btn');
 if(deleteBtn)deleteBtn.style.display=isAnonymous?'none':'block';
+// 비밀번호 변경: 이메일 로그인 계정만 표시
+const changePwRow=$('changepw-row');
+if(changePwRow){
+  const user=auth.currentUser;
+  const hasEmail=user&&user.providerData.some(p=>p.providerId==='password');
+  changePwRow.style.display=hasEmail?'flex':'none';
+}
 renderCodeDigits();
 updateGoogleLinkBtn();
 }
