@@ -9,45 +9,6 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="약 쏘옥"/>
 <script>
-// 카카오톡 인앱 브라우저 감지 → 외부 브라우저로 유도
-(function(){
-  const ua = navigator.userAgent.toLowerCase();
-  const isKakao = ua.indexOf('kakaotalk') > -1;
-  const isNaver = ua.indexOf('naver') > -1;
-  const isLine = ua.indexOf('line') > -1;
-  const isInApp = isKakao || isNaver || isLine;
-  if(!isInApp) return;
-
-  // iOS
-  if(/iphone|ipad|ipod/.test(ua)){
-    // Safari로 열기 유도 (카카오 특수 스킴)
-    if(isKakao){
-      window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(window.location.href);
-      return;
-    }
-  }
-  // Android
-  if(/android/.test(ua)){
-    if(isKakao){
-      window.location.href = 'intent://' + window.location.href.replace(/https?:\/\//i,'') + '#Intent;scheme=https;package=com.android.chrome;end';
-      return;
-    }
-  }
-  // 그 외: 안내 페이지 표시
-  document.addEventListener('DOMContentLoaded', function(){
-    document.body.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:#F0FBF6;font-family:'Apple SD Gothic Neo',sans-serif;text-align:center">
-        <div style="font-size:56px;margin-bottom:16px">💊</div>
-        <div style="font-size:20px;font-weight:700;color:#085041;margin-bottom:10px">약 쏘옥</div>
-        <div style="font-size:14px;color:#424242;line-height:1.7;margin-bottom:28px">카카오톡 브라우저에서는<br>일부 기능이 제한돼요.<br><b>Safari 또는 Chrome</b>에서 열어주세요!</div>
-        <div style="background:#fff;border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.08);word-break:break-all;font-size:13px;color:#1D9E75;font-weight:600">${window.location.href}</div>
-        <div style="font-size:12px;color:#757575;line-height:1.8">위 주소를 복사해서<br>Safari 또는 Chrome에 붙여넣으세요</div>
-        <button onclick="navigator.clipboard.writeText('${window.location.href}').then(()=>alert('주소가 복사됐어요!'))" style="margin-top:20px;padding:14px 28px;border-radius:999px;background:#1D9E75;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer">주소 복사하기</button>
-      </div>`;
-  });
-})();
-</script>
-<script>
 // 카카오톡 인앱 브라우저 감지 → 안내 화면 표시
 (function(){
   const ua = navigator.userAgent.toLowerCase();
@@ -753,7 +714,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
   <div class="modal-box">
     <div class="modal-title">⚠️ 회원 탈퇴</div>
     <div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:16px;line-height:1.7">탈퇴하면 모든 데이터가 삭제되고<br>복구할 수 없어요.</div>
-    <div class="modal-field"><label>비밀번호 확인</label><input type="password" id="delete-pw"/></div>
+    <div id="delete-pw-wrap"><div class="modal-field"><label>비밀번호 확인</label><input type="password" id="delete-pw"/></div></div>
     <div class="modal-err" id="delete-err"></div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-delete-account')">취소</button>
@@ -769,7 +730,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser, signInAnonymously, GoogleAuthProvider, signInWithPopup, linkWithCredential, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, deleteUser, signInAnonymously, GoogleAuthProvider, signInWithPopup, linkWithCredential, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
 
@@ -926,23 +887,35 @@ window.showResetModal=()=>{$('reset-email').value=$('a-email').value;$('reset-er
 window.doReset=async()=>{const email=$('reset-email').value.trim();if(!email){$('reset-err').textContent='이메일을 입력해주세요.';return;}showLoad('발송 중...');try{await sendPasswordResetEmail(auth,email);closeModal('modal-reset');toast('📧 재설정 링크를 이메일로 발송했어요!');}catch(e){$('reset-err').textContent='발송 실패';}finally{hideLoad();}};
 window.showChangePwModal=()=>{$('cur-pw').value='';$('new-pw').value='';$('new-pw2').value='';$('changepw-err').textContent='';$('modal-changepw').style.display='flex';};
 window.doChangePw=async()=>{const cur=$('cur-pw').value,np=$('new-pw').value,np2=$('new-pw2').value;if(!cur||!np){$('changepw-err').textContent='모든 항목을 입력해주세요.';return;}if(np!==np2){$('changepw-err').textContent='새 비밀번호가 일치하지 않아요.';return;}if(np.length<6){$('changepw-err').textContent='6자리 이상이어야 해요.';return;}showLoad('변경 중...');try{const cred=EmailAuthProvider.credential(auth.currentUser.email,cur);await reauthenticateWithCredential(auth.currentUser,cred);await updatePassword(auth.currentUser,np);closeModal('modal-changepw');toast('비밀번호가 변경됐어요!');}catch(e){$('changepw-err').textContent=e.code==='auth/wrong-password'?'현재 비밀번호가 틀렸어요.':'변경 실패';}finally{hideLoad();}};
-window.showDeleteAccountModal=()=>{$('delete-pw').value='';$('delete-err').textContent='';$('modal-delete-account').style.display='flex';};
+window.showDeleteAccountModal=()=>{
+  const user=auth.currentUser;if(!user)return;
+  const hasEmail=user.providerData.some(p=>p.providerId==='password');
+  const pwField=$('delete-pw-wrap');
+  if(pwField)pwField.style.display=hasEmail?'block':'none';
+  $('delete-pw').value='';$('delete-err').textContent='';$('modal-delete-account').style.display='flex';
+};
 window.doDeleteAccount=async()=>{
-  const pw=$('delete-pw').value;
-  if(!pw){$('delete-err').textContent='비밀번호를 입력해주세요.';return;}
+  const user=auth.currentUser;if(!user)return;
   if(!confirm('정말로 탈퇴할까요?'))return;
   showLoad('탈퇴 처리 중...');
   try{
-    const cred=EmailAuthProvider.credential(auth.currentUser.email,pw);
-    await reauthenticateWithCredential(auth.currentUser,cred);
+    const hasEmail=user.providerData.some(p=>p.providerId==='password');
+    const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
+    if(hasEmail){
+      const pw=$('delete-pw').value;
+      if(!pw){hideLoad();$('delete-err').textContent='비밀번호를 입력해주세요.';return;}
+      const cred=EmailAuthProvider.credential(user.email,pw);
+      await reauthenticateWithCredential(user,cred);
+    }else if(hasGoogle){
+      await reauthenticateWithPopup(user,googleProvider);
+    }
+    // 파트너 연결 해제 + Firestore 삭제
     for(const p of partners){try{await deleteDoc(doc(db,'users',p.uid,'partners',uid));}catch(e){}}
     await deleteDoc(doc(db,'users',uid));
-    // 모달 먼저 닫기
     closeModal('modal-delete-account');
-    await deleteUser(auth.currentUser);
-    // signOut 이후 onAuthStateChanged가 자동으로 로그인 화면으로 전환
+    await deleteUser(user);
   }catch(e){
-    $('delete-err').textContent=e.code==='auth/wrong-password'?'비밀번호가 틀렸어요.':'탈퇴 실패: '+e.message;
+    $('delete-err').textContent=e.code==='auth/wrong-password'?'비밀번호가 틀렸어요.':e.code==='auth/popup-closed-by-user'?'재인증이 취소됐어요.':'탈퇴 실패: '+e.message;
   }finally{hideLoad();}
 };
 window.closeModal=id=>{$(id).style.display='none';};
@@ -1199,7 +1172,7 @@ const startListeners = function(){
     const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;
     await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
     buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
-    unsubs.filter((_,i)=>i>=3).forEach(u=>u&&u());unsubs=unsubs.slice(0,3);
+    unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
     partners.forEach(p=>{
       unsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
       unsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
@@ -1366,7 +1339,7 @@ const doCheck = async (mid,e)=>{
     await setDoc(doc(db,'users',uid,'logs',todayKey()),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
     if(v&&m&&partners.length){
       for(const p of partners){try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m.name,type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}}
-      toast(`💚 ${partners[0]?getPDN(partners[0]):'파트너'}에게 복용 알림 전송!`);
+      const pNames=partners.map(p=>getPDN(p)).join(', ');toast(`💚 ${pNames}에게 복용 알림 전송!`);
     }else if(v&&m){toast(`✅ '${m.name}' 복용 완료!`);}
   }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 }
@@ -1524,7 +1497,7 @@ const updateStats = function(){
   const k=todayKey(),tl=logs[k]||{},tms=medsOn(todayDow());const done=tms.filter(m=>tl[m.id]).length;
   $('stat-rate').textContent=tms.length?Math.round(done/tms.length*100)+'%':'0%';
   let streak=0;const today=new Date();
-  for(let i=0;i<30;i++){const d=new Date(today);d.setDate(today.getDate()-i);const dk=dKey(d.getFullYear(),d.getMonth(),d.getDate());const dow=WDS[d.getDay()];const dm=meds.filter(m=>m.days?.includes(dow));if(!dm.length){if(i===0)continue;break;}if(dm.every(m=>(logs[dk]||{})[m.id]))streak++;else break;}
+  for(let i=0;i<60;i++){const d=new Date(today);d.setDate(today.getDate()-i);const dk=dKey(d.getFullYear(),d.getMonth(),d.getDate());const dow=WDS[d.getDay()];const dm=meds.filter(m=>m.days?.includes(dow));if(!dm.length)continue;if(dm.every(m=>(logs[dk]||{})[m.id]))streak++;else if(i>0)break;}
   $('stat-streak').textContent=streak;
 }
 
