@@ -14,26 +14,35 @@ const FB_CONFIG = {
 firebase.initializeApp(FB_CONFIG);
 const messaging = firebase.messaging();
 
-// notification 필드가 있는 FCM 메시지:
-// 브라우저가 자동으로 알림을 표시 → onBackgroundMessage는 호출되지 않음
-// 단, firebase-messaging-compat은 onBackgroundMessage를 등록만 해도
-// 브라우저 자동 표시를 막고 여기서 처리하므로 tag 지정으로 중복 방지
-messaging.onBackgroundMessage(payload => {
+// onBackgroundMessage를 등록하되 showNotification은 호출하지 않음
+// → Firebase SDK가 브라우저 자동 표시를 가로채서 여기로 보내지만 아무것도 안 함
+// → 대신 push 이벤트에서 직접 1번만 표시
+messaging.onBackgroundMessage(() => {
+  // 의도적으로 비워둠: push 이벤트에서 처리
+});
+
+// push 이벤트: 실제 알림 표시 (1번만)
+self.addEventListener('push', e => {
+  if (!e.data) return;
+  let payload;
+  try { payload = e.data.json(); } catch { return; }
+
   const n = payload.notification || {};
   const d = payload.data || {};
   const title = n.title || d.title || '약 쏘옥';
   const body  = n.body  || d.body  || '';
   const tag   = d.tag   || 'yakssook';
 
-  // tag가 같으면 기존 알림을 대체 → 중복 없음
-  return self.registration.showNotification(title, {
-    body,
-    icon: '/yakssook/icon-192.png',
-    badge: '/yakssook/icon-192.png',
-    tag,
-    renotify: false, // 같은 tag 재알림 안 함 → 진동/소리 중복 방지
-    data: d,
-  });
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/yakssook/icon-192.png',
+      badge: '/yakssook/icon-192.png',
+      tag,
+      renotify: true,
+      data: d,
+    })
+  );
 });
 
 self.addEventListener('notificationclick', e => {
