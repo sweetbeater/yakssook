@@ -364,13 +364,13 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .order-btn:disabled{opacity:.3;cursor:not-allowed}
 
 /* ONBOARDING */
-.onboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}
-.onboard-card{background:var(--card);border-radius:var(--rc) var(--rc) 0 0;padding:32px 24px 44px;width:100%;max-width:400px}
+.onboard-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#085041 0%,#1D9E75 100%);z-index:500;display:flex;align-items:center;justify-content:center}
+.onboard-card{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border-radius:28px;padding:40px 28px 36px;width:calc(100% - 48px);max-width:380px;border:1px solid rgba(255,255,255,.18)}
 .onboard-step{display:none}
 .onboard-step.active{display:block}
-.onboard-ic{font-size:52px;margin-bottom:14px;text-align:center}
-.onboard-title{font-size:20px;font-weight:900;color:var(--tx);margin-bottom:10px;text-align:center}
-.onboard-desc{font-size:var(--fs-base);color:var(--tx2);line-height:1.8;text-align:center;margin-bottom:24px}
+.onboard-ic{font-size:64px;margin-bottom:18px;text-align:center}
+.onboard-title{font-size:22px;font-weight:900;color:#fff;margin-bottom:10px;text-align:center}
+.onboard-desc{font-size:var(--fs-base);color:rgba(255,255,255,.85);line-height:1.8;text-align:center;margin-bottom:24px}
 .onboard-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
 .odot{width:8px;height:8px;border-radius:50%;background:var(--g200)}
 .odot.on{background:var(--t400);width:24px;border-radius:var(--rp)}
@@ -1380,11 +1380,19 @@ if(partners.find(p=>p.code===code)){toast('이미 연결된 파트너예요!');r
 showLoad('파트너 찾는 중...');
 try{
 const s=await getDocs(query(collection(db,'users'),where('code','==',code)));
-if(s.empty){toast('해당 코드의 유저를 찾을 수 없어요.');return;}
+if(s.empty){hideLoad();toast('해당 코드의 유저를 찾을 수 없어요.');return;}
 const pd=s.docs[0],pData=pd.data();const pName=pData.name||'파트너';
+// 내 partners에 상대 저장
 await setDoc(doc(db,'users',uid,'partners',pd.id),{uid:pd.id,name:pName,code,photoURL:pData.photoURL||'',nickname:'',relation:'',order:partners.length,connectedAt:serverTimestamp()});
+// 상대 partners에 나 저장 (실패해도 연결은 계속)
+try{
 await setDoc(doc(db,'users',pd.id,'partners',uid),{uid,name:uname||'파트너',code:ucode,photoURL:uphoto||'',nickname:'',relation:'',order:0,connectedAt:serverTimestamp()});
-$('code-input').value='';toast(`💚 ${pName}님과 연결 완료!`);
+}catch(e2){console.warn('상대방 partners 쓰기 실패(보안규칙):', e2.message);}
+$('code-input').value='';
+hideLoad();
+toast(`💚 ${pName}님과 연결됐어요!`);
+// 연결 직후 알림 권한 요청
+setTimeout(()=>promptPushAfterConnect(pName), 800);
 }catch(err){toast('연결 실패: '+err.message);}finally{hideLoad();}
 };
 window.removePartner=async uid2=>{if(!confirm('파트너 연결을 해제할까요?'))return;showLoad('연결 해제 중...');try{await deleteDoc(doc(db,'users',uid,'partners',uid2));await deleteDoc(doc(db,'users',uid2,'partners',uid));toast('연결이 해제되었어요.');}catch{toast('해제 실패');}finally{hideLoad();}};
@@ -1467,9 +1475,17 @@ const on=Notification.permission==='granted';
 lb.textContent=on?'푸시 알림 끄기':'푸시 알림 켜기';
 if(item)item.querySelector('.si-ic').textContent=on?'🔕':'🔔';
 }
+// 연결 후 알림 유도
+const promptPushAfterConnect=(partnerName)=>{
+if(Notification.permission==='granted')return;
+const msg=`${partnerName}님과 연결됐어요! 🎉\n\n알림을 켜면 파트너가 약을 먹었을 때, 쿡 찌르기/칭찬을 받을 때 바로 알 수 있어요.\n\n알림을 허용할까요?`;
+if(confirm(msg))requestPush();
+};
 window.togglePushNotif=async()=>{
 const on=Notification.permission==='granted';
 if(on){
+// 알림 끄기 경고
+if(!confirm('알림을 끄면 파트너의 복용 알림, 쿡 찌르기, 칭찬을 받을 수 없어요.\n그래도 끄시겠어요?'))return;
 if(confirm('푸시 알림을 끄려면 브라우저 설정에서 변경해야 해요.\n\n설정 방법:\n• Safari: 설정 → 앱 이름 → 알림 끄기\n• Chrome: 주소창 자물쇠 → 알림 → 차단\n\n설정 페이지로 이동할까요?')){
 try{await setDoc(doc(db,'users',uid),{fcmToken:null},{merge:true});}catch(e){}
 setPushUI(false);
