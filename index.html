@@ -1468,9 +1468,12 @@ try{
 if(!msgInited){
 messaging=getMessaging(fbApp);
 onMessage(messaging,p=>{
-  // 포그라운드: toast만 표시. 푸시 알림은 Firestore onSnapshot에서 SW.showNotification으로 통일
-  const{title,body}=p.notification||{};
-  if(title||body)toast(`🔔 ${title||'알림'}: ${body||''}`);
+  // data-only 메시지: notification 필드 없으므로 data에서 읽음
+  const d=p.data||{};
+  const n=p.notification||{};
+  const title=n.title||d.title||'';
+  const body=n.body||d.body||'';
+  if(title||body)toast(`🔔 ${title}: ${body}`);
 });
 msgInited=true;
 }
