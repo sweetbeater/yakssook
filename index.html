@@ -4,14 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>약 쏘옥</title>
-<link rel="manifest" href="/yakssook/manifest.json"/>
+<link rel="manifest" id="manifest-link" href="/yakssook/manifest.json"/>
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="apple-touch-icon" href="/yakssook/apple-touch-icon.png"/>
-<link rel="icon" type="image/png" sizes="192x192" href="/yakssook/icon-192.png"/>
-<link rel="icon" type="image/png" sizes="512x512" href="/yakssook/icon-512.png"/>
+<link rel="apple-touch-icon" id="apple-touch-icon" href="/yakssook/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="192x192" id="icon-192-link" href="/yakssook/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" id="icon-512-link" href="/yakssook/icon-512.png"/>
 <meta name="apple-mobile-web-app-title" content="약쏘옥"/>
 <script>
 // 카카오톡 인앱 브라우저 감지 → 안내 화면 표시
@@ -740,9 +740,19 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
 
 
+// ── 배포 경로 설정 (GitHub Pages: /yakssook, Netlify 루트: '') ──
+const BASE_PATH=location.pathname.startsWith('/yakssook')?'/yakssook':'';
+// HEAD 태그 내 경로 동적 보정 (Netlify/GitHub Pages 공통 대응)
+(()=>{
+  const bp=BASE_PATH;
+  const fix=id=>{const el=document.getElementById(id);if(el&&bp==='')el.setAttribute('href',el.getAttribute('href').replace('/yakssook',''));};
+  fix('manifest-link');
+  ['apple-touch-icon','icon-192-link','icon-512-link'].forEach(fix);
+})();
+
 const FB={apiKey:"AIzaSyArCJz3f9WKjIl9N-nzFtQzy7EAE8KjnAM",authDomain:"yakssook-c924f.firebaseapp.com",projectId:"yakssook-c924f",storageBucket:"yakssook-c924f.firebasestorage.app",messagingSenderId:"1053954576861",appId:"1:1053954576861:web:1b8aab71b34a5a2897e634"};
 const VAPID="BKtNTGD4U70OkHBXST3o89XpL7rsRFWTbrr_HcRM6-84w1VmNDoySybxDjBLOlZoabdzVuhp7fDy96kZt2e0rz4";
-const APP_URL="https://sweetbeater.github.io/yakssook";
+const APP_URL=location.origin+BASE_PATH;
 const fbApp=initializeApp(FB);
 const db=getFirestore(fbApp);
 const auth=getAuth(fbApp);
@@ -791,15 +801,14 @@ const getPDN=p=>p.nickname||p.name||'파트너';
 
 // ── 사운드 피드백 (Web Audio API) ──
 let audioCtx=null;
-const getAudioCtx = function(){
+const getAudioCtx = async function(){
   if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  // iOS: suspended 상태면 resume
-  if(audioCtx.state==='suspended') audioCtx.resume();
+  if(audioCtx.state==='suspended') await audioCtx.resume();
   return audioCtx;
 }
-const playSound = function(type){
+const playSound = async function(type){
   try{
-    const ctx=getAudioCtx();
+    const ctx=await getAudioCtx();
     const g=ctx.createGain();
     g.connect(ctx.destination);
     const now=ctx.currentTime;
@@ -1055,7 +1064,7 @@ onAuthStateChanged(auth,async user=>{
     }catch(e){console.error(e);}
     $('auth-wrap').classList.remove('show');$('main-wrap').classList.add('show');
     buildAddForm();renderCodeDigits();syncMyUI();
-    await registerSW();await initMsg();startListeners();
+    registerSW().catch(e=>console.warn(e));await initMsg();startListeners();
     updateGuestBanner();
     hideLoad();hideSplash();
   }else{
@@ -1193,10 +1202,10 @@ const startListeners = function(){
           const nm=d.fromName||'파트너';
           if(d.type==='checked'&&notif.partnerCheck){
             toast(`💚 ${nm}님이 ${d.medName} 복용 완료! 건강 지켜요 🌟`);
-            if(Notification.permission==='granted')new Notification('약 쏘옥 💚',{body:`${nm}님이 오늘도 약을 잘 챙겼어요!`,icon:'/icon-192.svg',tag:'ys'});
+            if(Notification.permission==='granted')new Notification('약 쏘옥 💚',{body:`${nm}님이 오늘도 약을 잘 챙겼어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys'});
           }
-          if(d.type==='poke'){toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 👉',{body:d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,icon:'/icon-192.svg',tag:'ys-poke'});}
-          if(d.type==='praise'){toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 🌟',{body:d.msg?.replace('○○',nm)||`${nm}님이 오늘 약 잘 먹은 걸 칭찬해줬어요!`,icon:'/icon-192.svg',tag:'ys-praise'});}
+          if(d.type==='poke'){toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 👉',{body:d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-poke'});}
+          if(d.type==='praise'){toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 🌟',{body:d.msg?.replace('○○',nm)||`${nm}님이 오늘 약 잘 먹은 걸 칭찬해줬어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-praise'});}
         }
         await setDoc(c.doc.ref,{read:true},{merge:true});
       }
@@ -1529,20 +1538,27 @@ const buildAddForm = function(){
 
 const buildPushBanner = function(show){const a=$('push-banner');if(!a)return;a.innerHTML=show?`<div class="push-banner"><p>🔔 알림을 켜면 파트너 복용 시 바로 알림이 와요!</p><button class="push-btn-sm" onclick="requestPush()">알림 켜기</button></div>`:'';}
 const setPushUI = function(on){$('push-txt').textContent=on?'🔔 알림 켜짐':'알림 꺼짐';$('push-txt').style.color=on?'var(--t400)':'var(--tx3)';$('fb-dot').classList.toggle('on',on);buildPushBanner(!on);updatePushToggleUI();}
-const SW_PATH='/yakssook/service-worker.js';
+const SW_PATH=BASE_PATH+'/service-worker.js';
 const registerSW = async ()=>{
   if(!('serviceWorker'in navigator))return;
   try{await navigator.serviceWorker.register(SW_PATH);}catch(e){console.warn('SW 등록 실패:',e);}
 };
-const swReadyWithTimeout = (ms=8000)=>Promise.race([
-  navigator.serviceWorker.ready,
-  new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),ms))
-]);
+const swReadyWithTimeout = (ms=8000)=>{
+  if(!('serviceWorker' in navigator)) return Promise.reject(new Error('SW not supported'));
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),ms))
+  ]);
+};
+let msgInited=false;
 const initMsg = async ()=>{
   if(!('Notification'in window))return;
   try{
-    messaging=getMessaging(fbApp);
-    onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title}: ${body}`);});
+    if(!msgInited){
+      messaging=getMessaging(fbApp);
+      onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title||'알림'}: ${body||''}`);});
+      msgInited=true;
+    }
     if(Notification.permission==='granted')await refreshFCM();
     setPushUI(Notification.permission==='granted');
   }catch(e){console.warn('initMsg 실패:',e);}
@@ -1580,22 +1596,20 @@ window.requestPush=async()=>{
   if(!('Notification'in window)){toast('이 브라우저는 알림을 지원하지 않아요.');return;}
   if(Notification.permission==='denied'){toast('브라우저 설정에서 알림을 허용해주세요.');return;}
   showLoad('알림 권한 요청 중...');
-  let granted=false;
   try{
     const p=await Notification.requestPermission();
-    granted=(p==='granted');
-    if(!granted){toast('알림 허용이 필요해요.');return;}
-  }catch(e){toast('알림 설정 실패');return;}
-  finally{hideLoad();}
-  // 권한 허용 후 SW/FCM 등록 (별도 try-catch)
-  showLoad('알림 등록 중...');
-  try{
+    if(p!=='granted'){hideLoad();toast('알림 허용이 필요해요.');return;}
+    hideLoad();
+    showLoad('알림 등록 중...');
     await registerSW();
     await refreshFCM();
+    hideLoad();
     toast('🔔 푸시 알림이 켜졌어요!');
     updatePushToggleUI();
-  }catch(e){toast('알림 등록 실패: '+e.message);}
-  finally{hideLoad();}
+  }catch(e){
+    hideLoad();
+    toast('알림 설정 실패: '+e.message);
+  }
 };
 
 let tt;
