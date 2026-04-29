@@ -16,35 +16,28 @@
 <script>
 (function(){
   var ua=navigator.userAgent.toLowerCase();
-  var url=location.href;
   var isKakao=ua.includes('kakaotalk')||ua.includes('kakao');
   var isFB=ua.includes('fban')||ua.includes('fbav');
   var isNaver=ua.includes('naver');
   if(!isKakao&&!isFB&&!isNaver)return;
 
   var isIOS=/iphone|ipad|ipod/.test(ua);
-  var isAnd=/android/.test(ua);
+  var url=location.href;
 
-  // iOS 카카오 → Safari 강제 오픈
-  if(isIOS&&isKakao){
-    location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);
-    setTimeout(showGuide,1500);
+  // ── 카카오 공식: openExternalBrowser=1 파라미터 ──
+  // URL에 이미 있으면 무한 루프 방지
+  if(isKakao&&url.indexOf('openExternalBrowser')===-1){
+    var sep=url.indexOf('?')===-1?'?':'&';
+    location.replace(url+sep+'openExternalBrowser=1');
     return;
   }
-  // Android 카카오 → Chrome intent
-  if(isAnd&&isKakao){
-    location.href='intent://'+url.replace(/https?:\/\//,'')+
-      '#Intent;scheme=https;package=com.android.chrome;end';
-    setTimeout(showGuide,1500);
-    return;
-  }
+
+  // openExternalBrowser=1로 왔는데도 여전히 인앱이면 → 안내 화면
   showGuide();
 
   function showGuide(){
-    var guide=document.getElementById('inapp-guide');
-    if(guide){guide.style.display='flex';return;}
+    var isAnd=/android/.test(ua);
     var d=document.createElement('div');
-    d.id='inapp-guide';
     d.style.cssText='position:fixed;inset:0;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;z-index:9999;font-family:sans-serif';
     var guide_html=isIOS
       ? '&#128241; <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>&rarr; <b style="color:#fff">Safari로 열기</b> 선택'
@@ -52,23 +45,24 @@
     d.innerHTML=
       '<div style="font-size:52px;margin-bottom:12px">&#128138;</div>'+
       '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>'+
-      '<div style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:20px">인앱 브라우저에서는 정상 작동하지 않아요.<br><b style="color:#fff">Safari 또는 Chrome</b>으로 열어주세요!</div>'+
+      '<div style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:20px">카카오톡 브라우저에서는 정상 작동하지 않아요.<br><b style="color:#fff">Safari 또는 Chrome</b>으로 열어주세요!</div>'+
       '<div style="background:rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;width:100%;max-width:300px;margin-bottom:20px;font-size:13px;color:rgba(255,255,255,.9);line-height:2">'+guide_html+'</div>'+
       '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;width:100%;max-width:300px;margin-bottom:16px;word-break:break-all;font-size:11px;color:rgba(255,255,255,.7)">'+url+'</div>'+
       '<button id="inapp-copy-btn" style="padding:14px 28px;border-radius:999px;background:#fff;color:#1D9E75;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">&#128279; 주소 복사하기</button>';
     document.body.appendChild(d);
     document.getElementById('inapp-copy-btn').addEventListener('click',function(){
       var btn=this;
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(url).then(function(){btn.textContent='✅ 복사됐어요!';}).catch(copy_fallback);
-      }else{copy_fallback();}
-      function copy_fallback(){
+      function done(){btn.textContent='✅ 복사됐어요!';}
+      function fallback(){
         var t=document.createElement('textarea');
-        t.value=url;t.style.position='fixed';t.style.opacity='0';
+        t.value=url;t.style.cssText='position:fixed;opacity:0';
         document.body.appendChild(t);t.focus();t.select();
-        try{document.execCommand('copy');btn.textContent='✅ 복사됐어요!';}catch(e){btn.textContent='주소창에 직접 붙여넣으세요';}
+        try{document.execCommand('copy');done();}catch(e){btn.textContent='주소를 직접 복사해주세요';}
         document.body.removeChild(t);
       }
+      navigator.clipboard&&navigator.clipboard.writeText
+        ?navigator.clipboard.writeText(url).then(done).catch(fallback)
+        :fallback();
     });
   }
 })();
