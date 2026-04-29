@@ -1139,22 +1139,7 @@ if(d.type==='checked'&&notif.partnerCheck)toast(`💚 ${nm}님이 ${d.medName||'
 if(d.type==='poke')toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);
 if(d.type==='praise')toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);
 // 푸시: SW showNotification (앱이 백그라운드거나 잠겨있을 때 표시)
-if(Notification.permission==='granted'){
-  const titles={'checked':'약 쏘옥 💚','poke':'약 쏘옥 👉','praise':'약 쏘옥 🌟'};
-  const bodies={
-    'checked':`${nm}님이 ${d.medName||'약'}을 복용했어요!`,
-    'poke':d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,
-    'praise':d.msg?.replace('○○',nm)||`${nm}님이 칭찬해줬어요!`
-  };
-  const tags={'checked':'ys-checked','poke':'ys-poke','praise':'ys-praise'};
-  if((d.type!=='checked'||notif.partnerCheck)&&titles[d.type]){
-    navigator.serviceWorker.ready.then(sw=>sw.showNotification(titles[d.type],{
-      body:bodies[d.type],
-      icon:location.origin+BASE_PATH+'/icon-192.png',
-      tag:tags[d.type],renotify:true
-    })).catch(()=>{});
-  }
-}
+// 푸시 알림은 Cloud Functions(sendNotif)가 FCM으로 발송 → 여기서 중복 발송 안 함
 await setDoc(c.doc.ref,{read:true},{merge:true});
 });
 }));
@@ -1566,17 +1551,8 @@ if(notif.selfAlarm&&Notification.permission==='granted'&&meds.length){
     // 현재 분이 알림 시각과 일치하고, 아직 복용 안 했으면 알림
     if(nowMin===targetMin&&!(logs[tk]||{})[m.id]){
       const notifKey=`local-${tk}-${m.id}`;
-      if(!sessionStorage.getItem(notifKey)){
-        sessionStorage.setItem(notifKey,'1');
-        navigator.serviceWorker.ready.then(sw=>{
-          sw.showNotification('약 쏘옥 💊',{
-            body:`${m.name} 복용 시간이에요!${alarmMin>0?` (${alarmMin}분 전 알림)`:''}`,
-            icon:location.origin+BASE_PATH+'/icon-192.png',
-            tag:`local-${m.id}`,
-            renotify:true
-          });
-        }).catch(()=>{});
-      }
+      // Cloud Functions(scheduledAlarms)가 FCM으로 발송 → 중복 방지로 여기선 제거
+      sessionStorage.setItem(notifKey,'1'); // 중복 실행 방지용은 유지
     }
   });
 }
