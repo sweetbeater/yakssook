@@ -407,65 +407,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .lmsg{font-size:var(--fs-base);color:var(--tx2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 #photo-input{display:none}
-/* ── 내 정원 탭 ── */
-.garden-section{padding:14px 14px 0}
-.garden-card{background:var(--card);border-radius:var(--rc);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;transition:transform .15s}
-.garden-card:active{transform:scale(.98)}
-.garden-card-top{padding:16px;display:flex;align-items:center;gap:14px}
-.plant-avatar{width:72px;height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:42px;flex-shrink:0;cursor:pointer;transition:transform .2s}
-.plant-avatar:active,.plant-avatar.wiggle{animation:wiggle .4s ease}
-@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}
-.garden-card-info{flex:1;min-width:0}
-.garden-plant-name{font-size:17px;font-weight:900;color:var(--tx)}
-.garden-partner-name{font-size:12px;color:var(--tx3);margin-top:2px}
-.garden-level{font-size:12px;color:var(--t400);font-weight:700;margin-top:4px}
-.garden-progress{height:6px;background:var(--g200);border-radius:3px;margin-top:6px;overflow:hidden}
-.garden-progress-bar{height:100%;background:linear-gradient(90deg,var(--t400),var(--t200));border-radius:3px;transition:width .5s}
-.garden-home-toggle{padding:10px 16px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--tx2)}
-.garden-detail-btn{font-size:12px;color:var(--t400);font-weight:700;cursor:pointer;padding:4px 8px;border-radius:8px;background:var(--t50)}
-
-/* 식물 선택 팝업 */
-.plant-pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
-.plant-pick-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:16px;border:2px solid var(--bd2);cursor:pointer;transition:all .2s;background:var(--g100)}
-.plant-pick-item.on{border-color:var(--t400);background:var(--t50)}
-.plant-pick-emoji{font-size:36px;line-height:1}
-.plant-pick-label{font-size:11px;font-weight:700;color:var(--tx2);text-align:center}
-.plant-pick-item.on .plant-pick-label{color:var(--t600)}
-
-/* 식물 도감 */
-.dex-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
-.dex-item{background:var(--card);border-radius:var(--rc);padding:14px;text-align:center;box-shadow:var(--shadow)}
-.dex-emoji{font-size:40px;margin-bottom:6px}
-.dex-name{font-size:13px;font-weight:700;color:var(--tx)}
-.dex-stages{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.dex-stage-dot{width:8px;height:8px;border-radius:50%;background:var(--t400)}
-.dex-stage-dot.locked{background:var(--g200)}
-.dex-locked{filter:grayscale(1);opacity:.4}
-
-/* 홈 식물 표시 */
-.home-plant-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0 8px;position:relative}
-.home-plant-emoji{font-size:80px;cursor:pointer;transition:transform .2s;line-height:1}
-.home-plant-emoji:active{transform:scale(.9)}
-.home-plant-name{font-size:14px;font-weight:700;color:var(--t600);margin-top:6px}
-.home-plant-level{font-size:12px;color:var(--tx3);margin-top:2px}
-.home-plant-select{font-size:12px;color:var(--t400);font-weight:700;cursor:pointer;margin-top:4px;padding:4px 12px;border-radius:999px;background:var(--t50)}
-
-/* 복용 애니메이션 */
-.water-anim{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);font-size:60px;pointer-events:none;z-index:200;animation:floatUp 1.2s ease forwards}
-@keyframes floatUp{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-120%) scale(1.4)}}
-
-/* 도감 서브탭 */
-.garden-subtabs{display:flex;gap:6px;padding:12px 14px 0;background:var(--bg)}
-.garden-subtab{flex:1;padding:10px;border-radius:var(--rp);font-size:var(--fs-sm);font-weight:700;border:none;background:var(--g100);color:var(--tx3);cursor:pointer;transition:all .2s;text-align:center}
-.garden-subtab.on{background:var(--t400);color:#fff}
-
-/* 공지 팝업 */
-.notice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9990;display:flex;align-items:center;justify-content:center;padding:24px}
-.notice-box{background:var(--card);border-radius:28px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
-.notice-emoji{font-size:52px;margin-bottom:12px}
-.notice-title{font-size:20px;font-weight:900;color:var(--tx);margin-bottom:8px}
-.notice-body{font-size:14px;color:var(--tx2);line-height:1.8;margin-bottom:20px}
-
 </style>
 </head>
 <body>
@@ -550,7 +491,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </div>
 <div class="partner-tabs-row" id="partner-tabs-row"></div>
 </div>
-<div id="home-plant-area"></div>
 <div class="cal-mode-row">
 <button class="cmb on" id="cmb-week" onclick="setCalMode('week')">📅 주간</button>
 <button class="cmb" id="cmb-month" onclick="setCalMode('month')">🗓 월별</button>
@@ -617,20 +557,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </select>
 </div>
 <button class="sbtn" onclick="addMed()">✅ 등록하기</button>
-</div>
-</div>
-<div class="screen" id="s-garden">
-<div class="fhdr">
-  <span class="ftitle">🌿 내 정원</span>
-  <button id="garden-dex-btn" style="margin-left:auto;padding:7px 14px;border-radius:var(--rp);background:var(--t50);color:var(--t600);font-size:13px;font-weight:700;border:none;cursor:pointer" onclick="toggleGardenView()">🔍 식물 도감</button>
-</div>
-<div id="garden-main-view">
-  <div id="garden-plants-view">
-    <div id="garden-plants-list" class="garden-section"></div>
-  </div>
-  <div id="garden-dex-view" style="display:none">
-    <div class="dex-grid" id="dex-grid"></div>
-  </div>
 </div>
 </div>
 <div class="screen" id="s-connect">
@@ -720,7 +646,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 <button class="fab" id="fab" onclick="go('add')">＋</button>
 <div class="bnav">
 <div class="ni on" id="n-home" onclick="go('home')"><div class="ni-ic">🏠</div><div class="ni-lb">홈</div></div>
-<div class="ni" id="n-garden" onclick="go('garden')"><div class="ni-ic">🌿</div><div class="ni-lb">내 정원</div></div>
 <div class="ni" id="n-connect" onclick="go('connect')"><div class="ni-ic">🔗</div><div class="ni-lb">연결</div></div>
 <div class="ni" id="n-my" onclick="go('my')"><div class="ni-ic">👤</div><div class="ni-lb">내 정보</div></div>
 </div>
@@ -781,35 +706,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </div>
 <div class="toast" id="toast"><div class="tdot"></div><span id="toast-msg"></span></div>
 <div class="loading" id="loading"><div class="lbox"><div class="spinner"></div><div class="lmsg" id="load-msg">처리 중...</div></div></div>
-
-<div class="modal-overlay" id="modal-plant-pick" style="display:none">
-<div class="modal-box" style="max-height:90vh;overflow-y:auto">
-  <div class="modal-title">🌱 함께 키울 식물을 선택해요!</div>
-  <div style="font-size:13px;color:var(--tx2);margin-bottom:4px;text-align:center">파트너와 함께 키울 식물 1종을 선택하세요</div>
-  <div style="font-size:12px;color:var(--tx3);margin-bottom:8px;text-align:center" id="plant-pick-partner-label"></div>
-  <div style="font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:4px">🌸 꽃</div>
-  <div class="plant-pick-grid" id="plant-pick-grid-flower"></div>
-  <div style="font-size:13px;font-weight:700;color:var(--tx2);margin:4px 0">🌳 나무</div>
-  <div class="plant-pick-grid" id="plant-pick-grid-tree"></div>
-  <div class="modal-field" style="margin-top:8px"><label>식물 이름 짓기 🏷️</label><input type="text" id="plant-name-input" placeholder="예: 우리 해바라기, 뿌뿌" maxlength="12"/></div>
-  <div class="modal-err" id="plant-pick-err"></div>
-  <div class="modal-btns">
-    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-plant-pick')">나중에</button>
-    <button class="modal-btn modal-btn-ok" onclick="confirmPlantPick()">시작하기 🌱</button>
-  </div>
-</div>
-</div>
-
-<div class="notice-overlay" id="notice-garden-update" style="display:none">
-  <div class="notice-box">
-    <div class="notice-emoji">🌿</div>
-    <div class="notice-title">내 정원이 생겼어요!</div>
-    <div class="notice-body">파트너와 함께 식물을 키우는<br><b>내 정원</b> 기능이 추가됐어요!<br><br>연결된 파트너마다 식물을 선택하고<br>약을 먹을 때마다 함께 성장해요 🌱</div>
-    <button class="abtn" onclick="startGardenForExisting()">식물 선택하러 가기 🌸</button>
-    <button style="width:100%;padding:10px;border:none;background:none;color:var(--tx3);font-size:13px;cursor:pointer;margin-top:6px" onclick="closeNoticeGarden()">나중에 할게요</button>
-  </div>
-</div>
-
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -835,24 +731,6 @@ const TIMES=['아침 식전','아침 식후','점심 식전','점심 식후','�
 const DAYS=['월','화','수','목','금','토','일'];
 const WDS=['일','월','화','수','목','금','토'];
 const COLORS=['#E8F8F0','#FFF3E0','#E8EAF6','#FCE4EC','#E0F2F1','#F3E5F5','#FFF8E1'];
-const PLANT_TYPES=[
-  {id:'sunflower',name:'해바라기',emoji:'🌻',type:'flower',stages:['🌱','🌿','🪴','🌻','🌻','🌻','🌻','🌻','🌻','🌟']},
-  {id:'lotus',name:'연꽃',emoji:'🪷',type:'flower',stages:['🌱','🌿','🪴','🌺','🪷','🪷','🪷','🪷','🪷','✨']},
-  {id:'lavender',name:'라벤더',emoji:'💜',type:'flower',stages:['🌱','🌿','🌿','🌸','💜','💜','💜','💜','💜','🌟']},
-  {id:'poppy',name:'푸른양귀비',emoji:'🔵',type:'flower',stages:['🌱','🌿','🪴','🌸','💙','💙','💙','💙','💙','✨']},
-  {id:'apple',name:'사과나무',emoji:'🍎',type:'tree',stages:['🌱','🌿','🪵','🌲','🌲','🌲','🍎','🍎','🍎','🍏']},
-  {id:'maple',name:'단풍나무',emoji:'🍁',type:'tree',stages:['🌱','🌿','🪵','🌳','🌳','🌳','🍂','🍁','🍁','🌟']},
-  {id:'magnolia',name:'목련나무',emoji:'🌸',type:'tree',stages:['🌱','🌿','🪵','🌳','🌳','🌸','🌸','🌸','🌸','✨']},
-  {id:'baobab',name:'바오밥나무',emoji:'🌴',type:'tree',stages:['🌱','🌿','🪵','🌴','🌴','🌴','🌴','🌴','🌴','👑']},
-];
-const PLANT_STAGE_NAMES_FLOWER=['씨앗','아기씨앗','첫뿌리','꼬마싹','아기떡잎','본잎','줄기성장','꽃봉오리','개화','성체'];
-const PLANT_STAGE_NAMES_TREE=['씨앗','어린씨앗','발아','유묘','어린나무','가지치기','굵은줄기','작은나무','큰나무','성체'];
-const DOSES_PER_LEVEL=7; // 레벨업에 필요한 복용 횟수
-let plants={}; // {partnerUid: {id,name,type,level,doses,plantCustomName,homePick}}
-let gardenSub='garden';
-let pendingPlantPartnerUid=null;
-let selectedPlantTypeId=null;
-
 const POKE_MSGS=[
 '💊 ○○님이 약 먹기를 기다리고 있어요!',
 '🌟 ○○님이 오늘 약 챙겼는지 걱정하고 있어요~',
@@ -873,7 +751,7 @@ const APP_START_TS=Date.now(); // 앱 시작 시각 - 이 이전 알림은 무�
 let calMode='week',weekOff=0,mYear=new Date().getFullYear(),mMonth=new Date().getMonth();
 let selDate=null,selPanel='me',calPartnerIdx=-1;
 let unsubs=[],onboardStep=0,editMedId='',timeSkipMode=false,editTimeSkipMode=false;
-const ONBOARD_TOTAL=6;
+const ONBOARD_TOTAL=5;
 const dKey=(y,m,d)=>`${y}-${m+1}-${d}`;
 const todayKey=()=>{const n=new Date();return dKey(n.getFullYear(),n.getMonth(),n.getDate());};
 const todayDow=()=>WDS[new Date().getDay()];
@@ -995,8 +873,6 @@ await reauthenticateWithCredential(user,cred);
 await reauthenticateWithPopup(user,googleProvider);
 }
 for(const p of partners){try{await deleteDoc(doc(db,'users',p.uid,'partners',uid));}catch(e){}}
-// plants 컬렉션 삭제
-for(const puid of Object.keys(plants)){try{await deleteDoc(doc(db,'users',uid,'plants',puid));}catch(e){}}
 await deleteDoc(doc(db,'users',uid));
 closeModal('modal-delete-account');
 await deleteUser(user);
@@ -1266,14 +1142,6 @@ await setDoc(c.doc.ref,{read:true},{merge:true});
 });
 }));
 rebuildCal();buildMedList();buildPartnerSections();
-// 내 식물 구독
-unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
-  plants={};
-  s.docs.forEach(d=>{plants[d.id]={...d.data(),partnerUid:d.id};});
-  buildHomePlant();buildGardenView();
-  // plants 로드 완료 후 공지 체크 (정확한 타이밍)
-  if(partners.length)checkGardenNotice();
-}));
 }
 const buildPartnerTabs = function(){
 const row=$('partner-tabs-row');row.innerHTML='';
@@ -1399,14 +1267,10 @@ const v=!isOk(mid);const m=meds.find(x=>x.id===mid);
 showLoad('저장 중...');
 try{
 await setDoc(doc(db,'users',uid,'logs',todayKey()),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
-if(v&&m){
-showWaterAnim();
-if(partners.length){
+if(v&&m&&partners.length){
 for(const p of partners){try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m.name,type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}}
-const pNames=partners.map(p=>getPDN(p)).join(', ');toast('💚 '+pNames+'에게 복용 알림 전송!');
-for(const p of partners){await growPlant(p.uid).catch(()=>{});}
-}else{toast('✅ '+m.name+' 복용 완료!');}
-}
+const pNames=partners.map(p=>getPDN(p)).join(', ');toast(`💚 ${pNames}에게 복용 알림 전송!`);
+}else if(v&&m){toast(`✅ '${m.name}' 복용 완료!`);}
 }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 }
 window.doCheck=doCheck;
@@ -1465,8 +1329,7 @@ if(!meds.length){el.innerHTML=`<div style="padding:12px 16px;font-size:14px;colo
 el.innerHTML='';
 meds.forEach(m=>{
 const r=document.createElement('div');r.className='mmrow';
-r.setAttribute('data-mid', m.id);
-r.innerHTML='<div class="mm-ic" style="background:'+(m.color||'#E8F8F0')+'">'+m.icon+'</div><div class="mm-info"><div class="mm-name">'+m.name+'</div><div class="mm-sub">'+fmtMedTime(m)+' · '+(m.days||[]).join(' ')+'요일</div></div><button class="mm-edit" data-id="'+m.id+'" onclick="openEditMedTime(this.dataset.id)">시각 수정</button><div class="mm-del" data-id="'+m.id+'" data-name="'+encodeURIComponent(m.name)+'" onclick="deleteMed(this.dataset.id,decodeURIComponent(this.dataset.name))">🗑</div>';
+r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" onclick="openEditMedTime('${m.id}')">시각 수정</button><div class="mm-del" onclick="deleteMed('${m.id}','${m.name.replace(/'/g,"\\'")}')">🗑</div>`;
 el.appendChild(r);
 });
 }
@@ -1536,15 +1399,8 @@ await setDoc(doc(db,'users',pd.id,'partners',uid),{uid,name:uname||'파트너',c
 $('code-input').value='';
 hideLoad();
 toast(`💚 ${pName}님과 연결됐어요!`);
-// 식물 선택 팝업 (알림 요청 전에)
-setTimeout(()=>{
-  if(!plants[pd.id]||!plants[pd.id].plantTypeId){
-    showPlantPick(pd.id,pName);
-    // 식물 선택 완료 후 알림 요청은 confirmPlantPick에서 처리
-  }else{
-    promptPushAfterConnect(pName);
-  }
-}, 600);
+// 연결 직후 알림 권한 요청
+setTimeout(()=>promptPushAfterConnect(pName), 800);
 }catch(err){
 const msg=err.code==='permission-denied'
   ?'연결 실패: Firebase 보안 규칙 미적용 상태예요. Console에서 규칙을 업데이트해주세요.'
@@ -1588,7 +1444,6 @@ $('fab').style.display=name==='home'?'flex':'none';
 if(name==='home'){rebuildCal();buildMedList();buildPartnerSections();}
 if(name==='my'){syncMyUI();updateStats();buildMedManage();}
 if(name==='connect'){buildPartnersList();buildPartnerOrderList();}
-if(name==='garden'){buildGardenView();}
 }
 window.go=go;
 const buildAddForm = function(){
@@ -1693,246 +1548,6 @@ let tt;
 const toast = function(msg){clearTimeout(tt);$('toast-msg').textContent=msg;$('toast').classList.add('show');tt=setTimeout(()=>$('toast').classList.remove('show'),3800);}
 const showLoad = function(msg){$('load-msg').textContent=msg||'처리 중...';$('loading').classList.add('show');}
 const hideLoad = function(){$('loading').classList.remove('show');}
-
-// ── 식물 이모지 반환 ──
-const getPlantEmoji=(typeId,level)=>{
-  const p=PLANT_TYPES.find(x=>x.id===typeId);
-  if(!p)return '🌱';
-  const idx=Math.min(level,p.stages.length-1);
-  return p.stages[idx];
-};
-const getPlantStageName=(typeId,level)=>{
-  const p=PLANT_TYPES.find(x=>x.id===typeId);
-  if(!p)return '씨앗';
-  const names=p.type==='flower'?PLANT_STAGE_NAMES_FLOWER:PLANT_STAGE_NAMES_TREE;
-  return names[Math.min(level,9)];
-};
-
-// ── 홈 대표 식물 ──
-const buildHomePlant=()=>{
-  const area=$('home-plant-area');if(!area)return;
-  const homePlant=Object.values(plants).find(p=>p.homePick);
-  if(!homePlant||!homePlant.plantTypeId){area.innerHTML='';return;}
-  const p=homePlant;
-  const partner=partners.find(x=>x.uid===p.partnerUid);
-  const pName=partner?getPDN(partner):'파트너';
-  const emoji=getPlantEmoji(p.plantTypeId,p.level||0);
-  const stageName=getPlantStageName(p.plantTypeId,p.level||0);
-  const doses=p.doses||0;
-  const progress=Math.min((doses%DOSES_PER_LEVEL)/DOSES_PER_LEVEL*100,100);
-  const customName=p.plantCustomName||'우리 식물';
-  area.innerHTML='<div class="home-plant-wrap">'
-    +'<div class="home-plant-emoji" onclick="wigglePlant(this)">'+emoji+'</div>'
-    +'<div class="home-plant-name">'+customName+'</div>'
-    +'<div class="home-plant-level">Lv.'+(+(p.level||0)+1)+' '+stageName+' · '+pName+'와 함께</div>'
-    +'<div style="width:140px;margin-top:6px"><div class="garden-progress"><div class="garden-progress-bar" style="width:'+progress+'%"></div></div></div>'
-    +'<div class="home-plant-select" onclick="showHomePlantPicker()">식물 변경 ›</div>'
-    +'</div>';
-};
-
-// ── 홈 식물 변경 ──
-window.showHomePlantPicker=()=>{
-  const list=Object.values(plants).filter(p=>p.plantTypeId);
-  if(!list.length){toast('연결된 파트너와 식물을 먼저 선택해주세요!');return;}
-  const msg=list.map((p,i)=>{const pn=partners.find(x=>x.uid===p.partnerUid)?getPDN(partners.find(x=>x.uid===p.partnerUid)):'파트너';return (i+1)+'. '+(p.plantCustomName||'식물')+' ('+pn+')';}).join('\n');
-  const idx=prompt('홈에 표시할 식물 번호를 입력하세요:\n'+msg);
-  if(!idx)return;
-  const n=parseInt(idx)-1;
-  if(n<0||n>=list.length){toast('올바른 번호를 입력해주세요.');return;}
-  setHomePlant(list[n].partnerUid);
-};
-const setHomePlant=async(partnerUid)=>{
-  // 모든 식물 homePick=false 후 선택된 것만 true
-  for(const p of Object.values(plants)){
-    try{await setDoc(doc(db,'users',uid,'plants',p.partnerUid),{homePick:p.partnerUid===partnerUid},{merge:true});}catch(e){}
-  }
-  buildHomePlant();buildGardenView();
-};
-
-// ── 식물 흔들기 ──
-window.wigglePlant=(el)=>{
-  el.classList.add('wiggle');
-  setTimeout(()=>el.classList.remove('wiggle'),400);
-};
-
-// ── 복용 애니메이션 ──
-const showWaterAnim=()=>{
-  const emojis=['💧','🌊','☀️','✨','🌟'];
-  const e=document.createElement('div');
-  e.className='water-anim';
-  e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-  document.body.appendChild(e);
-  setTimeout(()=>e.remove(),1200);
-};
-
-// ── 식물 성장 처리 ──
-const growPlant=async(partnerUid)=>{
-  const plant=plants[partnerUid];if(!plant||!plant.plantTypeId)return;
-  const newDoses=(plant.doses||0)+1;
-  const newLevel=Math.min(Math.floor(newDoses/DOSES_PER_LEVEL),9);
-  const leveled=newLevel>(plant.level||0);
-  await setDoc(doc(db,'users',uid,'plants',partnerUid),{doses:newDoses,level:newLevel},{merge:true});
-  if(leveled){
-    const emoji=getPlantEmoji(plant.plantTypeId,newLevel);
-    const stageName=getPlantStageName(plant.plantTypeId,newLevel);
-    const msgs=[
-      '약 복용으로 식물이 성장했어요! '+emoji,
-      '함께 키운 식물이 쑥쑥 자랐어요! '+emoji,
-      '오늘도 약을 잘 챙긴 덕분에 '+emoji+' '+stageName+' 단계가 됐어요!',
-      '대단해요! '+emoji+' '+stageName+' 단계로 성장했어요 🎉',
-    ];
-    toast(msgs[Math.floor(Math.random()*msgs.length)]);
-  }
-};
-
-// ── 내 정원 뷰 ──
-const buildGardenView=()=>{
-  buildGardenPlants();
-  buildPlantDex();
-};
-const buildGardenPlants=()=>{
-  const list=$('garden-plants-list');if(!list)return;
-  const myPlants=Object.values(plants);
-  if(!myPlants.length||myPlants.every(p=>!p.plantTypeId)){
-    list.innerHTML=`<div class="empty" style="padding:40px 20px"><div class="empty-ic">🌱</div><p>파트너와 연결하면<br>함께 키울 식물을 선택할 수 있어요!</p></div>`;
-    return;
-  }
-  list.innerHTML='';
-  myPlants.filter(p=>p.plantTypeId).forEach(p=>{
-    const partner=partners.find(x=>x.uid===p.partnerUid);
-    const pName=partner?getPDN(partner):'파트너';
-    const emoji=getPlantEmoji(p.plantTypeId,p.level||0);
-    const stageName=getPlantStageName(p.plantTypeId,p.level||0);
-    const doses=p.doses||0;
-    const progress=Math.min((doses%DOSES_PER_LEVEL)/DOSES_PER_LEVEL*100,100);
-    const remain=DOSES_PER_LEVEL-(doses%DOSES_PER_LEVEL);
-    const isHome=!!p.homePick;
-    const card=document.createElement('div');card.className='garden-card';
-    card.innerHTML=`<div class="garden-card-top">
-      <div class="plant-avatar" onclick="this.classList.add('wiggle');setTimeout(()=>this.classList.remove('wiggle'),400)">${emoji}</div>
-      <div class="garden-card-info">
-        <div class="garden-plant-name">${p.plantCustomName||'우리 식물'}</div>
-        <div class="garden-partner-name">with ${pName} · ${PLANT_TYPES.find(x=>x.id===p.plantTypeId)?.name||''}</div>
-        <div class="garden-level">Lv.${(p.level||0)+1} ${stageName}</div>
-        <div class="garden-progress"><div class="garden-progress-bar" style="width:${progress}%"></div></div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:3px">다음 단계까지 ${remain}번 복용</div>
-      </div>
-    </div>
-    <div class="garden-home-toggle">
-      <span>${isHome?'🏠 홈 화면에 표시 중':'홈 화면에 표시하기'}</span>
-      <label class="toggle-wrap" style="transform:scale(.85)"><input type="checkbox" ${isHome?'checked':''} data-puid="${p.partnerUid}" onchange="setHomePlant(this.dataset.puid)"/><span class="toggle-slider"></span></label>
-    </div>`;
-    list.appendChild(card);
-  });
-};
-const buildPlantDex=()=>{
-  const dex=$('dex-grid');if(!dex)return;
-  const myPlantTypes=new Set(Object.values(plants).filter(p=>p.plantTypeId).map(p=>p.plantTypeId));
-  const myPlantLevels={};
-  Object.values(plants).filter(p=>p.plantTypeId).forEach(p=>{myPlantLevels[p.plantTypeId]=p.level||0;});
-  dex.innerHTML='';
-  PLANT_TYPES.forEach(pt=>{
-    const owned=myPlantTypes.has(pt.id);
-    const level=myPlantLevels[pt.id]||0;
-    const item=document.createElement('div');
-    item.className='dex-item'+(owned?'':' dex-locked');
-    const stages=Array.from({length:10},(_,i)=>{const cls='dex-stage-dot'+(i<=level&&owned?'':' locked');return '<div class="'+cls+'"></div>';}).join('');
-    const dexEmoji=owned?pt.emoji:'❓';
-    const dexName=owned?pt.name:'???';
-    item.innerHTML='<div class="dex-emoji">'+dexEmoji+'</div><div class="dex-name">'+dexName+'</div><div class="dex-stages">'+stages+'</div>';
-    dex.appendChild(item);
-  });
-};
-
-// ── 정원/도감 뷰 토글 ──
-window.toggleGardenView=()=>{
-  const dexView=$('garden-dex-view');
-  const plantsView=$('garden-plants-view');
-  const btn=$('garden-dex-btn');
-  const isDex=dexView.style.display!=='none';
-  dexView.style.display=isDex?'none':'block';
-  plantsView.style.display=isDex?'block':'none';
-  btn.textContent=isDex?'🔍 식물 도감':'🌿 내 정원';
-};
-
-// ── 식물 선택 팝업 ──
-const showPlantPick=(partnerUid,partnerName)=>{
-  pendingPlantPartnerUid=partnerUid;
-  selectedPlantTypeId=null;
-  $('plant-pick-partner-label').textContent=`👫 ${partnerName}님과 함께 키울 식물`;
-  $('plant-name-input').value='';
-  $('plant-pick-err').textContent='';
-  // 꽃
-  const fg=$('plant-pick-grid-flower');fg.innerHTML='';
-  PLANT_TYPES.filter(p=>p.type==='flower').forEach(p=>{
-    const el=document.createElement('div');el.className='plant-pick-item';
-    el.innerHTML=`<div class="plant-pick-emoji">${p.emoji}</div><div class="plant-pick-label">${p.name}</div>`;
-    el.onclick=()=>{document.querySelectorAll('.plant-pick-item').forEach(x=>x.classList.remove('on'));el.classList.add('on');selectedPlantTypeId=p.id;};
-    fg.appendChild(el);
-  });
-  // 나무
-  const tg=$('plant-pick-grid-tree');tg.innerHTML='';
-  PLANT_TYPES.filter(p=>p.type==='tree').forEach(p=>{
-    const el=document.createElement('div');el.className='plant-pick-item';
-    el.innerHTML=`<div class="plant-pick-emoji">${p.emoji}</div><div class="plant-pick-label">${p.name}</div>`;
-    el.onclick=()=>{document.querySelectorAll('.plant-pick-item').forEach(x=>x.classList.remove('on'));el.classList.add('on');selectedPlantTypeId=p.id;};
-    tg.appendChild(el);
-  });
-  $('modal-plant-pick').style.display='flex';
-};
-window.confirmPlantPick=async()=>{
-  if(!selectedPlantTypeId){$('plant-pick-err').textContent='식물을 선택해주세요!';return;}
-  const name=$('plant-name-input').value.trim();
-  if(!name){$('plant-pick-err').textContent='식물 이름을 지어주세요!';return;}
-  showLoad('식물 심는 중...');
-  try{
-    const isFirst=Object.keys(plants).length===0;
-    await setDoc(doc(db,'users',uid,'plants',pendingPlantPartnerUid),{
-      plantTypeId:selectedPlantTypeId,
-      plantCustomName:name,
-      level:0,doses:0,
-      homePick:isFirst,
-      createdAt:serverTimestamp()
-    });
-    closeModal('modal-plant-pick');
-    toast('🌱 '+name+' 심기 완료! 함께 잘 키워봐요!');
-    // 다음 식물 없는 파트너 있으면 연속 선택
-    const nextMissing=partners.filter(p=>p.uid!==pendingPlantPartnerUid&&(!plants[p.uid]||!plants[p.uid].plantTypeId));
-    if(nextMissing.length){
-      setTimeout(()=>showPlantPick(nextMissing[0].uid,getPDN(nextMissing[0])),400);
-    }else{
-      const _partner=partners.find(x=>x.uid===pendingPlantPartnerUid);
-      if(_partner)setTimeout(()=>promptPushAfterConnect(getPDN(_partner)),800);
-    }
-  }catch(e){$('plant-pick-err').textContent='저장 실패: '+e.message;}
-  finally{hideLoad();}
-};
-
-// ── 기존 유저 공지 ──
-const checkGardenNotice=async()=>{
-  if(!partners.length)return;
-  const hasPlants=Object.values(plants).some(p=>p.plantTypeId);
-  if(hasPlants)return;
-  // Firestore에 저장해서 앱 재실행 후에도 1회만 표시
-  try{
-    const snap=await getDoc(doc(db,'users',uid));
-    if(snap.data()?.gardenNoticeSeen)return;
-    $('notice-garden-update').style.display='flex';
-    await setDoc(doc(db,'users',uid),{gardenNoticeSeen:true},{merge:true});
-  }catch(e){console.warn('gardenNotice 체크 실패:',e);}
-};
-window.closeNoticeGarden=()=>{$('notice-garden-update').style.display='none';};
-window.startGardenForExisting=()=>{
-  closeNoticeGarden();
-  go('garden');
-  pickNextMissingPlant();
-};
-// 파트너 순서대로 식물 없는 것 순차 선택
-const pickNextMissingPlant=()=>{
-  const missing=partners.filter(p=>!plants[p.uid]||!plants[p.uid].plantTypeId);
-  if(missing.length)showPlantPick(missing[0].uid,getPDN(missing[0]));
-};
-
 const tick = function(){
 const d=new Date();
 $('clock').textContent=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
@@ -1967,7 +1582,6 @@ window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
 <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
 <div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
-<div class="onboard-step" id="os-5"><div class="onboard-ic">🌿</div><div class="onboard-title">식물을 함께 키워요!</div><div class="onboard-desc">파트너와 연결하면 함께 키울 식물을 선택해요.<br>약을 먹을 때마다 식물이 쑥쑥 자라요 🌱<br><br><b>내 정원</b> 탭에서 성장을 확인하고<br>식물 도감도 채워보세요!</div></div>
 <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
 </div>
 </div>
