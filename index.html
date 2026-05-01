@@ -989,16 +989,13 @@ setTimeout(()=>showOnboard(),800);
 }
 }catch(e){console.error(e);}
 $('auth-wrap').classList.remove('show');$('main-wrap').classList.add('show');
-buildAddForm();renderCodeDigits();syncMyUI();
+buildAddForm();syncMyUI();
 registerSW().catch(e=>console.warn(e));await initMsg();
-if(!window._listenersStarted){
+if(!window._listenersStarted||window._lastUid!==uid){
   window._listenersStarted=true;
+  window._lastUid=uid;
   window._firedNotifs=new Set();
-  startListeners();
-}else{
-  // 토큰 갱신 시 리스너 재시작 - firedNotifs도 초기화
   unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
-  window._firedNotifs=new Set();
   startListeners();
 }
 updateGuestBanner();
@@ -1107,6 +1104,7 @@ unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
 unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
 unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
 unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
+if(window._reordering)return; // 순서 변경 중엔 snapshot 무시
 const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;
 await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
 buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
@@ -1376,7 +1374,9 @@ list.appendChild(el);
 window.movePartner=async(i,dir)=>{
 const j=i+dir;if(j<0||j>=partners.length)return;
 [partners[i],partners[j]]=[partners[j],partners[i]];
+window._reordering=true;
 for(let k=0;k<partners.length;k++){try{await setDoc(doc(db,'users',uid,'partners',partners[k].uid),{order:k},{merge:true});}catch(e){}}
+window._reordering=false;
 buildPartnerOrderList();buildPartnerTabs();buildPartnerSections();
 };
 window.connectByCode=async()=>{
@@ -1408,7 +1408,16 @@ const msg=err.code==='permission-denied'
 toast(msg);
 }finally{hideLoad();}
 };
-window.removePartner=async uid2=>{if(!confirm('파트너 연결을 해제할까요?'))return;showLoad('연결 해제 중...');try{await deleteDoc(doc(db,'users',uid,'partners',uid2));await deleteDoc(doc(db,'users',uid2,'partners',uid));toast('연결이 해제되었어요.');}catch{toast('해제 실패');}finally{hideLoad();}};
+window.removePartner=async uid2=>{
+if(!confirm('파트너 연결을 해제할까요?'))return;
+showLoad('연결 해제 중...');
+try{
+  await deleteDoc(doc(db,'users',uid,'partners',uid2));
+  try{await deleteDoc(doc(db,'users',uid2,'partners',uid));}catch(e){console.warn('상대방 파트너 해제 실패:',e.message);}
+  toast('연결이 해제되었어요.');
+}catch(e){toast('해제 실패: '+e.message);}
+finally{hideLoad();}
+};
 window.copyCode=()=>{const msg=`나랑 약 쏘옥해~! 💊\n초대 코드: ${ucode}\n👉 ${APP_URL}`;try{navigator.clipboard.writeText(msg);}catch(e){}toast('💌 초대 메시지가 복사됐어요! 카카오톡으로 보내보세요');};
 window.saveName=async()=>{
 const v=$('my-name').value.trim();if(!v){toast('이름을 입력해주세요!');return;}uname=v;showLoad('저장 중...');
@@ -1552,11 +1561,7 @@ if(notif.selfAlarm&&Notification.permission==='granted'&&meds.length){
     const targetMin=mh*60+mmin-alarmMin;
     const nowMin=hh*60+mm;
     // 현재 분이 알림 시각과 일치하고, 아직 복용 안 했으면 알림
-    if(nowMin===targetMin&&!(logs[tk]||{})[m.id]){
-      const notifKey=`local-${tk}-${m.id}`;
-      // Cloud Functions(scheduledAlarms)가 FCM으로 발송 → 중복 방지로 여기선 제거
-      sessionStorage.setItem(notifKey,'1'); // 중복 실행 방지용은 유지
-    }
+    // Cloud Functions scheduledAlarms가 FCM으로 처리
   });
 }
 }
