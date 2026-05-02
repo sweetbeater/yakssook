@@ -342,13 +342,13 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .order-btn:disabled{opacity:.3;cursor:not-allowed}
 
 /* ONBOARDING */
-.onboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}
-.onboard-card{background:var(--card);border-radius:var(--rc) var(--rc) 0 0;padding:32px 24px 44px;width:100%;max-width:400px}
+.onboard-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#085041 0%,#1D9E75 100%);z-index:9990;display:flex;align-items:center;justify-content:center}
+.onboard-card{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:28px;padding:40px 28px 36px;width:calc(100% - 48px);max-width:380px;border:1px solid rgba(255,255,255,.2)}
 .onboard-step{display:none}
 .onboard-step.active{display:block}
 .onboard-ic{font-size:52px;margin-bottom:14px;text-align:center}
-.onboard-title{font-size:20px;font-weight:900;color:var(--tx);margin-bottom:10px;text-align:center}
-.onboard-desc{font-size:var(--fs-base);color:var(--tx2);line-height:1.8;text-align:center;margin-bottom:24px}
+.onboard-title{font-size:22px;font-weight:900;color:#fff;margin-bottom:10px;text-align:center}
+.onboard-desc{font-size:var(--fs-base);color:rgba(255,255,255,.85);line-height:1.8;text-align:center;margin-bottom:24px}
 .onboard-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
 .odot{width:8px;height:8px;border-radius:50%;background:var(--g200)}
 .odot.on{background:var(--t400);width:24px;border-radius:var(--rp)}
@@ -654,10 +654,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </div>
 
 <!-- 온보딩 -->
-<div class="onboard-overlay" id="onboard" style="display:none">
-  <div class="onboard-card">
-    <div class="onboard-dots" id="odots"></div>
-    <div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
+
     <div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
     <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
     <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
@@ -1621,5 +1618,9 @@ const tick = function(){const d=new Date();$('clock').textContent=`${d.getHours(
 tick();setInterval(tick,30000);
 window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 </script>
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="onboard-card">
+    <div class="onboard-dots" id="odots"></div>
+    <div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
 </body>
 </html>
