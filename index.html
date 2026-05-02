@@ -1393,8 +1393,10 @@ unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
   plants={};
   const partnerUids=new Set(partners.map(p=>p.uid));
   const junkDocs=[]; // plantTypeId 없는 잘못된 문서
+  console.log('[plants onSnapshot] 문서 수:', s.docs.length, s.docs.map(d=>d.id));
   s.docs.forEach(d=>{
     const data=d.data();
+    console.log('[plants onSnapshot] 문서:', d.id, 'plantTypeId:', data.plantTypeId);
     // 유효한 식물 데이터인지 확인
     if(!data.plantTypeId){
       // plantTypeId 없는 문서는 정리 대상
@@ -2025,7 +2027,11 @@ const buildGardenPlants=()=>{
   const myPlants=Object.values(plants);
   list.innerHTML='';
   // 파트너 중 식물 없는 파트너 먼저 표시
+  console.log('[buildGardenPlants] partners:', partners.map(p=>p.uid));
+  console.log('[buildGardenPlants] plants keys:', Object.keys(plants));
+  console.log('[buildGardenPlants] plants data:', JSON.stringify(plants));
   const missingPartners=partners.filter(p=>!plants[p.uid]||!plants[p.uid].plantTypeId);
+  console.log('[buildGardenPlants] missingPartners:', missingPartners.map(p=>p.uid));
   missingPartners.forEach(p=>{
     const card=document.createElement('div');card.className='garden-card';
     card.style.cssText='border:2px dashed var(--t200);background:var(--t50)';
@@ -2131,6 +2137,10 @@ window.changePlant=async(partnerUid)=>{
   }catch(e){hideLoad();window._plantLock=false;toast('변경 실패: '+e.message);}
 };
 const showPlantPick=(partnerUid,partnerName)=>{
+  console.log('[showPlantPick] 호출됨', partnerUid, partnerName);
+  console.log('[showPlantPick] plants 현재:', JSON.stringify(plants));
+  console.log('[showPlantPick] _plantLock:', window._plantLock);
+  console.log('[showPlantPick] modal 존재:', !!$('modal-plant-pick'));
   pendingPlantPartnerUid=partnerUid;
   selectedPlantTypeId=null;
   $('plant-pick-partner-label').textContent=`👫 ${partnerName}님과 함께 키울 식물`;
