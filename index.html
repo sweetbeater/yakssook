@@ -800,6 +800,27 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </div>
 </div>
 
+<div class="modal-overlay" id="modal-plant-detail" style="display:none">
+<div class="modal-box" style="max-height:85vh;overflow-y:auto;text-align:center">
+  <div id="pd-plant-display" style="margin:8px 0 12px;cursor:pointer" onclick="wigglePlantDetail()"></div>
+  <div id="pd-plant-name" style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:2px"></div>
+  <div id="pd-plant-type" style="font-size:12px;color:var(--tx3);margin-bottom:14px"></div>
+  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:10px">
+    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">🗺 서식지</div>
+    <div id="pd-habitat" style="font-size:14px;color:var(--tx)"></div>
+  </div>
+  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:10px">
+    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">✨ 특성</div>
+    <div id="pd-trait" style="font-size:14px;color:var(--tx)"></div>
+  </div>
+  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">💚 성격</div>
+    <div id="pd-personality" style="font-size:14px;color:var(--tx)"></div>
+  </div>
+  <div style="font-size:12px;color:var(--tx3);margin-bottom:14px">식물을 터치하면 반응해요 👆</div>
+  <button class="modal-btn modal-btn-ok" onclick="closeModal('modal-plant-detail')">닫기</button>
+</div>
+</div>
 <div class="notice-overlay" id="notice-garden-update" style="display:none">
   <div class="notice-box">
     <div class="notice-emoji">🌿</div>
@@ -845,6 +866,16 @@ const PLANT_TYPES=[
   {id:'magnolia',name:'목련나무',emoji:'🌸',type:'tree',color:'#F8C8D4',stages:['🌱','🌿','🪵','🌳','🌳','🌸','🌸','🌸','🌸','✨']},
   {id:'baobab',name:'바오밥나무',emoji:'🌴',type:'tree',color:'#8B6914',stages:['🌱','🌿','🪵','🌴','🌴','🌴','🌴','🌴','🌴','👑']},
 ];
+const PLANT_INFO={
+  sunflower:{habitat:'햇볕이 잘 드는 들판',trait:'태양을 따라 고개를 돌리는 성질이 있어요.',personality:'밝고 활발해요. 약을 잘 챙기는 사람을 좋아해요.',sound:'🌻'},
+  lotus:{habitat:'고요한 연못 위',trait:'진흙 속에서도 아름다운 꽃을 피워요.',personality:'차분하고 깊이 있어요. 꾸준함을 가장 좋아해요.',sound:'🪷'},
+  lavender:{habitat:'향기로운 프로방스 초원',trait:'은은한 향기로 마음을 편안하게 해줘요.',personality:'섬세하고 따뜻해요. 파트너와의 시간을 소중히 여겨요.',sound:'💜'},
+  poppy:{habitat:'파란 하늘 아래 언덕',trait:'바람에 살랑이는 얇은 꽃잎이 매력이에요.',personality:'자유롭고 낭만적이에요. 새로운 하루를 기대해요.',sound:'💙'},
+  apple:{habitat:'시원한 고원 과수원',trait:'봄에 꽃이 피고 가을에 열매를 맺어요.',personality:'다정하고 넉넉해요. 결실을 위해 꾸준히 노력해요.',sound:'🍎'},
+  maple:{habitat:'단풍이 물드는 산속',trait:'계절에 따라 색이 변하는 아름다운 나무예요.',personality:'감수성이 풍부해요. 변화를 두려워하지 않아요.',sound:'🍁'},
+  magnolia:{habitat:'봄을 알리는 정원',trait:'이른 봄 가장 먼저 꽃을 피워요.',personality:'순수하고 용감해요. 새 시작을 함께해요.',sound:'🌸'},
+  baobab:{habitat:'아프리카 광활한 사바나',trait:'수천 년을 사는 생명의 나무예요.',personality:'든든하고 지혜로워요. 함께라면 무엇이든 버텨요.',sound:'🌴'},
+};
 
 // SVG 식물 일러스트 생성
 const getPlantSVG=(typeId,level,size=72)=>{
@@ -1802,7 +1833,7 @@ const buildHomePlant=()=>{
   const progress=Math.min((doses%DOSES_PER_LEVEL)/DOSES_PER_LEVEL*100,100);
   const customName=p.plantCustomName||'우리 식물';
   area.innerHTML='<div class="home-plant-wrap">'
-    +'<div class="home-plant-svg" onclick="wigglePlant(this)">'+getPlantHTML(p.plantTypeId,p.level||0,80)+'</div>'
+    +'<div class="home-plant-svg" onclick="touchHomePlant()">'+getPlantHTML(p.plantTypeId,p.level||0,80)+'</div>'
     +'<div class="home-plant-name">'+customName+'</div>'
     +'<div class="home-plant-level">Lv.'+(+(p.level||0)+1)+' '+stageName+' · '+pName+'와 함께</div>'
     +'<div style="width:140px;margin-top:6px"><div class="garden-progress"><div class="garden-progress-bar" style="width:'+progress+'%"></div></div></div>'
@@ -1814,12 +1845,9 @@ const buildHomePlant=()=>{
 window.showHomePlantPicker=()=>{
   const list=Object.values(plants).filter(p=>p.plantTypeId);
   if(!list.length){toast('연결된 파트너와 식물을 먼저 선택해주세요!');return;}
-  const msg=list.map((p,i)=>{const pn=partners.find(x=>x.uid===p.partnerUid)?getPDN(partners.find(x=>x.uid===p.partnerUid)):'파트너';return (i+1)+'. '+(p.plantCustomName||'식물')+' ('+pn+')';}).join('\n');
-  const idx=prompt('홈에 표시할 식물 번호를 입력하세요:\n'+msg);
-  if(!idx)return;
-  const n=parseInt(idx)-1;
-  if(n<0||n>=list.length){toast('올바른 번호를 입력해주세요.');return;}
-  setHomePlant(list[n].partnerUid);
+  // 내 정원 탭으로 이동해서 선택하도록 유도
+  go('garden');
+  toast('홈에 표시할 식물을 내 정원에서 선택해주세요 🌿');
 };
 const setHomePlant=async(partnerUid)=>{
   // 모든 식물 homePick=false 후 선택된 것만 true
@@ -1833,6 +1861,70 @@ const setHomePlant=async(partnerUid)=>{
 window.wigglePlant=(el)=>{
   el.classList.add('wiggle');
   setTimeout(()=>el.classList.remove('wiggle'),400);
+};
+
+// 홈 식물 터치 상호작용
+window.touchHomePlant=()=>{
+  const el=document.querySelector('.home-plant-svg');
+  if(!el)return;
+  el.style.transition='transform .1s';
+  el.style.transform='scale(1.15) rotate(5deg)';
+  setTimeout(()=>{el.style.transform='scale(0.95) rotate(-3deg)';},100);
+  setTimeout(()=>{el.style.transform='scale(1.05) rotate(2deg)';},200);
+  setTimeout(()=>{el.style.transform='scale(1)';},300);
+  // 랜덤 반응 이모지 띄우기
+  const reactions=['💚','🌟','😊','✨','🌿','💕'];
+  const r=reactions[Math.floor(Math.random()*reactions.length)];
+  const div=document.createElement('div');
+  div.style.cssText='position:fixed;font-size:28px;pointer-events:none;z-index:200;animation:floatUp 1s ease forwards';
+  const rect=el.getBoundingClientRect();
+  div.style.left=(rect.left+rect.width/2-14)+'px';
+  div.style.top=(rect.top-20)+'px';
+  div.textContent=r;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),1000);
+};
+
+// 자세히 보기 모달
+let _detailPuid=null;
+window.showPlantDetail=(puid)=>{
+  const plant=plants[puid];if(!plant||!plant.plantTypeId)return;
+  _detailPuid=puid;
+  const pt=PLANT_TYPES.find(x=>x.id===plant.plantTypeId);
+  const info=PLANT_INFO[plant.plantTypeId]||{};
+  const level=plant.level||0;
+  $('pd-plant-display').innerHTML=getPlantHTML(plant.plantTypeId,level,100);
+  $('pd-plant-name').textContent=(plant.plantCustomName||pt?.name||'식물')+' (Lv.'+(level+1)+')';
+  $('pd-plant-type').textContent=(pt?.type==='flower'?'🌸 꽃':'🌳 나무')+' · '+getPlantStageName(plant.plantTypeId,level);
+  $('pd-habitat').textContent=info.habitat||'-';
+  $('pd-trait').textContent=info.trait||'-';
+  $('pd-personality').textContent=info.personality||'-';
+  $('modal-plant-detail').style.display='flex';
+};
+window.wigglePlantDetail=()=>{
+  const el=$('pd-plant-display');if(!el)return;
+  // 더 역동적인 꿈틀 애니메이션
+  el.style.transition='transform .08s';
+  const frames=[
+    'scale(1.2) rotate(-8deg)',
+    'scale(0.9) rotate(10deg)',
+    'scale(1.15) rotate(-6deg)',
+    'scale(0.95) rotate(6deg)',
+    'scale(1.08) rotate(-3deg)',
+    'scale(1)',
+  ];
+  frames.forEach((f,i)=>{
+    setTimeout(()=>{el.style.transform=f;},i*80);
+  });
+  // 반응 이모지
+  const plant=_detailPuid&&plants[_detailPuid];
+  const info=plant&&PLANT_INFO[plant.plantTypeId];
+  const emoji=info?.sound||'💚';
+  const div=document.createElement('div');
+  div.style.cssText='position:fixed;font-size:32px;pointer-events:none;z-index:300;animation:floatUp 1s ease forwards;left:50%;top:30%;transform:translateX(-50%)';
+  div.textContent=emoji;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),1000);
 };
 
 // ── 복용 애니메이션 ──
@@ -1913,6 +2005,10 @@ const buildGardenPlants=()=>{
     <div class="garden-home-toggle">
       <span>${isHome?'🏠 홈 화면에 표시 중':'홈 화면에 표시하기'}</span>
       <label class="toggle-wrap" style="transform:scale(.85)"><input type="checkbox" ${isHome?'checked':''} data-puid="${p.partnerUid}" onchange="setHomePlant(this.dataset.puid)"/><span class="toggle-slider"></span></label>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 16px 14px">
+      <button class="garden-detail-btn" data-puid="${p.partnerUid}" onclick="showPlantDetail(this.dataset.puid)">🔍 자세히 보기</button>
+      <button class="garden-detail-btn" style="color:#E53935;background:#FFF0F0" data-puid="${p.partnerUid}" onclick="changePlant(this.dataset.puid)">🔄 식물 변경</button>
     </div>`;
     list.appendChild(card);
   });
@@ -1948,6 +2044,20 @@ window.toggleGardenView=()=>{
 };
 
 // ── 식물 선택 팝업 ──
+window.changePlant=async(partnerUid)=>{
+  const plant=plants[partnerUid];if(!plant)return;
+  const pName=partners.find(x=>x.uid===partnerUid)?getPDN(partners.find(x=>x.uid===partnerUid)):'파트너';
+  const customName=plant.plantCustomName||'우리 식물';
+  if(!confirm('⚠️ 식물을 변경하면 '+customName+'의 모든 경험치와 레벨이 초기화돼요.\n\n정말 변경할까요?'))return;
+  // 기존 데이터 초기화
+  showLoad('초기화 중...');
+  try{
+    await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});
+    try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});}catch(e){}
+    hideLoad();
+    showPlantPick(partnerUid,pName);
+  }catch(e){hideLoad();toast('변경 실패: '+e.message);}
+};
 const showPlantPick=(partnerUid,partnerName)=>{
   // 이미 상대방이 이 파트너와의 식물을 선택했으면 팝업 안 띄움
   if(plants[partnerUid]&&plants[partnerUid].plantTypeId){
