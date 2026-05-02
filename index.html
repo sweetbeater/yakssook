@@ -1557,12 +1557,8 @@ const initMsg = async ()=>{
     if(!msgInited){
       messaging=getMessaging(fbApp);
       onMessage(messaging,p=>{
-        // data-only 메시지는 p.data에서, notification 메시지는 p.notification에서
-        const n=p.notification||{};
-        const d=p.data||{};
-        const title=n.title||d.title||'';
-        const body=n.body||d.body||'';
-        if(title||body)toast(`🔔 ${title}: ${body}`);
+        // 포그라운드 FCM 수신 - onSnapshot에서 이미 토스트 처리하므로 여기선 무시
+        // (data-only 메시지라 title/body가 없어 공란 토스트 방지)
       });
       msgInited=true;
     }
