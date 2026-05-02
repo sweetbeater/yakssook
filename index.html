@@ -1404,14 +1404,11 @@ unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
       return;
     }
     if(partnerUids.has(d.id)){
-      // 정상: 문서 ID = 파트너 uid
-      plants[d.id]={...data,partnerUid:d.id};
+      plants[d.id]={...data,partnerUid:d.id,docId:d.id};
     } else {
-      // 랜덤 ID지만 유효한 데이터 → 파트너 순서대로 매핑
       const unmapped=partners.find(p=>!plants[p.uid]);
       if(unmapped){
-        plants[unmapped.uid]={...data,partnerUid:unmapped.uid};
-        // 비동기로 올바른 문서로 마이그레이션
+        plants[unmapped.uid]={...data,partnerUid:unmapped.uid,docId:d.id};
         setDoc(doc(db,'users',uid,'plants',unmapped.uid),{...data,partnerUid:unmapped.uid})
           .then(()=>deleteDoc(doc(db,'users',uid,'plants',d.id)))
           .catch(e=>console.warn('마이그레이션 실패:',e));
@@ -1687,14 +1684,9 @@ await setDoc(doc(db,'users',pd.id,'partners',uid),{uid,name:uname||'파트너',c
 $('code-input').value='';
 hideLoad();
 toast(`💚 ${pName}님과 연결됐어요!`);
-// 식물 선택 팝업 (알림 요청 전에)
+// 연결 시 항상 식물 선택 팝업 표시 (재연결 포함)
 setTimeout(()=>{
-  if(!plants[pd.id]||!plants[pd.id].plantTypeId){
-    showPlantPick(pd.id,pName);
-    // 식물 선택 완료 후 알림 요청은 confirmPlantPick에서 처리
-  }else{
-    promptPushAfterConnect(pName);
-  }
+  showPlantPick(pd.id,pName);
 }, 600);
 }catch(err){
 const msg=err.code==='permission-denied'
@@ -1707,13 +1699,23 @@ window.removePartner=async uid2=>{
 if(!confirm('파트너 연결을 해제할까요?\n연결된 식물 데이터도 함께 삭제돼요.'))return;
 showLoad('연결 해제 중...');
 try{
-  // 파트너 연결 해제
   await deleteDoc(doc(db,'users',uid,'partners',uid2));
   try{await deleteDoc(doc(db,'users',uid2,'partners',uid));}catch(e){console.warn('상대방 파트너 해제 실패:',e.message);}
-  // 식물 데이터 삭제 (내 쪽)
-  try{await deleteDoc(doc(db,'users',uid,'plants',uid2));}catch(e){}
-  // 식물 데이터 삭제 (상대방 쪽)
-  try{await deleteDoc(doc(db,'users',uid2,'plants',uid));}catch(e){}
+  // 식물 삭제: plants 컬렉션 전체 스캔해서 해당 파트너 관련 문서 모두 삭제
+  const myPlantsSnap=await getDocs(collection(db,'users',uid,'plants'));
+  for(const pd of myPlantsSnap.docs){
+    // 문서 ID가 파트너 uid이거나, 로컬 plants에서 해당 파트너 uid와 매핑된 것
+    if(pd.id===uid2||plants[uid2]?.docId===pd.id){
+      try{await deleteDoc(doc(db,'users',uid,'plants',pd.id));}catch(e){}
+    }
+  }
+  // 상대방 쪽도 삭제
+  const partnerPlantsSnap=await getDocs(collection(db,'users',uid2,'plants'));
+  for(const pd of partnerPlantsSnap.docs){
+    if(pd.id===uid){
+      try{await deleteDoc(doc(db,'users',uid2,'plants',pd.id));}catch(e){}
+    }
+  }
   toast('연결이 해제되었어요.');
 }catch(e){toast('해제 실패: '+e.message);}
 finally{hideLoad();}
