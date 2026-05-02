@@ -1704,11 +1704,16 @@ toast(msg);
 }finally{hideLoad();}
 };
 window.removePartner=async uid2=>{
-if(!confirm('파트너 연결을 해제할까요?'))return;
+if(!confirm('파트너 연결을 해제할까요?\n연결된 식물 데이터도 함께 삭제돼요.'))return;
 showLoad('연결 해제 중...');
 try{
+  // 파트너 연결 해제
   await deleteDoc(doc(db,'users',uid,'partners',uid2));
   try{await deleteDoc(doc(db,'users',uid2,'partners',uid));}catch(e){console.warn('상대방 파트너 해제 실패:',e.message);}
+  // 식물 데이터 삭제 (내 쪽)
+  try{await deleteDoc(doc(db,'users',uid,'plants',uid2));}catch(e){}
+  // 식물 데이터 삭제 (상대방 쪽)
+  try{await deleteDoc(doc(db,'users',uid2,'plants',uid));}catch(e){}
   toast('연결이 해제되었어요.');
 }catch(e){toast('해제 실패: '+e.message);}
 finally{hideLoad();}
@@ -2190,10 +2195,13 @@ window.confirmPlantPick=async()=>{
         plantTypeId:selectedPlantTypeId,
         plantCustomName:name,
         level:0,doses:0,
-        homePick:true, // 상대방은 기본 true (나중에 여러 식물 있으면 본인이 선택)
+        homePick:true,
         createdAt:serverTimestamp()
       });
-    }catch(e2){console.warn('상대방 plants 저장 실패:',e2.message);}
+      console.log('[confirmPlantPick] 상대방 plants 저장 성공');
+    }catch(e2){
+      console.error('[confirmPlantPick] 상대방 plants 저장 실패:', e2.code, e2.message);
+    }
     // 상대방에게 알림 (알림 type: plantSelected)
     try{
       await addDoc(collection(db,'users',pendingPlantPartnerUid,'notifications'),{
