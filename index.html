@@ -1392,34 +1392,34 @@ unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
   if(window._plantLock)return;
   plants={};
   const partnerUids=new Set(partners.map(p=>p.uid));
-  const toMigrate=[]; // 랜덤ID → 파트너uid로 마이그레이션 필요한 문서
+  const junkDocs=[]; // plantTypeId 없는 잘못된 문서
   s.docs.forEach(d=>{
     const data=d.data();
-    // 문서 ID가 파트너 uid인지 확인
+    // 유효한 식물 데이터인지 확인
+    if(!data.plantTypeId){
+      // plantTypeId 없는 문서는 정리 대상
+      junkDocs.push(d.id);
+      return;
+    }
     if(partnerUids.has(d.id)){
+      // 정상: 문서 ID = 파트너 uid
       plants[d.id]={...data,partnerUid:d.id};
-    } else if(data.partnerUid&&partnerUids.has(data.partnerUid)){
-      // partnerUid 필드가 있으면 그걸로 매핑
-      plants[data.partnerUid]={...data,partnerUid:data.partnerUid};
     } else {
-      // 랜덤 ID 문서 - partnerUid 필드로 찾기 or 마이그레이션 필요
-      toMigrate.push({docId:d.id,data});
+      // 랜덤 ID지만 유효한 데이터 → 파트너 순서대로 매핑
+      const unmapped=partners.find(p=>!plants[p.uid]);
+      if(unmapped){
+        plants[unmapped.uid]={...data,partnerUid:unmapped.uid};
+        // 비동기로 올바른 문서로 마이그레이션
+        setDoc(doc(db,'users',uid,'plants',unmapped.uid),{...data,partnerUid:unmapped.uid})
+          .then(()=>deleteDoc(doc(db,'users',uid,'plants',d.id)))
+          .catch(e=>console.warn('마이그레이션 실패:',e));
+      }
     }
   });
-  // 마이그레이션: 파트너와 매칭되는 문서를 파트너uid로 재저장
-  if(toMigrate.length&&partners.length){
-    toMigrate.forEach(async({docId,data})=>{
-      // 파트너 uid로 매핑할 수 없는 경우 첫 번째 파트너에 할당 시도
-      const matchedPartner=partners.find(p=>!plants[p.uid]);
-      if(matchedPartner){
-        plants[matchedPartner.uid]={...data,partnerUid:matchedPartner.uid};
-        try{
-          await setDoc(doc(db,'users',uid,'plants',matchedPartner.uid),{...data,partnerUid:matchedPartner.uid});
-          await deleteDoc(doc(db,'users',uid,'plants',docId));
-        }catch(e){console.warn('마이그레이션 실패:',e);}
-      }
-    });
-  }
+  // 잘못된 문서(plantTypeId null) 삭제
+  junkDocs.forEach(id=>{
+    deleteDoc(doc(db,'users',uid,'plants',id)).catch(()=>{});
+  });
   buildHomePlant();buildGardenView();
   if(partners.length)checkGardenNotice();
 }));
