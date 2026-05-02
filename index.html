@@ -1389,12 +1389,38 @@ await setDoc(c.doc.ref,{read:true},{merge:true});
 rebuildCal();buildMedList();buildPartnerSections();
 // 내 식물 구독
 unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
-  // 식물 변경/선택 중에는 로컬 상태 유지 (onSnapshot 덮어쓰기 방지)
   if(window._plantLock)return;
   plants={};
-  s.docs.forEach(d=>{plants[d.id]={...d.data(),partnerUid:d.id};});
+  const partnerUids=new Set(partners.map(p=>p.uid));
+  const toMigrate=[]; // 랜덤ID → 파트너uid로 마이그레이션 필요한 문서
+  s.docs.forEach(d=>{
+    const data=d.data();
+    // 문서 ID가 파트너 uid인지 확인
+    if(partnerUids.has(d.id)){
+      plants[d.id]={...data,partnerUid:d.id};
+    } else if(data.partnerUid&&partnerUids.has(data.partnerUid)){
+      // partnerUid 필드가 있으면 그걸로 매핑
+      plants[data.partnerUid]={...data,partnerUid:data.partnerUid};
+    } else {
+      // 랜덤 ID 문서 - partnerUid 필드로 찾기 or 마이그레이션 필요
+      toMigrate.push({docId:d.id,data});
+    }
+  });
+  // 마이그레이션: 파트너와 매칭되는 문서를 파트너uid로 재저장
+  if(toMigrate.length&&partners.length){
+    toMigrate.forEach(async({docId,data})=>{
+      // 파트너 uid로 매핑할 수 없는 경우 첫 번째 파트너에 할당 시도
+      const matchedPartner=partners.find(p=>!plants[p.uid]);
+      if(matchedPartner){
+        plants[matchedPartner.uid]={...data,partnerUid:matchedPartner.uid};
+        try{
+          await setDoc(doc(db,'users',uid,'plants',matchedPartner.uid),{...data,partnerUid:matchedPartner.uid});
+          await deleteDoc(doc(db,'users',uid,'plants',docId));
+        }catch(e){console.warn('마이그레이션 실패:',e);}
+      }
+    });
+  }
   buildHomePlant();buildGardenView();
-  // plants 로드 완료 후 공지 체크 (정확한 타이밍)
   if(partners.length)checkGardenNotice();
 }));
 }
