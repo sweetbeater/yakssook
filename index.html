@@ -969,7 +969,6 @@ const PLANT_STAGE_NAMES_FLOWER=['씨앗','아기씨앗','첫뿌리','꼬마싹',
 const PLANT_STAGE_NAMES_TREE=['씨앗','어린씨앗','발아','유묘','어린나무','가지치기','굵은줄기','작은나무','큰나무','성체'];
 const DOSES_PER_LEVEL=7; // 레벨업에 필요한 복용 횟수
 let plants={}; // {partnerUid: {id,name,type,level,doses,plantCustomName,homePick}}
-let gardenSub='garden';
 let pendingPlantPartnerUid=null;
 let selectedPlantTypeId=null;
 
@@ -1393,10 +1392,8 @@ unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
   plants={};
   const partnerUids=new Set(partners.map(p=>p.uid));
   const junkDocs=[]; // plantTypeId 없는 잘못된 문서
-  console.log('[plants onSnapshot] 문서 수:', s.docs.length, s.docs.map(d=>d.id));
   s.docs.forEach(d=>{
     const data=d.data();
-    console.log('[plants onSnapshot] 문서:', d.id, 'plantTypeId:', data.plantTypeId);
     // 유효한 식물 데이터인지 확인
     if(!data.plantTypeId){
       // plantTypeId 없는 문서는 정리 대상
@@ -1716,6 +1713,10 @@ try{
       try{await deleteDoc(doc(db,'users',uid2,'plants',pd.id));}catch(e){}
     }
   }
+  // 로컬 즉시 반영
+  delete plants[uid2];
+  partners=partners.filter(p=>p.uid!==uid2);
+  buildHomePlant();buildGardenView();buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
   toast('연결이 해제되었어요.');
 }catch(e){toast('해제 실패: '+e.message);}
 finally{hideLoad();}
@@ -2034,11 +2035,7 @@ const buildGardenPlants=()=>{
   const myPlants=Object.values(plants);
   list.innerHTML='';
   // 파트너 중 식물 없는 파트너 먼저 표시
-  console.log('[buildGardenPlants] partners:', partners.map(p=>p.uid));
-  console.log('[buildGardenPlants] plants keys:', Object.keys(plants));
-  console.log('[buildGardenPlants] plants data:', JSON.stringify(plants));
   const missingPartners=partners.filter(p=>!plants[p.uid]||!plants[p.uid].plantTypeId);
-  console.log('[buildGardenPlants] missingPartners:', missingPartners.map(p=>p.uid));
   missingPartners.forEach(p=>{
     const card=document.createElement('div');card.className='garden-card';
     card.style.cssText='border:2px dashed var(--t200);background:var(--t50)';
@@ -2123,6 +2120,8 @@ window.renamePlant=async(partnerUid,currentName)=>{
   try{
     await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantCustomName:trimmed},{merge:true});
     try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantCustomName:trimmed},{merge:true});}catch(e){}
+    if(plants[partnerUid])plants[partnerUid].plantCustomName=trimmed;
+    buildGardenView();buildHomePlant();
     toast('✅ 이름이 변경됐어요!');
   }catch(e){toast('저장 실패: '+e.message);}
   finally{hideLoad();}
@@ -2140,14 +2139,11 @@ window.changePlant=async(partnerUid)=>{
     await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});
     try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});}catch(e){}
     hideLoad();
+    buildGardenView();buildHomePlant();
     showPlantPick(partnerUid,pName);
   }catch(e){hideLoad();window._plantLock=false;toast('변경 실패: '+e.message);}
 };
 window.showPlantPick=(partnerUid,partnerName)=>{
-  console.log('[showPlantPick] 호출됨', partnerUid, partnerName);
-  console.log('[showPlantPick] plants 현재:', JSON.stringify(plants));
-  console.log('[showPlantPick] _plantLock:', window._plantLock);
-  console.log('[showPlantPick] modal 존재:', !!$('modal-plant-pick'));
   pendingPlantPartnerUid=partnerUid;
   selectedPlantTypeId=null;
   $('plant-pick-partner-label').textContent=`👫 ${partnerName}님과 함께 키울 식물`;
@@ -2177,10 +2173,9 @@ window.confirmPlantPick=async()=>{
   if(!name){$('plant-pick-err').textContent='식물 이름을 지어주세요!';return;}
   showLoad('식물 심는 중...');
   try{
-    const isFirst=Object.keys(plants).length===0;
-    // 내 homePick 결정: 식물이 처음이거나 파트너가 1명이면 자동 true
     const myPlantCount=Object.values(plants).filter(p=>p.plantTypeId).length;
-    const autoHome=(myPlantCount===0); // 처음 식물이면 자동 홈
+    const isFirst=(myPlantCount===0);
+    const autoHome=isFirst;
     const plantData={
       plantTypeId:selectedPlantTypeId,
       plantCustomName:name,
@@ -2191,7 +2186,6 @@ window.confirmPlantPick=async()=>{
     // 내 plants에 저장
     await setDoc(doc(db,'users',uid,'plants',pendingPlantPartnerUid),plantData);
     // 상대방 plants에 저장 (homePick은 상대방이 각자 결정 - 저장 안 함)
-    const partnerPlantCount=Object.keys(plants).length; // 상대방 파트너 수 미지수이므로 기본 true
     try{
       await setDoc(doc(db,'users',pendingPlantPartnerUid,'plants',uid),{
         plantTypeId:selectedPlantTypeId,
@@ -2200,7 +2194,6 @@ window.confirmPlantPick=async()=>{
         homePick:true,
         createdAt:serverTimestamp()
       });
-      console.log('[confirmPlantPick] 상대방 plants 저장 성공');
     }catch(e2){
       console.error('[confirmPlantPick] 상대방 plants 저장 실패:', e2.code, e2.message);
     }
@@ -2215,8 +2208,11 @@ window.confirmPlantPick=async()=>{
         createdAt:serverTimestamp()
       });
     }catch(e3){console.warn('알림 전송 실패:',e3.message);}
-    window._plantLock=false; // 락 해제
+    window._plantLock=false;
+    // 로컬 즉시 반영
+    plants[pendingPlantPartnerUid]={plantTypeId:selectedPlantTypeId,plantCustomName:name,level:0,doses:0,homePick:autoHome,partnerUid:pendingPlantPartnerUid};
     closeModal('modal-plant-pick');
+    buildHomePlant();buildGardenView();
     toast('🌱 '+name+' 심기 완료! 함께 잘 키워봐요!');
     // 알림 요청 (처음 식물 선택 시)
     const _partner=partners.find(x=>x.uid===pendingPlantPartnerUid);
