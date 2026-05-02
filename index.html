@@ -655,10 +655,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 
 <!-- 온보딩 -->
 
-    <div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
-    <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
-    <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
-    <div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
     <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
   </div>
 </div>
@@ -1621,12 +1617,12 @@ window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 <div class="onboard-overlay" id="onboard" style="display:none">
   <div class="onboard-card">
     <div class="onboard-dots" id="odots"></div>
-    <div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div>
-    <div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div>
-    <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div>
-    <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div>
-    <div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div>
-    <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음 →</button>
+    <div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
+    <div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
+    <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
+    <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
+    <div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
+    <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
   </div>
 </div>
 </body>
