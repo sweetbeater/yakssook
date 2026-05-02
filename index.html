@@ -794,7 +794,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
   <div class="modal-field" style="margin-top:8px"><label>식물 이름 짓기 🏷️</label><input type="text" id="plant-name-input" placeholder="예: 우리 해바라기, 뿌뿌" maxlength="12"/></div>
   <div class="modal-err" id="plant-pick-err"></div>
   <div class="modal-btns">
-    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-plant-pick')">나중에</button>
+    <button class="modal-btn modal-btn-cancel" onclick="window._plantLock=false;closeModal('modal-plant-pick')">나중에</button>
     <button class="modal-btn modal-btn-ok" onclick="confirmPlantPick()">시작하기 🌱</button>
   </div>
 </div>
@@ -877,77 +877,93 @@ const PLANT_INFO={
   baobab:{habitat:'아프리카 광활한 사바나',trait:'수천 년을 사는 생명의 나무예요.',personality:'든든하고 지혜로워요. 함께라면 무엇이든 버텨요.',sound:'🌴'},
 };
 
-// SVG 식물 일러스트 생성
+// SVG 식물 일러스트 생성 (개선된 버전)
 const getPlantSVG=(typeId,level,size=72)=>{
   const pt=PLANT_TYPES.find(x=>x.id===typeId);
   if(!pt)return '<div style="font-size:'+(size*0.6)+'px;line-height:1">🌱</div>';
-  const c=pt.color;
-  const g='#4CAF50'; // 줄기/잎 색
-  const ld='#388E3C'; // 어두운 잎
-  const s=size;
-  const stem=`<rect x="${s*0.46}" y="${s*0.45}" width="${s*0.08}" height="${s*0.45}" rx="3" fill="#5D4037"/>`;
+  const s=size, cx=s/2, g='#4CAF50', ld='#2E7D32', lg='#66BB6A';
+  const soil=`<ellipse cx="${cx}" cy="${s*0.88}" rx="${s*0.28}" ry="${s*0.08}" fill="#8D6E63" opacity=".35"/>`;
+  const stem=(h,w=0.07)=>`<path d="M${cx} ${s*0.88} Q${cx+s*0.06} ${s*0.65} ${cx} ${s*(0.88-h)}" stroke="${g}" stroke-width="${s*w}" fill="none" stroke-linecap="round"/>`;
 
-  // 단계별 SVG
+  // 새싹 (레벨 0~1)
   if(level<=1){
-    // 씨앗/새싹
+    const sh=0.42;
     return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      <ellipse cx="${s/2}" cy="${s*0.82}" rx="${s*0.18}" ry="${s*0.08}" fill="#8D6E63" opacity=".5"/>
-      <rect x="${s*0.46}" y="${s*0.45}" width="${s*0.08}" height="${s*0.4}" rx="3" fill="${g}"/>
-      <ellipse cx="${s/2}" cy="${s*0.42}" rx="${s*0.12}" ry="${s*0.1}" fill="${g}"/>
-    </svg>`;
-  }
-  if(level<=3){
-    // 어린 잎
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      <ellipse cx="${s/2}" cy="${s*0.85}" rx="${s*0.2}" ry="${s*0.07}" fill="#8D6E63" opacity=".4"/>
-      <rect x="${s*0.46}" y="${s*0.35}" width="${s*0.08}" height="${s*0.52}" rx="3" fill="${g}"/>
-      <ellipse cx="${s*0.32}" cy="${s*0.52}" rx="${s*0.14}" ry="${s*0.09}" fill="${ld}" transform="rotate(-30,${s*0.32},${s*0.52})"/>
-      <ellipse cx="${s*0.68}" cy="${s*0.45}" rx="${s*0.14}" ry="${s*0.09}" fill="${g}" transform="rotate(30,${s*0.68},${s*0.45})"/>
-      <ellipse cx="${s/2}" cy="${s*0.3}" rx="${s*0.13}" ry="${s*0.1}" fill="${g}"/>
+      ${soil}
+      ${stem(sh,0.06)}
+      <ellipse cx="${cx}" cy="${s*(0.88-sh-0.04)}" rx="${s*0.1}" ry="${s*0.13}" fill="${lg}" transform="rotate(-15,${cx},${s*(0.88-sh-0.04)})"/>
     </svg>`;
   }
 
-  if(pt.type==='flower'){
-    // 꽃 SVG
-    const petalCount=6;
-    const pr=s*0.14;const cr=s*0.08;
-    const cx=s/2;const cy=s*0.3;
-    let petals='';
-    for(let i=0;i<petalCount;i++){
-      const angle=(i/petalCount)*Math.PI*2;
-      const px=cx+Math.cos(angle)*pr;
-      const py=cy+Math.sin(angle)*pr;
-      petals+=`<ellipse cx="${px}" cy="${py}" rx="${s*0.1}" ry="${s*0.06}" fill="${c}" opacity="${level>=7?'1':'0.85'}" transform="rotate(${i*60},${px},${py})"/>`;
-    }
-    const centerColor=typeId==='sunflower'?'#8B4513':'#FFD700';
+  // 어린 잎 (레벨 2~3)
+  if(level<=3){
+    const sh=0.5;
+    const leaf=(lx,ly,rx,a)=>`<path d="M${cx} ${s*(0.88-sh*0.3)} Q${lx} ${ly} ${rx} ${ly-s*0.04}" stroke="${ld}" stroke-width="1" fill="${g}" opacity=".9"/>`;
     return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      <ellipse cx="${s/2}" cy="${s*0.87}" rx="${s*0.22}" ry="${s*0.07}" fill="#8D6E63" opacity=".3"/>
-      ${stem}
-      <ellipse cx="${s*0.3}" cy="${s*0.6}" rx="${s*0.13}" ry="${s*0.08}" fill="${ld}" transform="rotate(-25,${s*0.3},${s*0.6})"/>
-      <ellipse cx="${s*0.7}" cy="${s*0.55}" rx="${s*0.13}" ry="${s*0.08}" fill="${g}" transform="rotate(25,${s*0.7},${s*0.55})"/>
-      ${petals}
-      <circle cx="${cx}" cy="${cy}" r="${cr}" fill="${centerColor}"/>
-      ${level>=9?`<circle cx="${cx}" cy="${cy}" r="${cr*0.5}" fill="#FFF8DC" opacity=".7"/>`:''}
-    </svg>`;
-  } else {
-    // 나무 SVG
-    const treeColor=level>=6?c:'#4CAF50';
-    const trunkH=s*(0.25+Math.min(level,9)*0.02);
-    const crownR=s*(0.18+Math.min(level,9)*0.02);
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      <ellipse cx="${s/2}" cy="${s*0.87}" rx="${s*0.22}" ry="${s*0.07}" fill="#8D6E63" opacity=".3"/>
-      <rect x="${s*0.43}" y="${s*0.87-trunkH}" width="${s*0.14}" height="${trunkH}" rx="4" fill="#5D4037"/>
-      <circle cx="${s/2}" cy="${s*0.87-trunkH-crownR*0.7}" r="${crownR*1.1}" fill="${ld}"/>
-      <circle cx="${s*0.38}" cy="${s*0.87-trunkH-crownR*0.5}" r="${crownR*0.9}" fill="${treeColor}"/>
-      <circle cx="${s*0.62}" cy="${s*0.87-trunkH-crownR*0.5}" r="${crownR*0.9}" fill="${treeColor}"/>
-      <circle cx="${s/2}" cy="${s*0.87-trunkH-crownR*1.1}" r="${crownR*0.95}" fill="${g}"/>
-      ${level>=6?`<circle cx="${s*0.42}" cy="${s*0.87-trunkH-crownR*0.4}" r="${s*0.05}" fill="${c}"/>
-      <circle cx="${s*0.58}" cy="${s*0.87-trunkH-crownR*0.8}" r="${s*0.05}" fill="${c}"/>
-      <circle cx="${s*0.5}" cy="${s*0.87-trunkH-crownR*0.2}" r="${s*0.05}" fill="${c}"/>`:''}
-      ${level>=9?`<circle cx="${s*0.35}" cy="${s*0.87-trunkH-crownR*0.3}" r="${s*0.06}" fill="${c}"/>
-      <circle cx="${s*0.65}" cy="${s*0.87-trunkH-crownR*0.6}" r="${s*0.06}" fill="${c}"/>`:''}
+      ${soil}
+      <path d="M${cx} ${s*0.88} C${cx+s*0.04} ${s*0.72} ${cx-s*0.03} ${s*0.55} ${cx} ${s*0.38}" stroke="${g}" stroke-width="${s*0.07}" fill="none" stroke-linecap="round"/>
+      <path d="M${cx} ${s*0.62} Q${s*0.2} ${s*0.45} ${s*0.22} ${s*0.38}" stroke="${ld}" stroke-width="1" fill="${lg}" opacity=".9"/>
+      <path d="M${cx} ${s*0.55} Q${s*0.8} ${s*0.4} ${s*0.78} ${s*0.33}" stroke="${ld}" stroke-width="1" fill="${g}" opacity=".9"/>
+      <ellipse cx="${cx}" cy="${s*0.35}" rx="${s*0.11}" ry="${s*0.14}" fill="${lg}" transform="rotate(-5,${cx},${s*0.35})"/>
     </svg>`;
   }
+
+  // 꽃 종류 (레벨 4+)
+  if(pt.type==='flower'){
+    const c=pt.color;
+    const sh=0.56;
+    const stemPath=`<path d="M${cx} ${s*0.88} C${cx+s*0.05} ${s*0.72} ${cx-s*0.04} ${s*0.58} ${cx} ${s*0.42}" stroke="${g}" stroke-width="${s*0.07}" fill="none" stroke-linecap="round"/>`;
+    // 잎들
+    const leaves=`
+      <path d="M${cx} ${s*0.68} Q${s*0.18} ${s*0.58} ${s*0.2} ${s*0.5}" fill="${g}" stroke="${ld}" stroke-width=".8"/>
+      <path d="M${cx} ${s*0.62} Q${s*0.82} ${s*0.52} ${s*0.8} ${s*0.44}" fill="${lg}" stroke="${ld}" stroke-width=".8"/>`;
+    // 꽃잎
+    const pr=s*(level>=7?0.16:0.13);
+    const cr2=s*(level>=7?0.07:0.06);
+    const cy2=s*0.38;
+    let petals='';
+    const pc=typeId==='lavender'?8:6;
+    for(let i=0;i<pc;i++){
+      const a=(i/pc)*Math.PI*2-(Math.PI/2);
+      const px=cx+Math.cos(a)*pr, py=cy2+Math.sin(a)*pr;
+      const opacity=0.8+i%2*0.15;
+      petals+=`<ellipse cx="${px}" cy="${py}" rx="${s*0.1}" ry="${s*0.065}" fill="${c}" opacity="${opacity}" transform="rotate(${i*(360/pc)},${px},${py})"/>`;
+    }
+    const cColor=typeId==='sunflower'?'#5D2F0A':typeId==='lotus'?'#FFB7C5':'#FFEB3B';
+    const glow=level>=8?`<circle cx="${cx}" cy="${cy2}" r="${cr2*1.6}" fill="${cColor}" opacity=".3"/>`:'' ;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+      ${soil}${stemPath}${leaves}${glow}${petals}
+      <circle cx="${cx}" cy="${cy2}" r="${cr2}" fill="${cColor}"/>
+      ${level>=9?`<circle cx="${cx}" cy="${cy2}" r="${cr2*0.55}" fill="#fff" opacity=".6"/>`:''}
+    </svg>`;
+  }
+
+  // 나무 종류 (레벨 4+)
+  const c=pt.color;
+  const trH=s*(0.18+Math.min(level,9)*0.022);
+  const ty=s*0.88-trH;
+  const cr3=s*(0.16+Math.min(level-4,5)*0.022);
+  // 나무 줄기 (더 자연스럽게)
+  const trunkPath=`<path d="M${cx-s*0.055} ${s*0.88} C${cx-s*0.04} ${ty+trH*0.5} ${cx-s*0.02} ${ty+trH*0.3} ${cx} ${ty}" stroke="#5D4037" stroke-width="${s*0.11}" fill="none" stroke-linecap="round"/>`;
+  // 수관 레이어
+  const cr3a=cr3*1.15, cr3b=cr3*0.95, cr3c=cr3*0.9;
+  const crowns=`
+    <circle cx="${cx-cr3*0.35}" cy="${ty-cr3b*0.5}" r="${cr3b}" fill="${ld}"/>
+    <circle cx="${cx+cr3*0.35}" cy="${ty-cr3b*0.45}" r="${cr3b}" fill="${ld}"/>
+    <circle cx="${cx}" cy="${ty-cr3a*0.75}" r="${cr3a}" fill="${g}"/>
+    <circle cx="${cx}" cy="${ty-cr3c*0.5}" r="${cr3c}" fill="${lg}"/>`;
+  // 열매/단풍
+  let fruits='';
+  if(level>=6){
+    const fpos=[[cx-cr3*0.3,ty-cr3*0.4],[cx+cr3*0.4,ty-cr3*0.6],[cx-cr3*0.1,ty-cr3*0.9],[cx+cr3*0.2,ty-cr3*0.3]];
+    fpos.slice(0,level>=8?4:2).forEach(([fx,fy])=>{
+      fruits+=`<circle cx="${fx}" cy="${fy}" r="${s*0.045}" fill="${c}" stroke="${c}" stroke-width="0.5"/>`;
+    });
+  }
+  const trunkWood=`<path d="M${cx-s*0.02} ${ty+trH*0.4} Q${cx+s*0.03} ${ty+trH*0.5} ${cx+s*0.01} ${ty+trH*0.7}" stroke="#8D6E63" stroke-width="${s*0.012}" fill="none" opacity=".5"/>`;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+    ${soil}${trunkPath}${trunkWood}${crowns}${fruits}
+  </svg>`;
 };
 const PLANT_STAGE_NAMES_FLOWER=['씨앗','아기씨앗','첫뿌리','꼬마싹','아기떡잎','본잎','줄기성장','꽃봉오리','개화','성체'];
 const PLANT_STAGE_NAMES_TREE=['씨앗','어린씨앗','발아','유묘','어린나무','가지치기','굵은줄기','작은나무','큰나무','성체'];
@@ -1373,6 +1389,8 @@ await setDoc(c.doc.ref,{read:true},{merge:true});
 rebuildCal();buildMedList();buildPartnerSections();
 // 내 식물 구독
 unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
+  // 식물 변경/선택 중에는 로컬 상태 유지 (onSnapshot 덮어쓰기 방지)
+  if(window._plantLock)return;
   plants={};
   s.docs.forEach(d=>{plants[d.id]={...d.data(),partnerUid:d.id};});
   buildHomePlant();buildGardenView();
@@ -2076,22 +2094,17 @@ window.changePlant=async(partnerUid)=>{
   const customName=plant.plantCustomName||'우리 식물';
   if(!confirm('⚠️ 식물 종을 변경하면 '+customName+'의 모든 경험치와 레벨이 초기화돼요.\n\n정말 변경할까요?'))return;
   showLoad('초기화 중...');
+  window._plantLock=true; // onSnapshot 덮어쓰기 방지
   try{
-    // 로컬 즉시 초기화 (showPlantPick 중복방지 우회)
-    if(plants[partnerUid])plants[partnerUid].plantTypeId=null;
+    // 로컬 즉시 초기화
+    if(plants[partnerUid]){plants[partnerUid].plantTypeId=null;plants[partnerUid].plantCustomName=null;}
     await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});
     try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});}catch(e){}
     hideLoad();
     showPlantPick(partnerUid,pName);
-  }catch(e){hideLoad();toast('변경 실패: '+e.message);}
+  }catch(e){hideLoad();window._plantLock=false;toast('변경 실패: '+e.message);}
 };
 const showPlantPick=(partnerUid,partnerName)=>{
-  // 이미 상대방이 이 파트너와의 식물을 선택했으면 팝업 안 띄움
-  if(plants[partnerUid]&&plants[partnerUid].plantTypeId){
-    toast('이미 '+partnerName+'님과 함께 키우는 식물이 있어요! 🌱');
-    buildGardenView();buildHomePlant();
-    return;
-  }
   pendingPlantPartnerUid=partnerUid;
   selectedPlantTypeId=null;
   $('plant-pick-partner-label').textContent=`👫 ${partnerName}님과 함께 키울 식물`;
@@ -2156,6 +2169,7 @@ window.confirmPlantPick=async()=>{
         createdAt:serverTimestamp()
       });
     }catch(e3){console.warn('알림 전송 실패:',e3.message);}
+    window._plantLock=false; // 락 해제
     closeModal('modal-plant-pick');
     toast('🌱 '+name+' 심기 완료! 함께 잘 키워봐요!');
     // 알림 요청 (처음 식물 선택 시)
