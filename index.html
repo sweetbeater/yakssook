@@ -1902,7 +1902,7 @@ window.showHomePlantPicker=()=>{
   go('garden');
   toast('홈에 표시할 식물을 내 정원에서 선택해주세요 🌿');
 };
-const setHomePlant=async(partnerUid)=>{
+window.setHomePlant=async(partnerUid)=>{
   // 로컬 plants 즉시 업데이트 (onSnapshot 응답 전 UI 깜빡임 방지)
   for(const p of Object.values(plants)){
     p.homePick=(p.partnerUid===partnerUid);
@@ -2136,7 +2136,7 @@ window.changePlant=async(partnerUid)=>{
     showPlantPick(partnerUid,pName);
   }catch(e){hideLoad();window._plantLock=false;toast('변경 실패: '+e.message);}
 };
-const showPlantPick=(partnerUid,partnerName)=>{
+window.showPlantPick=(partnerUid,partnerName)=>{
   console.log('[showPlantPick] 호출됨', partnerUid, partnerName);
   console.log('[showPlantPick] plants 현재:', JSON.stringify(plants));
   console.log('[showPlantPick] _plantLock:', window._plantLock);
