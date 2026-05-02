@@ -1822,8 +1822,15 @@ const getPlantStageName=(typeId,level)=>{
 // ── 홈 대표 식물 ──
 const buildHomePlant=()=>{
   const area=$('home-plant-area');if(!area)return;
-  const homePlant=Object.values(plants).find(p=>p.homePick);
-  if(!homePlant||!homePlant.plantTypeId){area.innerHTML='';return;}
+  const myPlants=Object.values(plants).filter(p=>p.plantTypeId);
+  // 파트너 1명이면 자동으로 그 식물 표시 (homePick 무관)
+  let homePlant=null;
+  if(myPlants.length===1){
+    homePlant=myPlants[0];
+  }else{
+    homePlant=myPlants.find(p=>p.homePick)||myPlants[0]||null;
+  }
+  if(!homePlant){area.innerHTML='';return;}
   const p=homePlant;
   const partner=partners.find(x=>x.uid===p.partnerUid);
   const pName=partner?getPDN(partner):'파트너';
@@ -1837,7 +1844,7 @@ const buildHomePlant=()=>{
     +'<div class="home-plant-name">'+customName+'</div>'
     +'<div class="home-plant-level">Lv.'+(+(p.level||0)+1)+' '+stageName+' · '+pName+'와 함께</div>'
     +'<div style="width:140px;margin-top:6px"><div class="garden-progress"><div class="garden-progress-bar" style="width:'+progress+'%"></div></div></div>'
-    +'<div class="home-plant-select" onclick="showHomePlantPicker()">식물 변경 ›</div>'
+    +(myPlants.length>1?'<div class="home-plant-select" onclick="showHomePlantPicker()">식물 변경 ›</div>':'')
     +'</div>';
 };
 
@@ -1850,11 +1857,15 @@ window.showHomePlantPicker=()=>{
   toast('홈에 표시할 식물을 내 정원에서 선택해주세요 🌿');
 };
 const setHomePlant=async(partnerUid)=>{
-  // 모든 식물 homePick=false 후 선택된 것만 true
+  // 로컬 plants 즉시 업데이트 (onSnapshot 응답 전 UI 깜빡임 방지)
+  for(const p of Object.values(plants)){
+    p.homePick=(p.partnerUid===partnerUid);
+  }
+  buildHomePlant();buildGardenView();
+  // Firestore 비동기 업데이트
   for(const p of Object.values(plants)){
     try{await setDoc(doc(db,'users',uid,'plants',p.partnerUid),{homePick:p.partnerUid===partnerUid},{merge:true});}catch(e){}
   }
-  buildHomePlant();buildGardenView();
 };
 
 // ── 식물 흔들기 ──
@@ -2002,12 +2013,13 @@ const buildGardenPlants=()=>{
         <div style="font-size:11px;color:var(--tx3);margin-top:3px">다음 단계까지 ${remain}번 복용</div>
       </div>
     </div>
-    <div class="garden-home-toggle">
+    ${myPlants.filter(x=>x.plantTypeId).length>1?`<div class="garden-home-toggle">
       <span>${isHome?'🏠 홈 화면에 표시 중':'홈 화면에 표시하기'}</span>
       <label class="toggle-wrap" style="transform:scale(.85)"><input type="checkbox" ${isHome?'checked':''} data-puid="${p.partnerUid}" onchange="setHomePlant(this.dataset.puid)"/><span class="toggle-slider"></span></label>
-    </div>
-    <div style="display:flex;gap:8px;padding:0 16px 14px">
+    </div>`:'<div style="padding:10px 16px;font-size:12px;color:var(--tx3)">🏠 홈 화면에 표시 중</div>'}
+    <div style="display:flex;gap:8px;padding:0 16px 14px;flex-wrap:wrap">
       <button class="garden-detail-btn" data-puid="${p.partnerUid}" onclick="showPlantDetail(this.dataset.puid)">🔍 자세히 보기</button>
+      <button class="garden-detail-btn" style="color:#1D9E75;background:#E8F8F0" data-puid="${p.partnerUid}" data-cname="${p.plantCustomName||''}" onclick="renamePlant(this.dataset.puid,this.dataset.cname)">✏️ 이름 변경</button>
       <button class="garden-detail-btn" style="color:#E53935;background:#FFF0F0" data-puid="${p.partnerUid}" onclick="changePlant(this.dataset.puid)">🔄 식물 변경</button>
     </div>`;
     list.appendChild(card);
@@ -2044,14 +2056,29 @@ window.toggleGardenView=()=>{
 };
 
 // ── 식물 선택 팝업 ──
+window.renamePlant=async(partnerUid,currentName)=>{
+  const newName=prompt('식물의 새 이름을 입력해주세요 ✏️', currentName||'');
+  if(newName===null)return; // 취소
+  const trimmed=newName.trim();
+  if(!trimmed){toast('이름을 입력해주세요!');return;}
+  if(trimmed.length>12){toast('이름은 12자 이내로 입력해주세요!');return;}
+  showLoad('저장 중...');
+  try{
+    await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantCustomName:trimmed},{merge:true});
+    try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantCustomName:trimmed},{merge:true});}catch(e){}
+    toast('✅ 이름이 변경됐어요!');
+  }catch(e){toast('저장 실패: '+e.message);}
+  finally{hideLoad();}
+};
 window.changePlant=async(partnerUid)=>{
   const plant=plants[partnerUid];if(!plant)return;
   const pName=partners.find(x=>x.uid===partnerUid)?getPDN(partners.find(x=>x.uid===partnerUid)):'파트너';
   const customName=plant.plantCustomName||'우리 식물';
-  if(!confirm('⚠️ 식물을 변경하면 '+customName+'의 모든 경험치와 레벨이 초기화돼요.\n\n정말 변경할까요?'))return;
-  // 기존 데이터 초기화
+  if(!confirm('⚠️ 식물 종을 변경하면 '+customName+'의 모든 경험치와 레벨이 초기화돼요.\n\n정말 변경할까요?'))return;
   showLoad('초기화 중...');
   try{
+    // 로컬 즉시 초기화 (showPlantPick 중복방지 우회)
+    if(plants[partnerUid])plants[partnerUid].plantTypeId=null;
     await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});
     try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});}catch(e){}
     hideLoad();
@@ -2095,20 +2122,27 @@ window.confirmPlantPick=async()=>{
   showLoad('식물 심는 중...');
   try{
     const isFirst=Object.keys(plants).length===0;
+    // 내 homePick 결정: 식물이 처음이거나 파트너가 1명이면 자동 true
+    const myPlantCount=Object.values(plants).filter(p=>p.plantTypeId).length;
+    const autoHome=(myPlantCount===0); // 처음 식물이면 자동 홈
     const plantData={
       plantTypeId:selectedPlantTypeId,
       plantCustomName:name,
       level:0,doses:0,
-      homePick:isFirst,
+      homePick:autoHome,
       createdAt:serverTimestamp()
     };
     // 내 plants에 저장
     await setDoc(doc(db,'users',uid,'plants',pendingPlantPartnerUid),plantData);
-    // 상대방 plants에도 동일하게 저장 (공유 식물)
+    // 상대방 plants에 저장 (homePick은 상대방이 각자 결정 - 저장 안 함)
+    const partnerPlantCount=Object.keys(plants).length; // 상대방 파트너 수 미지수이므로 기본 true
     try{
       await setDoc(doc(db,'users',pendingPlantPartnerUid,'plants',uid),{
-        ...plantData,
-        homePick:true // 상대방도 홈에 표시
+        plantTypeId:selectedPlantTypeId,
+        plantCustomName:name,
+        level:0,doses:0,
+        homePick:true, // 상대방은 기본 true (나중에 여러 식물 있으면 본인이 선택)
+        createdAt:serverTimestamp()
       });
     }catch(e2){console.warn('상대방 plants 저장 실패:',e2.message);}
     // 상대방에게 알림 (알림 type: plantSelected)
