@@ -1197,7 +1197,7 @@ const startListeners = function(){
         window._firedNotifs.add(docId);
         const d=c.doc.data();
         const createdMs=(d.createdAt&&d.createdAt.toMillis)?d.createdAt.toMillis():Date.now();
-        if(createdMs<APP_START_TS){await setDoc(c.doc.ref,{read:true},{merge:true});return;}
+        if(createdMs<APP_START_TS+2000){await setDoc(c.doc.ref,{read:true},{merge:true});return;} // 앱 시작 2초 이내 생성된 알림은 이전 것으로 간주
         playSound('notif');
           const nm=d.fromName||'파트너';
           if(d.type==='checked'&&notif.partnerCheck){
@@ -1556,7 +1556,14 @@ const initMsg = async ()=>{
   try{
     if(!msgInited){
       messaging=getMessaging(fbApp);
-      onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title||'알림'}: ${body||''}`);});
+      onMessage(messaging,p=>{
+        // data-only 메시지는 p.data에서, notification 메시지는 p.notification에서
+        const n=p.notification||{};
+        const d=p.data||{};
+        const title=n.title||d.title||'';
+        const body=n.body||d.body||'';
+        if(title||body)toast(`🔔 ${title}: ${body}`);
+      });
       msgInited=true;
     }
     if(Notification.permission==='granted')await refreshFCM();
