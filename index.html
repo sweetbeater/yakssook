@@ -4,66 +4,44 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>약 쏘옥</title>
-<link rel="manifest" id="manifest-link" href="/yakssook/manifest.json?v=2"/>
+<link rel="manifest" id="manifest-link" href="/yakssook/manifest.json"/>
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="apple-touch-icon" id="apple-touch-icon" href="/yakssook/apple-touch-icon.png?v=2"/>
-<link rel="icon" type="image/png" sizes="192x192" id="icon-192-link" href="/yakssook/icon-192.png?v=2"/>
-<link rel="icon" type="image/png" sizes="512x512" id="icon-512-link" href="/yakssook/icon-512.png?v=2"/>
+<link rel="apple-touch-icon" id="apple-touch-icon" href="/yakssook/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="192x192" id="icon-192-link" href="/yakssook/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" id="icon-512-link" href="/yakssook/icon-512.png"/>
 <meta name="apple-mobile-web-app-title" content="약쏘옥"/>
 <script>
+// 카카오톡 인앱 브라우저 감지 → 안내 화면 표시
 (function(){
-  var ua=navigator.userAgent.toLowerCase();
-  var isKakao=ua.includes('kakaotalk')||ua.includes('kakao');
-  var isFB=ua.includes('fban')||ua.includes('fbav');
-  var isNaver=ua.includes('naver');
-  if(!isKakao&&!isFB&&!isNaver)return;
-
-  var isIOS=/iphone|ipad|ipod/.test(ua);
-  var url=location.href;
-
-  // ── 카카오 공식: openExternalBrowser=1 파라미터 ──
-  // URL에 이미 있으면 무한 루프 방지
-  if(isKakao&&url.indexOf('openExternalBrowser')===-1){
-    var sep=url.indexOf('?')===-1?'?':'&';
-    location.replace(url+sep+'openExternalBrowser=1');
-    return;
-  }
-
-  // openExternalBrowser=1로 왔는데도 여전히 인앱이면 → 안내 화면
-  showGuide();
-
-  function showGuide(){
-    var isAnd=/android/.test(ua);
-    var d=document.createElement('div');
-    d.style.cssText='position:fixed;inset:0;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;z-index:9999;font-family:sans-serif';
-    var guide_html=isIOS
-      ? '&#128241; <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>&rarr; <b style="color:#fff">Safari로 열기</b> 선택'
-      : '&#129302; <b style="color:#fff">Android</b>: 우측 상단 &#8942;<br>&rarr; <b style="color:#fff">다른 브라우저로 열기</b> 선택';
-    d.innerHTML=
-      '<div style="font-size:52px;margin-bottom:12px">&#128138;</div>'+
-      '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>'+
-      '<div style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:20px">카카오톡 브라우저에서는 정상 작동하지 않아요.<br><b style="color:#fff">Safari 또는 Chrome</b>으로 열어주세요!</div>'+
-      '<div style="background:rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;width:100%;max-width:300px;margin-bottom:20px;font-size:13px;color:rgba(255,255,255,.9);line-height:2">'+guide_html+'</div>'+
-      '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;width:100%;max-width:300px;margin-bottom:16px;word-break:break-all;font-size:11px;color:rgba(255,255,255,.7)">'+url+'</div>'+
-      '<button id="inapp-copy-btn" style="padding:14px 28px;border-radius:999px;background:#fff;color:#1D9E75;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">&#128279; 주소 복사하기</button>';
-    document.body.appendChild(d);
-    document.getElementById('inapp-copy-btn').addEventListener('click',function(){
-      var btn=this;
-      function done(){btn.textContent='✅ 복사됐어요!';}
-      function fallback(){
-        var t=document.createElement('textarea');
-        t.value=url;t.style.cssText='position:fixed;opacity:0';
-        document.body.appendChild(t);t.focus();t.select();
-        try{document.execCommand('copy');done();}catch(e){btn.textContent='주소를 직접 복사해주세요';}
-        document.body.removeChild(t);
-      }
-      navigator.clipboard&&navigator.clipboard.writeText
-        ?navigator.clipboard.writeText(url).then(done).catch(fallback)
-        :fallback();
-    });
+  const ua = navigator.userAgent.toLowerCase();
+  const isKakao = ua.includes('kakaotalk') || ua.includes('kakao');
+  const isFacebook = ua.includes('fban') || ua.includes('fbav');
+  const isInApp = isKakao || isFacebook;
+  if(isInApp){
+    document.write(`
+      <style>*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo',sans-serif}</style>
+      <div style="min-height:100vh;background:linear-gradient(160deg,#085041,#1D9E75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
+        <div style="font-size:56px;margin-bottom:16px">💊</div>
+        <div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:10px">약 쏘옥</div>
+        <div style="font-size:15px;color:rgba(255,255,255,.85);line-height:1.8;margin-bottom:32px">
+          카카오톡 브라우저에서는<br>정상적으로 작동하지 않아요.<br><b style="color:#fff">Safari나 Chrome</b>으로 열어주세요!
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:16px;padding:20px;width:100%;max-width:300px;margin-bottom:20px">
+          <div style="font-size:13px;color:rgba(255,255,255,.9);line-height:2">
+            📱 <b style="color:#fff">iPhone</b>: 우측 하단 ···<br>→ Safari로 열기<br><br>
+            🤖 <b style="color:#fff">Android</b>: 우측 상단 ⋮<br>→ 다른 브라우저로 열기
+          </div>
+        </div>
+        <button onclick="window.open('${window.location.href}','_blank')" 
+          style="padding:16px 32px;border-radius:999px;background:#fff;color:#1D9E75;font-size:16px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)">
+          브라우저로 열기 시도 →
+        </button>
+      </div>
+    `);
+    throw new Error('inapp browser');
   }
 })();
 </script>
@@ -364,13 +342,13 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .order-btn:disabled{opacity:.3;cursor:not-allowed}
 
 /* ONBOARDING */
-.onboard-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#085041 0%,#1D9E75 100%);z-index:9990;display:flex;align-items:center;justify-content:center}
-.onboard-card{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border-radius:28px;padding:40px 28px 36px;width:calc(100% - 48px);max-width:380px;border:1px solid rgba(255,255,255,.18)}
+.onboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.onboard-card{background:var(--card);border-radius:var(--rc) var(--rc) 0 0;padding:32px 24px 44px;width:100%;max-width:400px}
 .onboard-step{display:none}
 .onboard-step.active{display:block}
-.onboard-ic{font-size:64px;margin-bottom:18px;text-align:center}
-.onboard-title{font-size:22px;font-weight:900;color:#fff;margin-bottom:10px;text-align:center}
-.onboard-desc{font-size:var(--fs-base);color:rgba(255,255,255,.85);line-height:1.8;text-align:center;margin-bottom:24px}
+.onboard-ic{font-size:52px;margin-bottom:14px;text-align:center}
+.onboard-title{font-size:20px;font-weight:900;color:var(--tx);margin-bottom:10px;text-align:center}
+.onboard-desc{font-size:var(--fs-base);color:var(--tx2);line-height:1.8;text-align:center;margin-bottom:24px}
 .onboard-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
 .odot{width:8px;height:8px;border-radius:50%;background:var(--g200)}
 .odot.on{background:var(--t400);width:24px;border-radius:var(--rp)}
@@ -407,443 +385,371 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .lmsg{font-size:var(--fs-base);color:var(--tx2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 #photo-input{display:none}
-/* ── 내 정원 탭 ── */
-.garden-section{padding:14px 14px 0}
-.garden-card{background:var(--card);border-radius:var(--rc);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;transition:transform .15s}
-.garden-card:active{transform:scale(.98)}
-.garden-card-top{padding:16px;display:flex;align-items:center;gap:14px}
-.plant-avatar{width:72px;height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:42px;flex-shrink:0;cursor:pointer;transition:transform .2s}
-.plant-avatar:active,.plant-avatar.wiggle{animation:wiggle .4s ease}
-@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}
-.garden-card-info{flex:1;min-width:0}
-.garden-plant-name{font-size:17px;font-weight:900;color:var(--tx)}
-.garden-partner-name{font-size:12px;color:var(--tx3);margin-top:2px}
-.garden-level{font-size:12px;color:var(--t400);font-weight:700;margin-top:4px}
-.garden-progress{height:6px;background:var(--g200);border-radius:3px;margin-top:6px;overflow:hidden}
-.garden-progress-bar{height:100%;background:linear-gradient(90deg,var(--t400),var(--t200));border-radius:3px;transition:width .5s}
-.garden-home-toggle{padding:10px 16px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--tx2)}
-.garden-detail-btn{font-size:12px;color:var(--t400);font-weight:700;cursor:pointer;padding:4px 8px;border-radius:8px;background:var(--t50)}
-
-/* 식물 선택 팝업 */
-.plant-pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
-.plant-pick-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:16px;border:2px solid var(--bd2);cursor:pointer;transition:all .2s;background:var(--g100)}
-.plant-pick-item.on{border-color:var(--t400);background:var(--t50)}
-.plant-pick-emoji{font-size:36px;line-height:1}
-.plant-pick-label{font-size:11px;font-weight:700;color:var(--tx2);text-align:center}
-.plant-pick-item.on .plant-pick-label{color:var(--t600)}
-
-/* 식물 도감 */
-.dex-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
-.dex-item{background:var(--card);border-radius:var(--rc);padding:14px;text-align:center;box-shadow:var(--shadow)}
-.dex-emoji{font-size:40px;margin-bottom:6px}
-.dex-name{font-size:13px;font-weight:700;color:var(--tx)}
-.dex-stages{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.dex-stage-dot{width:8px;height:8px;border-radius:50%;background:var(--t400)}
-.dex-stage-dot.locked{background:var(--g200)}
-.dex-locked{filter:grayscale(1);opacity:.4}
-
-/* 홈 식물 표시 */
-.home-plant-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0 8px;position:relative}
-.home-plant-emoji{font-size:80px;cursor:pointer;transition:transform .2s;line-height:1}
-.home-plant-emoji:active{transform:scale(.9)}
-.home-plant-name{font-size:14px;font-weight:700;color:var(--t600);margin-top:6px}
-.home-plant-level{font-size:12px;color:var(--tx3);margin-top:2px}
-.home-plant-select{font-size:12px;color:var(--t400);font-weight:700;cursor:pointer;margin-top:4px;padding:4px 12px;border-radius:999px;background:var(--t50)}.home-plant-svg{display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s}.home-plant-svg:active{transform:scale(.9)}.plant-pick-svg{display:flex;align-items:center;justify-content:center;margin:0 auto}
-
-/* 복용 애니메이션 */
-.water-anim{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);font-size:60px;pointer-events:none;z-index:200;animation:floatUp 1.2s ease forwards}
-@keyframes floatUp{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-120%) scale(1.4)}}
-
-/* 도감 서브탭 */
-.garden-subtabs{display:flex;gap:6px;padding:12px 14px 0;background:var(--bg)}
-.garden-subtab{flex:1;padding:10px;border-radius:var(--rp);font-size:var(--fs-sm);font-weight:700;border:none;background:var(--g100);color:var(--tx3);cursor:pointer;transition:all .2s;text-align:center}
-.garden-subtab.on{background:var(--t400);color:#fff}
-
-/* 공지 팝업 */
-.notice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9990;display:flex;align-items:center;justify-content:center;padding:24px}
-.notice-box{background:var(--card);border-radius:28px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
-.notice-emoji{font-size:52px;margin-bottom:12px}
-.notice-title{font-size:20px;font-weight:900;color:var(--tx);margin-bottom:8px}
-.notice-body{font-size:14px;color:var(--tx2);line-height:1.8;margin-bottom:20px}
-
 </style>
 </head>
 <body>
-<svg style="display:none"><defs><symbol id="gico" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></symbol></defs></svg>
 <div class="app">
+
+<!-- 스플래시 -->
 <div class="splash" id="splash">
-<div class="splash-pill">💊</div>
-<div class="splash-title">약 쏘옥</div>
-<div class="splash-sub">묻지 않아도 알 수 있는 마음의 평화</div>
-<div class="splash-spin"></div>
+  <div class="splash-pill">💊</div>
+  <div class="splash-title">약 쏘옥</div>
+  <div class="splash-sub">묻지 않아도 알 수 있는 마음의 평화</div>
+  <div class="splash-spin"></div>
 </div>
+
+<!-- 로그인 -->
 <div class="auth-wrap" id="auth-wrap">
-<div class="auth-hero">
-<span class="auth-hero-pill">💊</span>
-<div class="auth-hero-title">약 쏘옥</div>
-<div style="font-size:13px;color:var(--tx3);margin-top:4px">묻지 않아도 알 수 있는 마음의 평화</div>
-</div>
-<div class="auth-box">
-<button class="abtn" style="background:linear-gradient(135deg,#5DCAA5,#1D9E75);margin-bottom:12px;font-size:17px" onclick="startAsGuest()">🔓 게스트로 바로 시작하기</button>
-<div style="font-size:12px;color:var(--tx3);text-align:center;margin-bottom:16px">약 등록·복용 체크 바로 가능 · 파트너 연결 시 계정 필요</div>
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-<div style="flex:1;height:1px;background:var(--bd2)"></div>
-<span style="font-size:12px;color:var(--tx3)">또는 계정으로 로그인</span>
-<div style="flex:1;height:1px;background:var(--bd2)"></div>
-</div>
-<button class="abtn" style="background:#fff;color:#444;border:1.5px solid var(--bd2);box-shadow:var(--shadow);margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px" onclick="signInWithGoogle()">
-<svg width="18" height="18"><use href="#gico"/></svg>
+  <div class="auth-hero">
+    <span class="auth-hero-pill">💊</span>
+    <div class="auth-hero-title">약 쏘옥</div>
+    <div style="font-size:13px;color:var(--tx3);margin-top:4px">묻지 않아도 알 수 있는 마음의 평화</div>
+  </div>
+  <div class="auth-box">
+    <!-- 게스트로 시작 -->
+    <button class="abtn" style="background:linear-gradient(135deg,#5DCAA5,#1D9E75);margin-bottom:12px;font-size:17px" onclick="startAsGuest()">🔓 게스트로 바로 시작하기</button>
+    <div style="font-size:12px;color:var(--tx3);text-align:center;margin-bottom:16px">약 등록·복용 체크 바로 가능 · 파트너 연결 시 계정 필요</div>
+
+    <!-- 구분선 -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="flex:1;height:1px;background:var(--bd2)"></div>
+      <span style="font-size:12px;color:var(--tx3)">또는 계정으로 로그인</span>
+      <div style="flex:1;height:1px;background:var(--bd2)"></div>
+    </div>
+
+    <!-- 구글 로그인/회원가입 -->
+    <button class="abtn" style="background:#fff;color:#444;border:1.5px solid var(--bd2);box-shadow:var(--shadow);margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Google로 시작하기
-</button>
-<div class="atabs">
-<button class="atab on" id="tab-in" onclick="setTab('in')">로그인</button>
-<button class="atab" id="tab-up" onclick="setTab('up')">회원가입</button>
+    </button>
+
+    <!-- 이메일 탭 -->
+    <div class="atabs">
+      <button class="atab on" id="tab-in" onclick="setTab('in')">로그인</button>
+      <button class="atab" id="tab-up" onclick="setTab('up')">회원가입</button>
+    </div>
+    <div class="afield"><label>📧 이메일</label><input type="email" id="a-email" placeholder="example@email.com" autocomplete="email"/></div>
+    <div class="afield"><label>🔒 비밀번호</label><input type="password" id="a-pw" placeholder="6자리 이상" autocomplete="current-password"/></div>
+    <div id="a-signup-fields" style="display:none">
+      <div class="afield"><label>🔒 비밀번호 확인</label><input type="password" id="a-pw2" placeholder="비밀번호 재입력"/></div>
+      <div class="afield"><label>😊 이름 (닉네임)</label><input type="text" id="a-name" placeholder="예: 엄마, 지연이"/></div>
+    </div>
+    <button class="abtn" id="a-btn" onclick="doAuth()">로그인</button>
+    <div class="aerr" id="a-err"></div>
+    <div class="auth-link" id="a-reset-link" onclick="showResetModal()">🔑 비밀번호를 잊으셨나요?</div>
+  </div>
 </div>
-<div class="afield"><label>📧 이메일</label><input type="email" id="a-email" placeholder="example@email.com" autocomplete="email"/></div>
-<div class="afield"><label>🔒 비밀번호</label><input type="password" id="a-pw" placeholder="6자리 이상" autocomplete="current-password"/></div>
-<div id="a-signup-fields" style="display:none">
-<div class="afield"><label>🔒 비밀번호 확인</label><input type="password" id="a-pw2" placeholder="비밀번호 재입력"/></div>
-<div class="afield"><label>😊 이름 (닉네임)</label><input type="text" id="a-name" placeholder="예: 엄마, 지연이"/></div>
-</div>
-<button class="abtn" id="a-btn" onclick="doAuth()">로그인</button>
-<div class="aerr" id="a-err"></div>
-<div class="auth-link" id="a-reset-link" onclick="showResetModal()">🔑 비밀번호를 잊으셨나요?</div>
-</div>
-</div>
+
+<!-- 계정 연동 유도 모달 -->
 <div class="modal-overlay" id="modal-upgrade" style="display:none">
-<div class="modal-box">
-<div style="text-align:center;margin-bottom:16px">
-<div style="font-size:40px;margin-bottom:8px">🔗</div>
-<div class="modal-title" style="text-align:center">파트너 연결을 위해<br>계정이 필요해요</div>
-</div>
-<div style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:18px;text-align:center">지금까지 등록한 약과 복용 기록은<br>계정을 만들어도 <b>그대로 유지</b>돼요 😊</div>
-<button class="abtn" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#444;border:1.5px solid var(--bd2);box-shadow:var(--shadow)" onclick="upgradeWithGoogle()">
-<svg width="16" height="16"><use href="#gico"/></svg>
+  <div class="modal-box">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:40px;margin-bottom:8px">🔗</div>
+      <div class="modal-title" style="text-align:center">파트너 연결을 위해<br>계정이 필요해요</div>
+    </div>
+    <div style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:18px;text-align:center">지금까지 등록한 약과 복용 기록은<br>계정을 만들어도 <b>그대로 유지</b>돼요 😊</div>
+    <button class="abtn" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#444;border:1.5px solid var(--bd2);box-shadow:var(--shadow)" onclick="upgradeWithGoogle()">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Google로 계정 만들기
-</button>
-<button class="abtn" style="margin-bottom:10px" onclick="showUpgradeEmail()">📧 이메일로 계정 만들기</button>
-<button style="width:100%;padding:12px;border-radius:var(--rp);background:none;border:none;color:var(--tx3);font-size:13px;cursor:pointer" onclick="closeModal('modal-upgrade')">나중에 할게요</button>
-<div id="upgrade-email-form" style="display:none;margin-top:16px;border-top:1px solid var(--bd);padding-top:16px">
-<div class="modal-field"><label>이메일</label><input type="email" id="upgrade-email" placeholder="example@email.com"/></div>
-<div class="modal-field"><label>비밀번호</label><input type="password" id="upgrade-pw" placeholder="6자리 이상"/></div>
-<div class="modal-field"><label>비밀번호 확인</label><input type="password" id="upgrade-pw2" placeholder="비밀번호 재입력"/></div>
-<div class="modal-field"><label>이름</label><input type="text" id="upgrade-name" placeholder="예: 엄마, 지연이"/></div>
-<div class="modal-err" id="upgrade-err"></div>
-<button class="abtn" onclick="doUpgradeEmail()">계정 만들기</button>
+    </button>
+    <button class="abtn" style="margin-bottom:10px" onclick="showUpgradeEmail()">📧 이메일로 계정 만들기</button>
+    <button style="width:100%;padding:12px;border-radius:var(--rp);background:none;border:none;color:var(--tx3);font-size:13px;cursor:pointer" onclick="closeModal('modal-upgrade')">나중에 할게요</button>
+    <!-- 이메일 업그레이드 폼 (숨김) -->
+    <div id="upgrade-email-form" style="display:none;margin-top:16px;border-top:1px solid var(--bd);padding-top:16px">
+      <div class="modal-field"><label>이메일</label><input type="email" id="upgrade-email" placeholder="example@email.com"/></div>
+      <div class="modal-field"><label>비밀번호</label><input type="password" id="upgrade-pw" placeholder="6자리 이상"/></div>
+      <div class="modal-field"><label>비밀번호 확인</label><input type="password" id="upgrade-pw2" placeholder="비밀번호 재입력"/></div>
+      <div class="modal-field"><label>이름</label><input type="text" id="upgrade-name" placeholder="예: 엄마, 지연이"/></div>
+      <div class="modal-err" id="upgrade-err"></div>
+      <button class="abtn" onclick="doUpgradeEmail()">계정 만들기</button>
+    </div>
+  </div>
 </div>
-</div>
-</div>
+
+<!-- 메인 -->
 <div class="main-wrap" id="main-wrap">
-<div class="sbar">
-<span id="clock">9:41</span>
-<div style="display:flex;align-items:center;gap:8px">
-<span id="push-txt" style="font-size:12px;color:var(--tx3)">알림 꺼짐</span>
-<div class="fb-dot" id="fb-dot"></div>
-</div>
-</div>
-<div class="screen active" id="s-home">
-<div class="hbar">
-<div class="logo-row">
-<span class="logo-ic">💊</span>
-<span class="logo">약 쏘옥</span>
-<span class="logo-sub" id="logo-sub"></span>
-</div>
-<div class="partner-tabs-row" id="partner-tabs-row"></div>
-</div>
-<div id="home-plant-area"></div>
-<div class="cal-mode-row">
-<button class="cmb on" id="cmb-week" onclick="setCalMode('week')">📅 주간</button>
-<button class="cmb" id="cmb-month" onclick="setCalMode('month')">🗓 월별</button>
-</div>
-<div id="cal-week" class="week-wrap">
-<div class="cal-nav">
-<button class="nav-btn" onclick="shiftWeek(-1)">‹</button>
-<span class="cal-title" id="week-lbl"></span>
-<button class="nav-btn" onclick="shiftWeek(1)">›</button>
-</div>
-<div class="week-grid" id="week-grid"></div>
-</div>
-<div id="cal-month" class="month-wrap" style="display:none">
-<div class="cal-nav">
-<button class="nav-btn" onclick="shiftMonth(-1)">‹</button>
-<span class="cal-title" id="month-lbl"></span>
-<button class="nav-btn" onclick="shiftMonth(1)">›</button>
-</div>
-<div class="mgrid" id="month-grid"></div>
-</div>
-<div class="dpanel" id="dpanel">
-<div class="dpanel-hdr">
-<span class="dpanel-date" id="dpanel-date"></span>
-<div class="dtabs" id="dtabs"></div>
-</div>
-<div class="dpanel-body" id="dpanel-body"></div>
-</div>
-<div id="push-banner"></div>
-<div id="partner-med-sections"></div>
-<div class="slabel">💊 오늘 내 복용 목록</div>
-<div id="med-list"></div>
-</div>
-<div class="screen" id="s-add">
-<div class="fhdr"><button class="back" onclick="go('home')">←</button><span class="ftitle">💊 약 등록</span></div>
-<div class="fbody">
-<div class="fg"><label>약 이름</label><input type="text" id="mn-name" placeholder="예: 혈압약, 비타민D"/></div>
-<div class="fg">
-<label>아이콘 선택</label>
-<div class="igrid" id="icon-grid"></div>
-<div class="icon-custom-row">
-<input type="text" id="icon-custom" placeholder="직접 입력 (이모지)" maxlength="2" oninput="previewCustomIcon(this.value)"/>
-<div class="icon-preview" id="icon-preview">✏️</div>
-</div>
-</div>
-<div class="fg">
-<label>복용 시간 (식사 기준)</label>
-<div class="chips" id="time-chips"></div>
-</div>
-<div class="fg">
-<label>⏰ 정확한 복용 시각 (선택)</label>
-<div class="time-input-row">
-<input type="time" id="med-time-exact"/>
-<button class="time-skip-btn" id="time-skip-btn" onclick="toggleTimeSkip()">시간 없음</button>
-</div>
-<div style="font-size:12px;color:var(--tx3);margin-top:6px">⚡ 시각 입력 시 예약 알림이 정확하게 작동해요</div>
-</div>
-<div class="fg"><label>복용 요일</label><div class="chips" id="day-chips"></div></div>
-<div class="fg"><label>🔔 알림 설정</label>
-<select id="alarm-sel">
-<option value="30">복용 30분 전 알림</option>
-<option value="60">복용 1시간 전 알림</option>
-<option value="0">복용 시간에 알림</option>
-<option value="-1">알림 없음</option>
-</select>
-</div>
-<button class="sbtn" onclick="addMed()">✅ 등록하기</button>
-</div>
-</div>
-<div class="screen" id="s-garden">
-<div class="fhdr">
-  <span class="ftitle">🌿 내 정원</span>
-  <button id="garden-dex-btn" style="margin-left:auto;padding:7px 14px;border-radius:var(--rp);background:var(--t50);color:var(--t600);font-size:13px;font-weight:700;border:none;cursor:pointer" onclick="toggleGardenView()">🔍 식물 도감</button>
-</div>
-<div id="garden-main-view">
-  <div id="garden-plants-view">
-    <div id="garden-plants-list" class="garden-section"></div>
+  <div class="sbar">
+    <span id="clock">9:41</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="push-txt" style="font-size:12px;color:var(--tx3)">알림 꺼짐</span>
+      <div class="fb-dot" id="fb-dot"></div>
+    </div>
   </div>
-  <div id="garden-dex-view" style="display:none">
-    <div class="dex-grid" id="dex-grid"></div>
+
+  <!-- HOME -->
+  <div class="screen active" id="s-home">
+    <div class="hbar">
+      <div class="logo-row">
+        <span class="logo-ic">💊</span>
+        <span class="logo">약 쏘옥</span>
+        <span class="logo-sub" id="logo-sub"></span>
+      </div>
+      <div class="partner-tabs-row" id="partner-tabs-row"></div>
+    </div>
+    <div class="cal-mode-row">
+      <button class="cmb on" id="cmb-week" onclick="setCalMode('week')">📅 주간</button>
+      <button class="cmb" id="cmb-month" onclick="setCalMode('month')">🗓 월별</button>
+    </div>
+    <div id="cal-week" class="week-wrap">
+      <div class="cal-nav">
+        <button class="nav-btn" onclick="shiftWeek(-1)">‹</button>
+        <span class="cal-title" id="week-lbl"></span>
+        <button class="nav-btn" onclick="shiftWeek(1)">›</button>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+    <div id="cal-month" class="month-wrap" style="display:none">
+      <div class="cal-nav">
+        <button class="nav-btn" onclick="shiftMonth(-1)">‹</button>
+        <span class="cal-title" id="month-lbl"></span>
+        <button class="nav-btn" onclick="shiftMonth(1)">›</button>
+      </div>
+      <div class="mgrid" id="month-grid"></div>
+    </div>
+    <div class="dpanel" id="dpanel">
+      <div class="dpanel-hdr">
+        <span class="dpanel-date" id="dpanel-date"></span>
+        <div class="dtabs" id="dtabs"></div>
+      </div>
+      <div class="dpanel-body" id="dpanel-body"></div>
+    </div>
+    <div id="push-banner"></div>
+    <div id="partner-med-sections"></div>
+    <div class="slabel">💊 오늘 내 복용 목록</div>
+    <div id="med-list"></div>
+  </div>
+
+  <!-- ADD -->
+  <div class="screen" id="s-add">
+    <div class="fhdr"><button class="back" onclick="go('home')">←</button><span class="ftitle">💊 약 등록</span></div>
+    <div class="fbody">
+      <div class="fg"><label>약 이름</label><input type="text" id="mn-name" placeholder="예: 혈압약, 비타민D"/></div>
+      <div class="fg">
+        <label>아이콘 선택</label>
+        <div class="igrid" id="icon-grid"></div>
+        <div class="icon-custom-row">
+          <input type="text" id="icon-custom" placeholder="직접 입력 (이모지)" maxlength="2" oninput="previewCustomIcon(this.value)"/>
+          <div class="icon-preview" id="icon-preview">✏️</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label>복용 시간 (식사 기준)</label>
+        <div class="chips" id="time-chips"></div>
+      </div>
+      <div class="fg">
+        <label>⏰ 정확한 복용 시각 (선택)</label>
+        <div class="time-input-row">
+          <input type="time" id="med-time-exact"/>
+          <button class="time-skip-btn" id="time-skip-btn" onclick="toggleTimeSkip()">시간 없음</button>
+        </div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:6px">⚡ 시각 입력 시 예약 알림이 정확하게 작동해요</div>
+      </div>
+      <div class="fg"><label>복용 요일</label><div class="chips" id="day-chips"></div></div>
+      <div class="fg"><label>🔔 알림 설정</label>
+        <select id="alarm-sel">
+          <option value="30">복용 30분 전 알림</option>
+          <option value="60">복용 1시간 전 알림</option>
+          <option value="0">복용 시간에 알림</option>
+          <option value="-1">알림 없음</option>
+        </select>
+      </div>
+      <button class="sbtn" onclick="addMed()">✅ 등록하기</button>
+    </div>
+  </div>
+
+  <!-- CONNECT -->
+  <div class="screen" id="s-connect">
+    <div class="chero">
+      <div class="chtitle">🔗 파트너 연결</div>
+      <div class="chsub">6자리 코드를 공유해서 연결하세요.<br>연결하면 서로의 복용 현황을 실시간으로 확인해요!</div>
+    </div>
+    <div class="slabel">내 초대 코드</div>
+    <div class="codebox">
+      <div class="cblabel">상대방에게 이 코드를 알려주세요</div>
+      <div class="cdigits" id="my-code-digits"></div>
+      <button class="copybtn" onclick="copyCode()">💌 초대 메시지 복사하기</button>
+    </div>
+    <div class="slabel">코드로 연결하기</div>
+    <div class="einput-row">
+      <input type="text" id="code-input" placeholder="상대방 6자리 코드" maxlength="6" style="text-transform:uppercase"/>
+      <button onclick="connectByCode()">연결</button>
+    </div>
+    <div class="slabel">연결된 파트너</div>
+    <div id="partners-list"></div>
+    <div class="slabel">파트너 순서 편집</div>
+    <div id="partner-order-list"></div>
+  </div>
+
+  <!-- MY -->
+  <div class="screen" id="s-my">
+    <div class="phero">
+      <div class="avatar-wrap" onclick="document.getElementById('photo-input').click()">
+        <div class="av-xl" id="av-xl"><span>나</span></div>
+        <div class="av-cam">📷</div>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)"/>
+      <div style="flex:1;min-width:0">
+        <div class="name-row"><input type="text" id="my-name" placeholder="이름 입력" autocomplete="nickname"/><button onclick="saveName()">저장</button></div>
+        <div style="margin-top:6px;font-size:12px;color:var(--tx3)" id="my-email-lbl"></div>
+      </div>
+    </div>
+    <div class="srow">
+      <div class="sbox"><div class="snum" id="stat-rate">0%</div><div class="slbl2">오늘 달성률</div></div>
+      <div class="sbox"><div class="snum" id="stat-streak">0</div><div class="slbl2">연속 복용일</div></div>
+      <div class="sbox"><div class="snum" id="stat-count">0</div><div class="slbl2">등록된 약</div></div>
+    </div>
+    <div class="slabel">💊 등록된 약 관리</div>
+    <div id="med-manage"></div>
+    <div class="slabel">🔔 알림 설정</div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-title">💚 파트너 복용 완료 알림</div><div class="toggle-sub">파트너가 약을 먹으면 내 폰에 알림</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="notif-partner-check" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-title">⏰ 내 복용 시간 알림</div><div class="toggle-sub">복용 시각 전에 미리 알림 (시각 설정된 약만)</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="notif-self" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
+    </div>
+    <div class="notif-detail" id="notif-self-detail" style="display:none">
+      <label>알림 시점</label>
+      <select id="notif-self-min" onchange="saveNotif()">
+        <option value="10">10분 전</option>
+        <option value="15">15분 전</option>
+        <option value="30" selected>30분 전</option>
+        <option value="60">1시간 전</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-title">🔔 파트너 미복용 알림</div><div class="toggle-sub">파트너가 설정 시간 후에도 안 먹으면 알림</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="notif-partner-miss" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
+    </div>
+    <div class="notif-detail" id="notif-miss-detail" style="display:none">
+      <label>미복용 후 알림 시점</label>
+      <select id="notif-miss-min" onchange="saveNotif()">
+        <option value="30">30분 후</option>
+        <option value="60" selected>1시간 후</option>
+        <option value="120">2시간 후</option>
+        <option value="180">3시간 후</option>
+      </select>
+    </div>
+    <div class="slabel">👤 계정</div>
+    <div id="guest-account-section"></div>
+    <div class="sitem" id="my-email-row"><span class="si-ic">✉️</span><span class="si-lb" id="my-email-item"></span></div>
+    <div class="sitem" id="google-link-row" style="display:none" onclick="linkGoogleAccount()">
+      <span class="si-ic"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>
+      <span class="si-lb" id="google-link-lb">Google 계정 연동하기</span>
+      <span class="si-arr">›</span>
+    </div>
+    <div class="sitem" onclick="showChangePwModal()"><span class="si-ic">🔑</span><span class="si-lb">비밀번호 변경</span><span class="si-arr">›</span></div>
+    <div class="sitem" onclick="togglePushNotif()" id="push-toggle-item"><span class="si-ic">🔔</span><span class="si-lb" id="push-toggle-lb">푸시 알림 켜기</span><span class="si-arr">›</span></div>
+    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    <button class="danger-btn" id="delete-account-btn" onclick="showDeleteAccountModal()">⚠️ 회원 탈퇴</button>
+  </div>
+
+  <button class="fab" id="fab" onclick="go('add')">＋</button>
+  <div class="bnav">
+    <div class="ni on" id="n-home" onclick="go('home')"><div class="ni-ic">🏠</div><div class="ni-lb">홈</div></div>
+    <div class="ni" id="n-connect" onclick="go('connect')"><div class="ni-ic">🔗</div><div class="ni-lb">연결</div></div>
+    <div class="ni" id="n-my" onclick="go('my')"><div class="ni-ic">👤</div><div class="ni-lb">내 정보</div></div>
   </div>
 </div>
+
+<!-- 온보딩 -->
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="onboard-card">
+    <div class="onboard-dots" id="odots"></div>
+    <div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
+    <div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
+    <div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
+    <div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
+    <div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
+    <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
+  </div>
 </div>
-<div class="screen" id="s-connect">
-<div class="chero">
-<div class="chtitle">🔗 파트너 연결</div>
-<div class="chsub">6자리 코드를 공유해서 연결하세요.<br>연결하면 서로의 복용 현황을 실시간으로 확인해요!</div>
-</div>
-<div class="slabel">내 초대 코드</div>
-<div class="codebox">
-<div class="cblabel">상대방에게 이 코드를 알려주세요</div>
-<div class="cdigits" id="my-code-digits"></div>
-<button class="copybtn" onclick="copyCode()">💌 초대 메시지 복사하기</button>
-</div>
-<div class="slabel">코드로 연결하기</div>
-<div class="einput-row">
-<input type="text" id="code-input" placeholder="상대방 6자리 코드" maxlength="6" style="text-transform:uppercase"/>
-<button onclick="connectByCode()">연결</button>
-</div>
-<div class="slabel">연결된 파트너</div>
-<div id="partners-list"></div>
-<div class="slabel">파트너 순서 편집</div>
-<div id="partner-order-list"></div>
-</div>
-<div class="screen" id="s-my">
-<div class="phero">
-<div class="avatar-wrap" onclick="document.getElementById('photo-input').click()">
-<div class="av-xl" id="av-xl"><span>나</span></div>
-<div class="av-cam">📷</div>
-</div>
-<input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)"/>
-<div style="flex:1;min-width:0">
-<div class="name-row"><input type="text" id="my-name" placeholder="이름 입력" autocomplete="nickname"/><button onclick="saveName()">저장</button></div>
-<div style="margin-top:6px;font-size:12px;color:var(--tx3)" id="my-email-lbl"></div>
-</div>
-</div>
-<div class="srow">
-<div class="sbox"><div class="snum" id="stat-rate">0%</div><div class="slbl2">오늘 달성률</div></div>
-<div class="sbox"><div class="snum" id="stat-streak">0</div><div class="slbl2">연속 복용일</div></div>
-<div class="sbox"><div class="snum" id="stat-count">0</div><div class="slbl2">등록된 약</div></div>
-</div>
-<div class="slabel">💊 등록된 약 관리</div>
-<div id="med-manage"></div>
-<div class="slabel">🔔 알림 설정</div>
-<div class="toggle-row">
-<div class="toggle-info"><div class="toggle-title">💚 파트너 복용 완료 알림</div><div class="toggle-sub">파트너가 약을 먹으면 내 폰에 알림</div></div>
-<label class="toggle-wrap"><input type="checkbox" id="notif-partner-check" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
-</div>
-<div class="toggle-row">
-<div class="toggle-info"><div class="toggle-title">⏰ 내 복용 시간 알림</div><div class="toggle-sub">복용 시각 전에 미리 알림 (시각 설정된 약만)</div></div>
-<label class="toggle-wrap"><input type="checkbox" id="notif-self" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
-</div>
-<div class="notif-detail" id="notif-self-detail" style="display:none">
-<label>알림 시점</label>
-<select id="notif-self-min" onchange="saveNotif()">
-<option value="10">10분 전</option>
-<option value="15">15분 전</option>
-<option value="30" selected>30분 전</option>
-<option value="60">1시간 전</option>
-</select>
-</div>
-<div class="toggle-row">
-<div class="toggle-info"><div class="toggle-title">🔔 파트너 미복용 알림</div><div class="toggle-sub">파트너가 설정 시간 후에도 안 먹으면 알림</div></div>
-<label class="toggle-wrap"><input type="checkbox" id="notif-partner-miss" onchange="saveNotif()"/><span class="toggle-slider"></span></label>
-</div>
-<div class="notif-detail" id="notif-miss-detail" style="display:none">
-<label>미복용 후 알림 시점</label>
-<select id="notif-miss-min" onchange="saveNotif()">
-<option value="30">30분 후</option>
-<option value="60" selected>1시간 후</option>
-<option value="120">2시간 후</option>
-<option value="180">3시간 후</option>
-</select>
-</div>
-<div class="slabel">👤 계정</div>
-<div id="guest-account-section"></div>
-<div class="sitem" id="my-email-row"><span class="si-ic">✉️</span><span class="si-lb" id="my-email-item"></span></div>
-<div class="sitem" id="google-link-row" style="display:none" onclick="linkGoogleAccount()">
-<span class="si-ic"><svg width="18" height="18"><use href="#gico"/></svg></span>
-<span class="si-lb" id="google-link-lb">Google 계정 연동하기</span>
-<span class="si-arr">›</span>
-</div>
-<div class="sitem" id="changepw-row" onclick="showChangePwModal()"><span class="si-ic">🔑</span><span class="si-lb">비밀번호 변경</span><span class="si-arr">›</span></div>
-<div class="sitem" onclick="togglePushNotif()" id="push-toggle-item"><span class="si-ic">🔔</span><span class="si-lb" id="push-toggle-lb">푸시 알림 켜기</span><span class="si-arr">›</span></div>
-<button class="logout-btn" onclick="doLogout()">로그아웃</button>
-<button class="danger-btn" id="delete-account-btn" onclick="showDeleteAccountModal()">⚠️ 회원 탈퇴</button>
-</div>
-<button class="fab" id="fab" onclick="go('add')">＋</button>
-<div class="bnav">
-<div class="ni on" id="n-home" onclick="go('home')"><div class="ni-ic">🏠</div><div class="ni-lb">홈</div></div>
-<div class="ni" id="n-garden" onclick="go('garden')"><div class="ni-ic">🌿</div><div class="ni-lb">내 정원</div></div>
-<div class="ni" id="n-connect" onclick="go('connect')"><div class="ni-ic">🔗</div><div class="ni-lb">연결</div></div>
-<div class="ni" id="n-my" onclick="go('my')"><div class="ni-ic">👤</div><div class="ni-lb">내 정보</div></div>
-</div>
-</div>
+
+<!-- 약 시각 수정 모달 -->
 <div class="modal-overlay" id="modal-edit-med" style="display:none">
-<div class="modal-box">
-<div class="modal-title">⏰ 복용 시각 수정</div>
-<div class="modal-field"><label>약 이름</label><input type="text" id="edit-med-name" readonly style="background:var(--g100);color:var(--tx3)"/></div>
-<div class="modal-field">
-<label>복용 시각 (24시간)</label>
-<div style="display:flex;gap:10px;align-items:center">
-<input type="time" id="edit-med-time" style="flex:1;padding:13px 16px;border-radius:var(--rb);border:1.5px solid var(--bd2);background:var(--bg);font-size:var(--fs-base);color:var(--tx);outline:none;font-family:inherit"/>
-<button class="time-skip-btn" id="edit-time-skip" onclick="toggleEditTimeSkip()">시간 없음</button>
+  <div class="modal-box">
+    <div class="modal-title">⏰ 복용 시각 수정</div>
+    <div class="modal-field"><label>약 이름</label><input type="text" id="edit-med-name" readonly style="background:var(--g100);color:var(--tx3)"/></div>
+    <div class="modal-field">
+      <label>복용 시각 (24시간)</label>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="time" id="edit-med-time" style="flex:1;padding:13px 16px;border-radius:var(--rb);border:1.5px solid var(--bd2);background:var(--bg);font-size:var(--fs-base);color:var(--tx);outline:none;font-family:inherit"/>
+        <button class="time-skip-btn" id="edit-time-skip" onclick="toggleEditTimeSkip()">시간 없음</button>
+      </div>
+    </div>
+    <div class="modal-err" id="edit-med-err"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-edit-med')">취소</button>
+      <button class="modal-btn modal-btn-ok" onclick="saveEditMedTime()">저장</button>
+    </div>
+  </div>
 </div>
-</div>
-<div class="modal-err" id="edit-med-err"></div>
-<div class="modal-btns">
-<button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-edit-med')">취소</button>
-<button class="modal-btn modal-btn-ok" onclick="saveEditMedTime()">저장</button>
-</div>
-</div>
-</div>
+
+<!-- 비밀번호 재설정 -->
 <div class="modal-overlay" id="modal-reset" style="display:none">
-<div class="modal-box">
-<div class="modal-title">🔑 비밀번호 재설정</div>
-<div class="modal-field"><label>가입한 이메일</label><input type="email" id="reset-email" placeholder="example@email.com"/></div>
-<div class="modal-err" id="reset-err"></div>
-<div class="modal-btns">
-<button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-reset')">취소</button>
-<button class="modal-btn modal-btn-ok" onclick="doReset()">메일 발송</button>
+  <div class="modal-box">
+    <div class="modal-title">🔑 비밀번호 재설정</div>
+    <div class="modal-field"><label>가입한 이메일</label><input type="email" id="reset-email" placeholder="example@email.com"/></div>
+    <div class="modal-err" id="reset-err"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-reset')">취소</button>
+      <button class="modal-btn modal-btn-ok" onclick="doReset()">메일 발송</button>
+    </div>
+  </div>
 </div>
-</div>
-</div>
+
+<!-- 비밀번호 변경 -->
 <div class="modal-overlay" id="modal-changepw" style="display:none">
-<div class="modal-box">
-<div class="modal-title">🔑 비밀번호 변경</div>
-<div class="modal-field"><label>현재 비밀번호</label><input type="password" id="cur-pw"/></div>
-<div class="modal-field"><label>새 비밀번호</label><input type="password" id="new-pw" placeholder="6자리 이상"/></div>
-<div class="modal-field"><label>새 비밀번호 확인</label><input type="password" id="new-pw2"/></div>
-<div class="modal-err" id="changepw-err"></div>
-<div class="modal-btns">
-<button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-changepw')">취소</button>
-<button class="modal-btn modal-btn-ok" onclick="doChangePw()">변경</button>
+  <div class="modal-box">
+    <div class="modal-title">🔑 비밀번호 변경</div>
+    <div class="modal-field"><label>현재 비밀번호</label><input type="password" id="cur-pw"/></div>
+    <div class="modal-field"><label>새 비밀번호</label><input type="password" id="new-pw" placeholder="6자리 이상"/></div>
+    <div class="modal-field"><label>새 비밀번호 확인</label><input type="password" id="new-pw2"/></div>
+    <div class="modal-err" id="changepw-err"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-changepw')">취소</button>
+      <button class="modal-btn modal-btn-ok" onclick="doChangePw()">변경</button>
+    </div>
+  </div>
 </div>
-</div>
-</div>
+
+<!-- 회원 탈퇴 -->
 <div class="modal-overlay" id="modal-delete-account" style="display:none">
-<div class="modal-box">
-<div class="modal-title">⚠️ 회원 탈퇴</div>
-<div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:16px;line-height:1.7">탈퇴하면 모든 데이터가 삭제되고<br>복구할 수 없어요.</div>
-<div id="delete-pw-wrap"><div class="modal-field"><label>비밀번호 확인</label><input type="password" id="delete-pw"/></div></div>
-<div class="modal-err" id="delete-err"></div>
-<div class="modal-btns">
-<button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-delete-account')">취소</button>
-<button class="modal-btn modal-btn-danger" onclick="doDeleteAccount()">탈퇴</button>
+  <div class="modal-box">
+    <div class="modal-title">⚠️ 회원 탈퇴</div>
+    <div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:16px;line-height:1.7">탈퇴하면 모든 데이터가 삭제되고<br>복구할 수 없어요.</div>
+    <div id="delete-pw-wrap"><div class="modal-field"><label>비밀번호 확인</label><input type="password" id="delete-pw"/></div></div>
+    <div class="modal-err" id="delete-err"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-delete-account')">취소</button>
+      <button class="modal-btn modal-btn-danger" onclick="doDeleteAccount()">탈퇴</button>
+    </div>
+  </div>
 </div>
-</div>
-</div>
+
 <div class="toast" id="toast"><div class="tdot"></div><span id="toast-msg"></span></div>
 <div class="loading" id="loading"><div class="lbox"><div class="spinner"></div><div class="lmsg" id="load-msg">처리 중...</div></div></div>
-
-<div class="modal-overlay" id="modal-plant-pick" style="display:none">
-<div class="modal-box" style="max-height:90vh;overflow-y:auto">
-  <div class="modal-title">🌱 함께 키울 식물을 선택해요!</div>
-  <div style="font-size:13px;color:var(--tx2);margin-bottom:4px;text-align:center">파트너와 함께 키울 식물 1종을 선택하세요</div>
-  <div style="font-size:12px;color:var(--tx3);margin-bottom:8px;text-align:center" id="plant-pick-partner-label"></div>
-  <div style="font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:4px">🌸 꽃</div>
-  <div class="plant-pick-grid" id="plant-pick-grid-flower"></div>
-  <div style="font-size:13px;font-weight:700;color:var(--tx2);margin:4px 0">🌳 나무</div>
-  <div class="plant-pick-grid" id="plant-pick-grid-tree"></div>
-  <div class="modal-field" style="margin-top:8px"><label>식물 이름 짓기 🏷️</label><input type="text" id="plant-name-input" placeholder="예: 우리 해바라기, 뿌뿌" maxlength="12"/></div>
-  <div class="modal-err" id="plant-pick-err"></div>
-  <div class="modal-btns">
-    <button class="modal-btn modal-btn-cancel" onclick="window._plantLock=false;closeModal('modal-plant-pick')">나중에</button>
-    <button class="modal-btn modal-btn-ok" onclick="confirmPlantPick()">시작하기 🌱</button>
-  </div>
-</div>
 </div>
 
-<div class="modal-overlay" id="modal-plant-detail" style="display:none">
-<div class="modal-box" style="max-height:85vh;overflow-y:auto;text-align:center">
-  <div id="pd-plant-display" style="margin:8px 0 12px;cursor:pointer" onclick="wigglePlantDetail()"></div>
-  <div id="pd-plant-name" style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:2px"></div>
-  <div id="pd-plant-type" style="font-size:12px;color:var(--tx3);margin-bottom:14px"></div>
-  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:10px">
-    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">🗺 서식지</div>
-    <div id="pd-habitat" style="font-size:14px;color:var(--tx)"></div>
-  </div>
-  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:10px">
-    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">✨ 특성</div>
-    <div id="pd-trait" style="font-size:14px;color:var(--tx)"></div>
-  </div>
-  <div style="background:var(--g100);border-radius:14px;padding:14px;text-align:left;margin-bottom:14px">
-    <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:6px">💚 성격</div>
-    <div id="pd-personality" style="font-size:14px;color:var(--tx)"></div>
-  </div>
-  <div style="font-size:12px;color:var(--tx3);margin-bottom:14px">식물을 터치하면 반응해요 👆</div>
-  <button class="modal-btn modal-btn-ok" onclick="closeModal('modal-plant-detail')">닫기</button>
-</div>
-</div>
-<div class="notice-overlay" id="notice-garden-update" style="display:none">
-  <div class="notice-box">
-    <div class="notice-emoji">🌿</div>
-    <div class="notice-title">내 정원이 생겼어요!</div>
-    <div class="notice-body">파트너와 함께 식물을 키우는<br><b>내 정원</b> 기능이 추가됐어요!<br><br>연결된 파트너마다 식물을 선택하고<br>약을 먹을 때마다 함께 성장해요 🌱</div>
-    <button class="abtn" onclick="startGardenForExisting()">식물 선택하러 가기 🌸</button>
-    <button style="width:100%;padding:10px;border:none;background:none;color:var(--tx3);font-size:13px;cursor:pointer;margin-top:6px" onclick="closeNoticeGarden()">나중에 할게요</button>
-  </div>
-</div>
-
-</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, deleteUser, signInAnonymously, GoogleAuthProvider, signInWithPopup, linkWithCredential, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+
+
+// ── 배포 경로 설정 (GitHub Pages: /yakssook, Netlify 루트: '') ──
 const BASE_PATH=location.pathname.startsWith('/yakssook')?'/yakssook':'';
+// HEAD 태그 내 경로 동적 보정 (Netlify/GitHub Pages 공통 대응)
 (()=>{
-const bp=BASE_PATH;
-const fix=id=>{const el=document.getElementById(id);if(el&&bp==='')el.setAttribute('href',el.getAttribute('href').replace('/yakssook',''));};
-fix('manifest-link');
-['apple-touch-icon','icon-192-link','icon-512-link'].forEach(fix);
+  const bp=BASE_PATH;
+  const fix=id=>{const el=document.getElementById(id);if(el&&bp==='')el.setAttribute('href',el.getAttribute('href').replace('/yakssook',''));};
+  fix('manifest-link');
+  ['apple-touch-icon','icon-192-link','icon-512-link'].forEach(fix);
 })();
+
 const FB={apiKey:"AIzaSyArCJz3f9WKjIl9N-nzFtQzy7EAE8KjnAM",authDomain:"yakssook-c924f.firebaseapp.com",projectId:"yakssook-c924f",storageBucket:"yakssook-c924f.firebasestorage.app",messagingSenderId:"1053954576861",appId:"1:1053954576861:web:1b8aab71b34a5a2897e634"};
 const VAPID="BKtNTGD4U70OkHBXST3o89XpL7rsRFWTbrr_HcRM6-84w1VmNDoySybxDjBLOlZoabdzVuhp7fDy96kZt2e0rz4";
 const APP_URL=location.origin+BASE_PATH;
@@ -851,148 +757,36 @@ const fbApp=initializeApp(FB);
 const db=getFirestore(fbApp);
 const auth=getAuth(fbApp);
 let messaging=null;
+
 const ICONS=['💊','🌟','🐟','💙','🌿','🍊','🫀','🧴','💉','🫶'];
 const TIMES=['아침 식전','아침 식후','점심 식전','점심 식후','저녁 식전','저녁 식후','취침 전'];
 const DAYS=['월','화','수','목','금','토','일'];
 const WDS=['일','월','화','수','목','금','토'];
 const COLORS=['#E8F8F0','#FFF3E0','#E8EAF6','#FCE4EC','#E0F2F1','#F3E5F5','#FFF8E1'];
-const PLANT_TYPES=[
-  {id:'sunflower',name:'해바라기',emoji:'🌻',type:'flower',color:'#F4C430',stages:['🌱','🌿','🪴','🌻','🌻','🌻','🌻','🌻','🌻','🌟']},
-  {id:'lotus',name:'연꽃',emoji:'🪷',type:'flower',color:'#E8A0BF',stages:['🌱','🌿','🪴','🌺','🪷','🪷','🪷','🪷','🪷','✨']},
-  {id:'lavender',name:'라벤더',emoji:'💜',type:'flower',color:'#9B59B6',stages:['🌱','🌿','🌿','🌸','💜','💜','💜','💜','💜','🌟']},
-  {id:'poppy',name:'푸른양귀비',emoji:'🔵',type:'flower',color:'#3498DB',stages:['🌱','🌿','🪴','🌸','💙','💙','💙','💙','💙','✨']},
-  {id:'apple',name:'사과나무',emoji:'🍎',type:'tree',color:'#E74C3C',stages:['🌱','🌿','🪵','🌲','🌲','🌲','🍎','🍎','🍎','🍏']},
-  {id:'maple',name:'단풍나무',emoji:'🍁',type:'tree',color:'#E67E22',stages:['🌱','🌿','🪵','🌳','🌳','🌳','🍂','🍁','🍁','🌟']},
-  {id:'magnolia',name:'목련나무',emoji:'🌸',type:'tree',color:'#F8C8D4',stages:['🌱','🌿','🪵','🌳','🌳','🌸','🌸','🌸','🌸','✨']},
-  {id:'baobab',name:'바오밥나무',emoji:'🌴',type:'tree',color:'#8B6914',stages:['🌱','🌿','🪵','🌴','🌴','🌴','🌴','🌴','🌴','👑']},
-];
-const PLANT_INFO={
-  sunflower:{habitat:'햇볕이 잘 드는 들판',trait:'태양을 따라 고개를 돌리는 성질이 있어요.',personality:'밝고 활발해요. 약을 잘 챙기는 사람을 좋아해요.',sound:'🌻'},
-  lotus:{habitat:'고요한 연못 위',trait:'진흙 속에서도 아름다운 꽃을 피워요.',personality:'차분하고 깊이 있어요. 꾸준함을 가장 좋아해요.',sound:'🪷'},
-  lavender:{habitat:'향기로운 프로방스 초원',trait:'은은한 향기로 마음을 편안하게 해줘요.',personality:'섬세하고 따뜻해요. 파트너와의 시간을 소중히 여겨요.',sound:'💜'},
-  poppy:{habitat:'파란 하늘 아래 언덕',trait:'바람에 살랑이는 얇은 꽃잎이 매력이에요.',personality:'자유롭고 낭만적이에요. 새로운 하루를 기대해요.',sound:'💙'},
-  apple:{habitat:'시원한 고원 과수원',trait:'봄에 꽃이 피고 가을에 열매를 맺어요.',personality:'다정하고 넉넉해요. 결실을 위해 꾸준히 노력해요.',sound:'🍎'},
-  maple:{habitat:'단풍이 물드는 산속',trait:'계절에 따라 색이 변하는 아름다운 나무예요.',personality:'감수성이 풍부해요. 변화를 두려워하지 않아요.',sound:'🍁'},
-  magnolia:{habitat:'봄을 알리는 정원',trait:'이른 봄 가장 먼저 꽃을 피워요.',personality:'순수하고 용감해요. 새 시작을 함께해요.',sound:'🌸'},
-  baobab:{habitat:'아프리카 광활한 사바나',trait:'수천 년을 사는 생명의 나무예요.',personality:'든든하고 지혜로워요. 함께라면 무엇이든 버텨요.',sound:'🌴'},
-};
 
-// SVG 식물 일러스트 생성 (개선된 버전)
-const getPlantSVG=(typeId,level,size=72)=>{
-  const pt=PLANT_TYPES.find(x=>x.id===typeId);
-  if(!pt)return '<div style="font-size:'+(size*0.6)+'px;line-height:1">🌱</div>';
-  const s=size, cx=s/2, g='#4CAF50', ld='#2E7D32', lg='#66BB6A';
-  const soil=`<ellipse cx="${cx}" cy="${s*0.88}" rx="${s*0.28}" ry="${s*0.08}" fill="#8D6E63" opacity=".35"/>`;
-  const stem=(h,w=0.07)=>`<path d="M${cx} ${s*0.88} Q${cx+s*0.06} ${s*0.65} ${cx} ${s*(0.88-h)}" stroke="${g}" stroke-width="${s*w}" fill="none" stroke-linecap="round"/>`;
-
-  // 새싹 (레벨 0~1)
-  if(level<=1){
-    const sh=0.42;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      ${soil}
-      ${stem(sh,0.06)}
-      <ellipse cx="${cx}" cy="${s*(0.88-sh-0.04)}" rx="${s*0.1}" ry="${s*0.13}" fill="${lg}" transform="rotate(-15,${cx},${s*(0.88-sh-0.04)})"/>
-    </svg>`;
-  }
-
-  // 어린 잎 (레벨 2~3)
-  if(level<=3){
-    const sh=0.5;
-    const leaf=(lx,ly,rx,a)=>`<path d="M${cx} ${s*(0.88-sh*0.3)} Q${lx} ${ly} ${rx} ${ly-s*0.04}" stroke="${ld}" stroke-width="1" fill="${g}" opacity=".9"/>`;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      ${soil}
-      <path d="M${cx} ${s*0.88} C${cx+s*0.04} ${s*0.72} ${cx-s*0.03} ${s*0.55} ${cx} ${s*0.38}" stroke="${g}" stroke-width="${s*0.07}" fill="none" stroke-linecap="round"/>
-      <path d="M${cx} ${s*0.62} Q${s*0.2} ${s*0.45} ${s*0.22} ${s*0.38}" stroke="${ld}" stroke-width="1" fill="${lg}" opacity=".9"/>
-      <path d="M${cx} ${s*0.55} Q${s*0.8} ${s*0.4} ${s*0.78} ${s*0.33}" stroke="${ld}" stroke-width="1" fill="${g}" opacity=".9"/>
-      <ellipse cx="${cx}" cy="${s*0.35}" rx="${s*0.11}" ry="${s*0.14}" fill="${lg}" transform="rotate(-5,${cx},${s*0.35})"/>
-    </svg>`;
-  }
-
-  // 꽃 종류 (레벨 4+)
-  if(pt.type==='flower'){
-    const c=pt.color;
-    const sh=0.56;
-    const stemPath=`<path d="M${cx} ${s*0.88} C${cx+s*0.05} ${s*0.72} ${cx-s*0.04} ${s*0.58} ${cx} ${s*0.42}" stroke="${g}" stroke-width="${s*0.07}" fill="none" stroke-linecap="round"/>`;
-    // 잎들
-    const leaves=`
-      <path d="M${cx} ${s*0.68} Q${s*0.18} ${s*0.58} ${s*0.2} ${s*0.5}" fill="${g}" stroke="${ld}" stroke-width=".8"/>
-      <path d="M${cx} ${s*0.62} Q${s*0.82} ${s*0.52} ${s*0.8} ${s*0.44}" fill="${lg}" stroke="${ld}" stroke-width=".8"/>`;
-    // 꽃잎
-    const pr=s*(level>=7?0.16:0.13);
-    const cr2=s*(level>=7?0.07:0.06);
-    const cy2=s*0.38;
-    let petals='';
-    const pc=typeId==='lavender'?8:6;
-    for(let i=0;i<pc;i++){
-      const a=(i/pc)*Math.PI*2-(Math.PI/2);
-      const px=cx+Math.cos(a)*pr, py=cy2+Math.sin(a)*pr;
-      const opacity=0.8+i%2*0.15;
-      petals+=`<ellipse cx="${px}" cy="${py}" rx="${s*0.1}" ry="${s*0.065}" fill="${c}" opacity="${opacity}" transform="rotate(${i*(360/pc)},${px},${py})"/>`;
-    }
-    const cColor=typeId==='sunflower'?'#5D2F0A':typeId==='lotus'?'#FFB7C5':'#FFEB3B';
-    const glow=level>=8?`<circle cx="${cx}" cy="${cy2}" r="${cr2*1.6}" fill="${cColor}" opacity=".3"/>`:'' ;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-      ${soil}${stemPath}${leaves}${glow}${petals}
-      <circle cx="${cx}" cy="${cy2}" r="${cr2}" fill="${cColor}"/>
-      ${level>=9?`<circle cx="${cx}" cy="${cy2}" r="${cr2*0.55}" fill="#fff" opacity=".6"/>`:''}
-    </svg>`;
-  }
-
-  // 나무 종류 (레벨 4+)
-  const c=pt.color;
-  const trH=s*(0.18+Math.min(level,9)*0.022);
-  const ty=s*0.88-trH;
-  const cr3=s*(0.16+Math.min(level-4,5)*0.022);
-  // 나무 줄기 (더 자연스럽게)
-  const trunkPath=`<path d="M${cx-s*0.055} ${s*0.88} C${cx-s*0.04} ${ty+trH*0.5} ${cx-s*0.02} ${ty+trH*0.3} ${cx} ${ty}" stroke="#5D4037" stroke-width="${s*0.11}" fill="none" stroke-linecap="round"/>`;
-  // 수관 레이어
-  const cr3a=cr3*1.15, cr3b=cr3*0.95, cr3c=cr3*0.9;
-  const crowns=`
-    <circle cx="${cx-cr3*0.35}" cy="${ty-cr3b*0.5}" r="${cr3b}" fill="${ld}"/>
-    <circle cx="${cx+cr3*0.35}" cy="${ty-cr3b*0.45}" r="${cr3b}" fill="${ld}"/>
-    <circle cx="${cx}" cy="${ty-cr3a*0.75}" r="${cr3a}" fill="${g}"/>
-    <circle cx="${cx}" cy="${ty-cr3c*0.5}" r="${cr3c}" fill="${lg}"/>`;
-  // 열매/단풍
-  let fruits='';
-  if(level>=6){
-    const fpos=[[cx-cr3*0.3,ty-cr3*0.4],[cx+cr3*0.4,ty-cr3*0.6],[cx-cr3*0.1,ty-cr3*0.9],[cx+cr3*0.2,ty-cr3*0.3]];
-    fpos.slice(0,level>=8?4:2).forEach(([fx,fy])=>{
-      fruits+=`<circle cx="${fx}" cy="${fy}" r="${s*0.045}" fill="${c}" stroke="${c}" stroke-width="0.5"/>`;
-    });
-  }
-  const trunkWood=`<path d="M${cx-s*0.02} ${ty+trH*0.4} Q${cx+s*0.03} ${ty+trH*0.5} ${cx+s*0.01} ${ty+trH*0.7}" stroke="#8D6E63" stroke-width="${s*0.012}" fill="none" opacity=".5"/>`;
-  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-    ${soil}${trunkPath}${trunkWood}${crowns}${fruits}
-  </svg>`;
-};
-const PLANT_STAGE_NAMES_FLOWER=['씨앗','아기씨앗','첫뿌리','꼬마싹','아기떡잎','본잎','줄기성장','꽃봉오리','개화','성체'];
-const PLANT_STAGE_NAMES_TREE=['씨앗','어린씨앗','발아','유묘','어린나무','가지치기','굵은줄기','작은나무','큰나무','성체'];
-const DOSES_PER_LEVEL=7; // 레벨업에 필요한 복용 횟수
-let plants={}; // {partnerUid: {id,name,type,level,doses,plantCustomName,homePick}}
-let pendingPlantPartnerUid=null;
-let selectedPlantTypeId=null;
-
+// 정서적 알림 메시지
 const POKE_MSGS=[
-'💊 ○○님이 약 먹기를 기다리고 있어요!',
-'🌟 ○○님이 오늘 약 챙겼는지 걱정하고 있어요~',
-'💝 ○○님이 건강 챙기길 응원하고 있어요!',
-'🌿 ○○님이 슬며시 알림을 보냈어요 😊',
-'💌 ○○님이 사랑을 담아 알림을 보냈어요!'
+  '💊 ○○님이 약 먹기를 기다리고 있어요!',
+  '🌟 ○○님이 오늘 약 챙겼는지 걱정하고 있어요~',
+  '💝 ○○님이 건강 챙기길 응원하고 있어요!',
+  '🌿 ○○님이 슬며시 알림을 보냈어요 😊',
+  '💌 ○○님이 사랑을 담아 알림을 보냈어요!'
 ];
 const PRAISE_MSGS=[
-'🌟 ○○님이 "오늘도 잘했어요!" 칭찬 스티커를 보냈어요 👏',
-'💝 ○○님이 "최고예요!" 칭찬을 보냈어요 🎉',
-'🎊 ○○님이 약 잘 먹은 걸 축하해줬어요!',
-'⭐ ○○님이 "참 잘했어요~" 칭찬 도장을 찍어줬어요!'
+  '🌟 ○○님이 "오늘도 잘했어요!" 칭찬 스티커를 보냈어요 👏',
+  '💝 ○○님이 "최고예요!" 칭찬을 보냈어요 🎉',
+  '🎊 ○○님이 약 잘 먹은 걸 축하해줬어요!',
+  '⭐ ○○님이 "참 잘했어요~" 칭찬 도장을 찍어줬어요!'
 ];
+
 let uid='',uname='',ucode='',uemail='',uphoto='';
 let meds=[],logs={},partners=[],pMeds={},pLogs={};
 let notif={partnerCheck:true,selfAlarm:false,selfMin:30,partnerMiss:false,partnerMissMin:60};
-const APP_START_TS=Date.now(); // 앱 시작 시각 - 이 이전 알림은 무시
 let calMode='week',weekOff=0,mYear=new Date().getFullYear(),mMonth=new Date().getMonth();
 let selDate=null,selPanel='me',calPartnerIdx=-1;
 let unsubs=[],onboardStep=0,editMedId='',timeSkipMode=false,editTimeSkipMode=false;
-const ONBOARD_TOTAL=6;
+const ONBOARD_TOTAL=5;
+
 const dKey=(y,m,d)=>`${y}-${m+1}-${d}`;
 const todayKey=()=>{const n=new Date();return dKey(n.getFullYear(),n.getMonth(),n.getDate());};
 const todayDow=()=>WDS[new Date().getDay()];
@@ -1002,1285 +796,830 @@ const isOk=mid=>!!(logs[todayKey()]?.[mid]);
 const genCode=()=>Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 const $=id=>document.getElementById(id);
 const getPDN=p=>p.nickname||p.name||'파트너';
+
+// 햅틱
+
+// ── 사운드 피드백 (Web Audio API) ──
 let audioCtx=null;
 const getAudioCtx = async function(){
-if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-if(audioCtx.state==='suspended') await audioCtx.resume();
-return audioCtx;
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') await audioCtx.resume();
+  return audioCtx;
 }
 const playSound = async function(type){
-try{
-const ctx=await getAudioCtx();
-const g=ctx.createGain();
-g.connect(ctx.destination);
-const now=ctx.currentTime;
-if(type==='check'){
-[523.25,783.99].forEach((freq,i)=>{
-const o=ctx.createOscillator();
-o.type='sine'; o.frequency.value=freq;
-const gain=ctx.createGain();
-gain.gain.setValueAtTime(0,now+i*.12);
-gain.gain.linearRampToValueAtTime(.25,now+i*.12+.02);
-gain.gain.exponentialRampToValueAtTime(.001,now+i*.12+.3);
-o.connect(gain); gain.connect(ctx.destination);
-o.start(now+i*.12); o.stop(now+i*.12+.3);
-});
-} else if(type==='poke'){
-[300,400,300].forEach((freq,i)=>{
-const o=ctx.createOscillator();
-o.type='triangle'; o.frequency.value=freq;
-const gain=ctx.createGain();
-gain.gain.setValueAtTime(0,now+i*.1);
-gain.gain.linearRampToValueAtTime(.2,now+i*.1+.01);
-gain.gain.exponentialRampToValueAtTime(.001,now+i*.1+.15);
-o.connect(gain); gain.connect(ctx.destination);
-o.start(now+i*.1); o.stop(now+i*.1+.15);
-});
-} else if(type==='praise'){
-[523,659,784,1047].forEach((freq,i)=>{
-const o=ctx.createOscillator();
-o.type='sine'; o.frequency.value=freq;
-const gain=ctx.createGain();
-gain.gain.setValueAtTime(0,now+i*.08);
-gain.gain.linearRampToValueAtTime(.2,now+i*.08+.02);
-gain.gain.exponentialRampToValueAtTime(.001,now+i*.08+.25);
-o.connect(gain); gain.connect(ctx.destination);
-o.start(now+i*.08); o.stop(now+i*.08+.25);
-});
-} else if(type==='notif'){
-const o=ctx.createOscillator();
-o.type='sine';
-o.frequency.setValueAtTime(600,now);
-o.frequency.exponentialRampToValueAtTime(400,now+.15);
-g.gain.setValueAtTime(0,now);
-g.gain.linearRampToValueAtTime(.2,now+.02);
-g.gain.exponentialRampToValueAtTime(.001,now+.25);
-o.connect(g); o.start(now); o.stop(now+.25);
-} else if(type==='error'){
-const o=ctx.createOscillator();
-o.type='sawtooth'; o.frequency.value=150;
-g.gain.setValueAtTime(.15,now);
-g.gain.exponentialRampToValueAtTime(.001,now+.2);
-o.connect(g); o.start(now); o.stop(now+.2);
+  try{
+    const ctx=await getAudioCtx();
+    const g=ctx.createGain();
+    g.connect(ctx.destination);
+    const now=ctx.currentTime;
+    if(type==='check'){
+      // 복용 체크: 밝고 경쾌한 "딩~" 두 음
+      [523.25,783.99].forEach((freq,i)=>{
+        const o=ctx.createOscillator();
+        o.type='sine'; o.frequency.value=freq;
+        const gain=ctx.createGain();
+        gain.gain.setValueAtTime(0,now+i*.12);
+        gain.gain.linearRampToValueAtTime(.25,now+i*.12+.02);
+        gain.gain.exponentialRampToValueAtTime(.001,now+i*.12+.3);
+        o.connect(gain); gain.connect(ctx.destination);
+        o.start(now+i*.12); o.stop(now+i*.12+.3);
+      });
+    } else if(type==='poke'){
+      // 쿡 찌르기: 통통 튀는 소리
+      [300,400,300].forEach((freq,i)=>{
+        const o=ctx.createOscillator();
+        o.type='triangle'; o.frequency.value=freq;
+        const gain=ctx.createGain();
+        gain.gain.setValueAtTime(0,now+i*.1);
+        gain.gain.linearRampToValueAtTime(.2,now+i*.1+.01);
+        gain.gain.exponentialRampToValueAtTime(.001,now+i*.1+.15);
+        o.connect(gain); gain.connect(ctx.destination);
+        o.start(now+i*.1); o.stop(now+i*.1+.15);
+      });
+    } else if(type==='praise'){
+      // 칭찬: 반짝이는 팡파레
+      [523,659,784,1047].forEach((freq,i)=>{
+        const o=ctx.createOscillator();
+        o.type='sine'; o.frequency.value=freq;
+        const gain=ctx.createGain();
+        gain.gain.setValueAtTime(0,now+i*.08);
+        gain.gain.linearRampToValueAtTime(.2,now+i*.08+.02);
+        gain.gain.exponentialRampToValueAtTime(.001,now+i*.08+.25);
+        o.connect(gain); gain.connect(ctx.destination);
+        o.start(now+i*.08); o.stop(now+i*.08+.25);
+      });
+    } else if(type==='notif'){
+      // 알림 수신: 부드러운 "뿅"
+      const o=ctx.createOscillator();
+      o.type='sine';
+      o.frequency.setValueAtTime(600,now);
+      o.frequency.exponentialRampToValueAtTime(400,now+.15);
+      g.gain.setValueAtTime(0,now);
+      g.gain.linearRampToValueAtTime(.2,now+.02);
+      g.gain.exponentialRampToValueAtTime(.001,now+.25);
+      o.connect(g); o.start(now); o.stop(now+.25);
+    } else if(type==='error'){
+      // 오류: 낮은 "뚝"
+      const o=ctx.createOscillator();
+      o.type='sawtooth'; o.frequency.value=150;
+      g.gain.setValueAtTime(.15,now);
+      g.gain.exponentialRampToValueAtTime(.001,now+.2);
+      o.connect(g); o.start(now); o.stop(now+.2);
+    }
+  }catch(e){console.log('sound error:',e);}
 }
-}catch(e){console.log('sound error:',e);}
-}
+
+// 시간 포맷
 const fmtMedTime=m=>{let s=m.time||'';if(m.timeExact)s+=` (${m.timeExact})`;return s;};
+
+// ── AUTH ──
 window.setTab=tab=>{
-$('tab-in').classList.toggle('on',tab==='in');
-$('tab-up').classList.toggle('on',tab==='up');
-$('a-signup-fields').style.display=tab==='up'?'block':'none';
-$('a-btn').textContent=tab==='in'?'로그인':'회원가입';
-$('a-reset-link').style.display=tab==='in'?'block':'none';
-$('a-err').textContent='';
+  $('tab-in').classList.toggle('on',tab==='in');
+  $('tab-up').classList.toggle('on',tab==='up');
+  $('a-signup-fields').style.display=tab==='up'?'block':'none';
+  $('a-btn').textContent=tab==='in'?'로그인':'회원가입';
+  $('a-reset-link').style.display=tab==='in'?'block':'none';
+  $('a-err').textContent='';
 };
+
 window.doAuth=async()=>{
-const email=$('a-email').value.trim(),pw=$('a-pw').value,pw2=$('a-pw2').value,name=$('a-name').value.trim();
-const isUp=$('tab-up').classList.contains('on');
-const errEl=$('a-err');errEl.textContent='';
-if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
-if(isUp){if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않아요.';return;}if(!name){errEl.textContent='이름을 입력해주세요.';return;}}
-showLoad(isUp?'계정 만드는 중...':'로그인 중...');
-try{
-if(isUp){const code=genCode();const cred=await createUserWithEmailAndPassword(auth,email,pw);await setDoc(doc(db,'users',cred.user.uid),{uid:cred.user.uid,name,email,code,photoURL:'',notif,isNew:true,createdAt:serverTimestamp()});}
-else{await signInWithEmailAndPassword(auth,email,pw);}
-}catch(e){hideLoad();const M={'auth/email-already-in-use':'이미 가입된 이메일이에요.','auth/invalid-email':'이메일 형식을 확인해주세요.','auth/weak-password':'6자리 이상 입력해주세요.','auth/user-not-found':'가입되지 않은 이메일이에요.','auth/wrong-password':'비밀번호가 틀렸어요.','auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.','auth/too-many-requests':'잠시 후 다시 시도해주세요.'};errEl.textContent=M[e.code]||'오류: '+e.message;}
+  
+  const email=$('a-email').value.trim(),pw=$('a-pw').value,pw2=$('a-pw2').value,name=$('a-name').value.trim();
+  const isUp=$('tab-up').classList.contains('on');
+  const errEl=$('a-err');errEl.textContent='';
+  if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
+  if(isUp){if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않아요.';return;}if(!name){errEl.textContent='이름을 입력해주세요.';return;}}
+  showLoad(isUp?'계정 만드는 중...':'로그인 중...');
+  try{
+    if(isUp){const code=genCode();const cred=await createUserWithEmailAndPassword(auth,email,pw);await setDoc(doc(db,'users',cred.user.uid),{uid:cred.user.uid,name,email,code,photoURL:'',notif,isNew:true,createdAt:serverTimestamp()});}
+    else{await signInWithEmailAndPassword(auth,email,pw);}
+  }catch(e){hideLoad();const M={'auth/email-already-in-use':'이미 가입된 이메일이에요.','auth/invalid-email':'이메일 형식을 확인해주세요.','auth/weak-password':'6자리 이상 입력해주세요.','auth/user-not-found':'가입되지 않은 이메일이에요.','auth/wrong-password':'비밀번호가 틀렸어요.','auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.','auth/too-many-requests':'잠시 후 다시 시도해주세요.'};errEl.textContent=M[e.code]||'오류: '+e.message;}
 };
+
 window.doLogout=async()=>{if(!confirm('로그아웃 할까요?'))return;unsubs.forEach(u=>u&&u());unsubs=[];await signOut(auth);};
 window.showResetModal=()=>{$('reset-email').value=$('a-email').value;$('reset-err').textContent='';$('modal-reset').style.display='flex';};
 window.doReset=async()=>{const email=$('reset-email').value.trim();if(!email){$('reset-err').textContent='이메일을 입력해주세요.';return;}showLoad('발송 중...');try{await sendPasswordResetEmail(auth,email);closeModal('modal-reset');toast('📧 재설정 링크를 이메일로 발송했어요!');}catch(e){$('reset-err').textContent='발송 실패';}finally{hideLoad();}};
 window.showChangePwModal=()=>{$('cur-pw').value='';$('new-pw').value='';$('new-pw2').value='';$('changepw-err').textContent='';$('modal-changepw').style.display='flex';};
 window.doChangePw=async()=>{const cur=$('cur-pw').value,np=$('new-pw').value,np2=$('new-pw2').value;if(!cur||!np){$('changepw-err').textContent='모든 항목을 입력해주세요.';return;}if(np!==np2){$('changepw-err').textContent='새 비밀번호가 일치하지 않아요.';return;}if(np.length<6){$('changepw-err').textContent='6자리 이상이어야 해요.';return;}showLoad('변경 중...');try{const cred=EmailAuthProvider.credential(auth.currentUser.email,cur);await reauthenticateWithCredential(auth.currentUser,cred);await updatePassword(auth.currentUser,np);closeModal('modal-changepw');toast('비밀번호가 변경됐어요!');}catch(e){$('changepw-err').textContent=e.code==='auth/wrong-password'?'현재 비밀번호가 틀렸어요.':'변경 실패';}finally{hideLoad();}};
 window.showDeleteAccountModal=()=>{
-const user=auth.currentUser;if(!user)return;
-const hasEmail=user.providerData.some(p=>p.providerId==='password');
-const pwField=$('delete-pw-wrap');
-if(pwField)pwField.style.display=hasEmail?'block':'none';
-$('delete-pw').value='';$('delete-err').textContent='';$('modal-delete-account').style.display='flex';
+  const user=auth.currentUser;if(!user)return;
+  const hasEmail=user.providerData.some(p=>p.providerId==='password');
+  const pwField=$('delete-pw-wrap');
+  if(pwField)pwField.style.display=hasEmail?'block':'none';
+  $('delete-pw').value='';$('delete-err').textContent='';$('modal-delete-account').style.display='flex';
 };
 window.doDeleteAccount=async()=>{
-const user=auth.currentUser;if(!user)return;
-if(!confirm('정말로 탈퇴할까요?'))return;
-showLoad('탈퇴 처리 중...');
-try{
-const hasEmail=user.providerData.some(p=>p.providerId==='password');
-const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
-if(hasEmail){
-const pw=$('delete-pw').value;
-if(!pw){hideLoad();$('delete-err').textContent='비밀번호를 입력해주세요.';return;}
-const cred=EmailAuthProvider.credential(user.email,pw);
-await reauthenticateWithCredential(user,cred);
-}else if(hasGoogle){
-await reauthenticateWithPopup(user,googleProvider);
-}
-for(const p of partners){try{await deleteDoc(doc(db,'users',p.uid,'partners',uid));}catch(e){}}
-// plants 컬렉션 삭제
-for(const puid of Object.keys(plants)){try{await deleteDoc(doc(db,'users',uid,'plants',puid));}catch(e){}}
-await deleteDoc(doc(db,'users',uid));
-closeModal('modal-delete-account');
-await deleteUser(user);
-}catch(e){
-$('delete-err').textContent=e.code==='auth/wrong-password'?'비밀번호가 틀렸어요.':e.code==='auth/popup-closed-by-user'?'재인증이 취소됐어요.':'탈퇴 실패: '+e.message;
-}finally{hideLoad();}
+  const user=auth.currentUser;if(!user)return;
+  if(!confirm('정말로 탈퇴할까요?'))return;
+  showLoad('탈퇴 처리 중...');
+  try{
+    const hasEmail=user.providerData.some(p=>p.providerId==='password');
+    const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
+    if(hasEmail){
+      const pw=$('delete-pw').value;
+      if(!pw){hideLoad();$('delete-err').textContent='비밀번호를 입력해주세요.';return;}
+      const cred=EmailAuthProvider.credential(user.email,pw);
+      await reauthenticateWithCredential(user,cred);
+    }else if(hasGoogle){
+      await reauthenticateWithPopup(user,googleProvider);
+    }
+    // 파트너 연결 해제 + Firestore 삭제
+    for(const p of partners){try{await deleteDoc(doc(db,'users',p.uid,'partners',uid));}catch(e){}}
+    await deleteDoc(doc(db,'users',uid));
+    closeModal('modal-delete-account');
+    await deleteUser(user);
+  }catch(e){
+    $('delete-err').textContent=e.code==='auth/wrong-password'?'비밀번호가 틀렸어요.':e.code==='auth/popup-closed-by-user'?'재인증이 취소됐어요.':'탈퇴 실패: '+e.message;
+  }finally{hideLoad();}
 };
 window.closeModal=id=>{$(id).style.display='none';};
+
 const googleProvider = new GoogleAuthProvider();
 let isAnonymous = false;
+
+// 게스트로 시작
 window.startAsGuest=async()=>{
-showLoad('게스트 모드로 시작하는 중...');
-try{await signInAnonymously(auth);}
-catch(e){hideLoad();toast('게스트 시작 실패: '+e.message);}
+  showLoad('게스트 모드로 시작하는 중...');
+  try{await signInAnonymously(auth);}
+  catch(e){hideLoad();toast('게스트 시작 실패: '+e.message);}
 };
+
+// 구글 로그인
 window.signInWithGoogle=async()=>{
-try{
-const result=await signInWithPopup(auth,googleProvider);
-showLoad('로그인 중...');
-const user=result.user;
-const snap=await getDoc(doc(db,'users',user.uid));
-if(!snap.exists()){
-const code=genCode();
-await setDoc(doc(db,'users',user.uid),{uid:user.uid,name:user.displayName||'',email:user.email||'',code,photoURL:user.photoURL||'',notif,isNew:true,createdAt:serverTimestamp()});
-}
-}catch(e){hideLoad();if(e.code!=='auth/popup-closed-by-user')toast('구글 로그인 실패: '+e.message);}
+  try{
+    const result=await signInWithPopup(auth,googleProvider);
+    showLoad('로그인 중...');
+    const user=result.user;
+    const snap=await getDoc(doc(db,'users',user.uid));
+    if(!snap.exists()){
+      const code=genCode();
+      await setDoc(doc(db,'users',user.uid),{uid:user.uid,name:user.displayName||'',email:user.email||'',code,photoURL:user.photoURL||'',notif,isNew:true,createdAt:serverTimestamp()});
+    }
+  }catch(e){hideLoad();if(e.code!=='auth/popup-closed-by-user')toast('구글 로그인 실패: '+e.message);}
 };
+
+// 익명 → 구글 업그레이드
 window.upgradeWithGoogle=async()=>{
-try{
-const result=await linkWithPopup(auth.currentUser,googleProvider);
-showLoad('계정 연동 중...');
-const user=result.user;
-await setDoc(doc(db,'users',uid),{email:user.email||'',name:uname||user.displayName||'',photoURL:uphoto||user.photoURL||'',isAnonymous:false},{merge:true});
-closeModal('modal-upgrade');isAnonymous=false;updateGuestBanner();
-toast('🎉 계정 연동 완료! 어디서든 데이터를 불러올 수 있어요');
-}catch(e){
-if(e.code==='auth/credential-already-in-use')toast('이미 다른 계정에 연결된 구글 계정이에요.');
-else if(e.code!=='auth/popup-closed-by-user')toast('연동 실패: '+e.message);
-}finally{hideLoad();}
+  try{
+    const result=await linkWithPopup(auth.currentUser,googleProvider);
+    showLoad('계정 연동 중...');
+    const user=result.user;
+    await setDoc(doc(db,'users',uid),{email:user.email||'',name:uname||user.displayName||'',photoURL:uphoto||user.photoURL||'',isAnonymous:false},{merge:true});
+    closeModal('modal-upgrade');isAnonymous=false;updateGuestBanner();
+    toast('🎉 계정 연동 완료! 어디서든 데이터를 불러올 수 있어요');
+  }catch(e){
+    if(e.code==='auth/credential-already-in-use')toast('이미 다른 계정에 연결된 구글 계정이에요.');
+    else if(e.code!=='auth/popup-closed-by-user')toast('연동 실패: '+e.message);
+  }finally{hideLoad();}
 };
+
+// 익명 → 이메일 업그레이드
 window.showUpgradeEmail=()=>{$('upgrade-email-form').style.display='block';};
 window.doUpgradeEmail=async()=>{
-const email=$('upgrade-email').value.trim(),pw=$('upgrade-pw').value,pw2=$('upgrade-pw2').value,name=$('upgrade-name').value.trim();
-const errEl=$('upgrade-err');errEl.textContent='';
-if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
-if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않아요.';return;}
-if(!name){errEl.textContent='이름을 입력해주세요.';return;}
-showLoad('계정 만드는 중...');
-try{
-const cred=EmailAuthProvider.credential(email,pw);
-await linkWithCredential(auth.currentUser,cred);
-if(name)uname=name;
-await setDoc(doc(db,'users',uid),{email,name:uname,isAnonymous:false},{merge:true});
-closeModal('modal-upgrade');isAnonymous=false;updateGuestBanner();syncMyUI();
-toast('🎉 계정 연동 완료! 어디서든 데이터를 불러올 수 있어요');
-}catch(e){
-const M={'auth/email-already-in-use':'이미 사용 중인 이메일이에요.','auth/invalid-email':'이메일 형식을 확인해주세요.','auth/weak-password':'6자리 이상이어야 해요.'};
-errEl.textContent=M[e.code]||'연동 실패: '+e.message;
-}finally{hideLoad();}
+  const email=$('upgrade-email').value.trim(),pw=$('upgrade-pw').value,pw2=$('upgrade-pw2').value,name=$('upgrade-name').value.trim();
+  const errEl=$('upgrade-err');errEl.textContent='';
+  if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
+  if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않아요.';return;}
+  if(!name){errEl.textContent='이름을 입력해주세요.';return;}
+  showLoad('계정 만드는 중...');
+  try{
+    const cred=EmailAuthProvider.credential(email,pw);
+    await linkWithCredential(auth.currentUser,cred);
+    if(name)uname=name;
+    await setDoc(doc(db,'users',uid),{email,name:uname,isAnonymous:false},{merge:true});
+    closeModal('modal-upgrade');isAnonymous=false;updateGuestBanner();syncMyUI();
+    toast('🎉 계정 연동 완료! 어디서든 데이터를 불러올 수 있어요');
+  }catch(e){
+    const M={'auth/email-already-in-use':'이미 사용 중인 이메일이에요.','auth/invalid-email':'이메일 형식을 확인해주세요.','auth/weak-password':'6자리 이상이어야 해요.'};
+    errEl.textContent=M[e.code]||'연동 실패: '+e.message;
+  }finally{hideLoad();}
 };
+
+// 기존 이메일 계정 → 구글 연동
 window.linkGoogleAccount=async()=>{
-const user=auth.currentUser;if(!user)return;
-const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
-if(hasGoogle){toast('이미 Google 계정이 연동되어 있어요!');return;}
-try{
-await linkWithPopup(user,googleProvider);
-showLoad('연동 중...');
-updateGoogleLinkBtn();
-toast('🎉 Google 계정 연동 완료!');
-}catch(e){
-if(e.code==='auth/credential-already-in-use')toast('이미 다른 계정에 연결된 Google 계정이에요.');
-else if(e.code!=='auth/popup-closed-by-user')toast('연동 실패: '+e.message);
-}finally{hideLoad();}
+  const user=auth.currentUser;if(!user)return;
+  const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
+  if(hasGoogle){toast('이미 Google 계정이 연동되어 있어요!');return;}
+  try{
+    await linkWithPopup(user,googleProvider);
+    showLoad('연동 중...');
+    updateGoogleLinkBtn();
+    toast('🎉 Google 계정 연동 완료!');
+  }catch(e){
+    if(e.code==='auth/credential-already-in-use')toast('이미 다른 계정에 연결된 Google 계정이에요.');
+    else if(e.code!=='auth/popup-closed-by-user')toast('연동 실패: '+e.message);
+  }finally{hideLoad();}
 };
+
+// 구글 연동 버튼 상태 업데이트
 const updateGoogleLinkBtn = function(){
-const row=$('google-link-row');const lb=$('google-link-lb');if(!row||!lb)return;
-const user=auth.currentUser;if(!user){row.style.display='none';return;}
-const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
-if(!isAnonymous){
-row.style.display='flex';
-lb.textContent=hasGoogle?'Google 계정 연동됨 ✓':'Google 계정 연동하기';
-row.style.opacity=hasGoogle?'0.5':'1';
-row.style.cursor=hasGoogle?'default':'pointer';
-row.onclick=hasGoogle?null:linkGoogleAccount;
-}else{
-row.style.display='none';
+  const row=$('google-link-row');const lb=$('google-link-lb');if(!row||!lb)return;
+  const user=auth.currentUser;if(!user){row.style.display='none';return;}
+  const hasGoogle=user.providerData.some(p=>p.providerId==='google.com');
+  // 이메일 계정인 경우에만 표시 (익명 아닐 때)
+  if(!isAnonymous){
+    row.style.display='flex';
+    lb.textContent=hasGoogle?'Google 계정 연동됨 ✓':'Google 계정 연동하기';
+    row.style.opacity=hasGoogle?'0.5':'1';
+    row.style.cursor=hasGoogle?'default':'pointer';
+    row.onclick=hasGoogle?null:linkGoogleAccount;
+  }else{
+    row.style.display='none';
+  }
 }
-}
+
+// 파트너 연결 전 계정 유도
 const checkGuestBeforeConnect = function(){
-if(isAnonymous){$('modal-upgrade').style.display='flex';return true;}
-return false;
+  if(isAnonymous){$('modal-upgrade').style.display='flex';return true;}
+  return false;
 }
+
+// 게스트 배너
 const updateGuestBanner = function(){
-const ex=$('guest-banner');if(ex)ex.remove();
-if(!isAnonymous)return;
-const b=document.createElement('div');b.id='guest-banner';
-b.style.cssText='margin:10px 14px 0;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:var(--rc);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)';
-b.innerHTML=`<div style="flex:1"><div style="font-size:14px;font-weight:700;color:#E65100">👋 게스트 모드</div><div style="font-size:12px;color:#BF360C;margin-top:2px">계정을 만들면 파트너 연결 + 데이터 영구 보관!</div></div><button onclick="document.getElementById('modal-upgrade').style.display='flex'" style="padding:8px 14px;border-radius:var(--rp);background:#FF9800;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap">계정 만들기</button>`;
-const pb=$('push-banner');if(pb)pb.after(b);else{const ml=$('med-list');if(ml)ml.before(b);}
+  const ex=$('guest-banner');if(ex)ex.remove();
+  if(!isAnonymous)return;
+  const b=document.createElement('div');b.id='guest-banner';
+  b.style.cssText='margin:10px 14px 0;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:var(--rc);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)';
+  b.innerHTML=`<div style="flex:1"><div style="font-size:14px;font-weight:700;color:#E65100">👋 게스트 모드</div><div style="font-size:12px;color:#BF360C;margin-top:2px">계정을 만들면 파트너 연결 + 데이터 영구 보관!</div></div><button onclick="document.getElementById('modal-upgrade').style.display='flex'" style="padding:8px 14px;border-radius:var(--rp);background:#FF9800;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap">계정 만들기</button>`;
+  const pb=$('push-banner');if(pb)pb.after(b);else{const ml=$('med-list');if(ml)ml.before(b);}
 }
+
+// 로그인 상태 영구 유지
 setPersistence(auth, browserLocalPersistence).catch(()=>{});
 const hideSplash = function(){const s=$('splash');s.classList.add('hide');setTimeout(()=>s.style.display='none',500);}
+
 onAuthStateChanged(auth,async user=>{
-if(user){
-showLoad('불러오는 중...');uid=user.uid;uemail=user.email||'';
-isAnonymous=user.isAnonymous;
-try{
-const snap=await getDoc(doc(db,'users',uid));
-if(snap.exists()){const d=snap.data();uname=d.name||'';ucode=d.code||genCode();uphoto=d.photoURL||'';notif={...notif,...(d.notif||{})};if(!d.code)await setDoc(doc(db,'users',uid),{code:ucode},{merge:true});if(d.isNew){await setDoc(doc(db,'users',uid),{isNew:false},{merge:true});setTimeout(()=>showOnboard(),800);}}
-else{
-ucode=genCode();
-await setDoc(doc(db,'users',uid),{uid,name:'',email:'',code:ucode,photoURL:'',notif,isAnonymous:true,isNew:true,createdAt:serverTimestamp()});
-setTimeout(()=>showOnboard(),800);
-}
-}catch(e){console.error(e);}
-$('auth-wrap').classList.remove('show');$('main-wrap').classList.add('show');
-buildAddForm();syncMyUI();
-registerSW().catch(e=>console.warn(e));await initMsg();
-if(!window._listenersStarted||window._lastUid!==uid){
-  window._listenersStarted=true;
-  window._lastUid=uid;
-  window._firedNotifs=new Set();
-  unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
-  startListeners();
-}
-updateGuestBanner();
-hideLoad();hideSplash();
-}else{
-unsubs.forEach(u=>u&&u());unsubs=[];meds=[];logs={};partners=[];pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
-$('main-wrap').classList.remove('show');$('auth-wrap').classList.add('show');hideSplash();
-}
+  if(user){
+    showLoad('불러오는 중...');uid=user.uid;uemail=user.email||'';
+    isAnonymous=user.isAnonymous;
+    try{
+      const snap=await getDoc(doc(db,'users',uid));
+      if(snap.exists()){const d=snap.data();uname=d.name||'';ucode=d.code||genCode();uphoto=d.photoURL||'';notif={...notif,...(d.notif||{})};if(!d.code)await setDoc(doc(db,'users',uid),{code:ucode},{merge:true});if(d.isNew){await setDoc(doc(db,'users',uid),{isNew:false},{merge:true});setTimeout(()=>showOnboard(),800);}}
+      else{
+        // 익명 유저 첫 접속 - Firestore 문서 생성
+        ucode=genCode();
+        await setDoc(doc(db,'users',uid),{uid,name:'',email:'',code:ucode,photoURL:'',notif,isAnonymous:true,isNew:true,createdAt:serverTimestamp()});
+        setTimeout(()=>showOnboard(),800);
+      }
+    }catch(e){console.error(e);}
+    $('auth-wrap').classList.remove('show');$('main-wrap').classList.add('show');
+    buildAddForm();renderCodeDigits();syncMyUI();
+    registerSW().catch(e=>console.warn(e));await initMsg();startListeners();
+    updateGuestBanner();
+    hideLoad();hideSplash();
+  }else{
+    unsubs.forEach(u=>u&&u());unsubs=[];meds=[];logs={};partners=[];pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
+    $('main-wrap').classList.remove('show');$('auth-wrap').classList.add('show');hideSplash();
+  }
 });
+
+// ── 온보딩 ──
 const showOnboard = function(){onboardStep=0;renderOnboard();$('onboard').style.display='flex';}
 const renderOnboard = function(){document.querySelectorAll('.onboard-step').forEach((s,i)=>s.classList.toggle('active',i===onboardStep));const dots=$('odots');dots.innerHTML='';for(let i=0;i<ONBOARD_TOTAL;i++){const d=document.createElement('div');d.className='odot'+(i===onboardStep?' on':'');dots.appendChild(d);}$('onboard-btn').textContent=onboardStep===ONBOARD_TOTAL-1?'시작하기 🚀':'다음 →';}
 window.nextOnboard=()=>{if(onboardStep<ONBOARD_TOTAL-1){onboardStep++;renderOnboard();}else{$('onboard').style.display='none';}};
+
+// ── UI 동기화 ──
 const syncMyUI = function(){
-const xl=$('av-xl');
-if(uphoto){xl.innerHTML=`<img src="${uphoto}" alt="프로필"/>`;}
-else{xl.innerHTML=`<span>${uname?uname[0]:'나'}</span>`;}
-const logoSub=$('logo-sub');
-const MSGS=[
-n=>`${n}님 안녕하세요 👋`,
-()=>`오늘도 건강한 하루예요 🌿`,
-()=>`💡 약은 정해진 시간에 먹을수록 효과가 좋아요`,
-()=>`물과 함께 먹으면 흡수가 더 잘 돼요 💧`,
-n=>`${n}님, 오늘 약 챙기셨나요? 😊`,
-()=>`💊 약을 쪼개면 효과가 달라질 수 있어요`,
-()=>`식후 30분이 약 흡수에 가장 좋아요 🍚`,
-()=>`꾸준한 복용이 건강의 시작이에요 🌟`,
-()=>`오늘도 서로 챙겨주는 하루 되세요 💚`,
-()=>`알코올과 약은 함께 먹으면 안 돼요 🚫`,
-()=>`냉장 보관 약은 꼭 냉장고에! ❄️`,
-()=>`약을 건너뛰었다면 2배로 먹지 마세요`,
-n=>`${n}님과 파트너, 오늘도 함께 건강해요 🤝`,
-()=>`유통기한 지난 약은 꼭 폐기해 주세요 🗑️`,
-()=>`햇빛 드는 곳에 약을 보관하면 성분이 변해요 ☀️`,
-];
-if(logoSub){
-const fn=MSGS[Math.floor(Math.random()*MSGS.length)];
-logoSub.textContent=fn(uname||'');
-}
-$('my-name').value=uname;$('my-email-lbl').textContent=uemail;$('my-email-item').textContent=uemail;
-$('notif-partner-check').checked=notif.partnerCheck;
-$('notif-self').checked=notif.selfAlarm;$('notif-self-detail').style.display=notif.selfAlarm?'flex':'none';$('notif-self-min').value=notif.selfMin||30;
-$('notif-partner-miss').checked=notif.partnerMiss;$('notif-miss-detail').style.display=notif.partnerMiss?'flex':'none';$('notif-miss-min').value=notif.partnerMissMin||60;
-const guestSection=$('guest-account-section');
-const emailRow=$('my-email-row');
-if(isAnonymous){
-if(guestSection)guestSection.innerHTML=`<div style="margin:0 14px 8px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:var(--rc);padding:16px;box-shadow:var(--shadow)"><div style="font-size:14px;font-weight:700;color:#E65100;margin-bottom:4px">👋 게스트 모드</div><div style="font-size:12px;color:#BF360C;margin-bottom:12px;line-height:1.5">계정을 만들면 어디서든 데이터를 불러올 수 있어요.</div><button onclick="document.getElementById('modal-upgrade').style.display='flex'" style="width:100%;padding:12px;border-radius:var(--rp);background:#FF9800;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer">계정 만들기</button></div>`;
-if(emailRow)emailRow.style.display='none';
-}else{
-if(guestSection)guestSection.innerHTML='';
-if(emailRow)emailRow.style.display='flex';
-}
-const deleteBtn=$('delete-account-btn');
-if(deleteBtn)deleteBtn.style.display=isAnonymous?'none':'block';
-// 비밀번호 변경: 이메일 로그인 계정만 표시
-const changePwRow=$('changepw-row');
-if(changePwRow){
-  const user=auth.currentUser;
-  const hasEmail=user&&user.providerData.some(p=>p.providerId==='password');
-  changePwRow.style.display=hasEmail?'flex':'none';
-}
-renderCodeDigits();
-updateGoogleLinkBtn();
+  const xl=$('av-xl');
+  if(uphoto){xl.innerHTML=`<img src="${uphoto}" alt="프로필"/>`;}
+  else{xl.innerHTML=`<span>${uname?uname[0]:'나'}</span>`;}
+  const logoSub=$('logo-sub');
+  // 랜덤 메시지
+  const MSGS=[
+    n=>`${n}님 안녕하세요 👋`,
+    ()=>`오늘도 건강한 하루예요 🌿`,
+    ()=>`💡 약은 정해진 시간에 먹을수록 효과가 좋아요`,
+    ()=>`물과 함께 먹으면 흡수가 더 잘 돼요 💧`,
+    n=>`${n}님, 오늘 약 챙기셨나요? 😊`,
+    ()=>`💊 약을 쪼개면 효과가 달라질 수 있어요`,
+    ()=>`식후 30분이 약 흡수에 가장 좋아요 🍚`,
+    ()=>`꾸준한 복용이 건강의 시작이에요 🌟`,
+    ()=>`오늘도 서로 챙겨주는 하루 되세요 💚`,
+    ()=>`알코올과 약은 함께 먹으면 안 돼요 🚫`,
+    ()=>`냉장 보관 약은 꼭 냉장고에! ❄️`,
+    ()=>`약을 건너뛰었다면 2배로 먹지 마세요`,
+    n=>`${n}님과 파트너, 오늘도 함께 건강해요 🤝`,
+    ()=>`유통기한 지난 약은 꼭 폐기해 주세요 🗑️`,
+    ()=>`햇빛 드는 곳에 약을 보관하면 성분이 변해요 ☀️`,
+  ];
+  if(logoSub){
+    const fn=MSGS[Math.floor(Math.random()*MSGS.length)];
+    logoSub.textContent=fn(uname||'');
+  }
+  $('my-name').value=uname;$('my-email-lbl').textContent=uemail;$('my-email-item').textContent=uemail;
+  $('notif-partner-check').checked=notif.partnerCheck;
+  $('notif-self').checked=notif.selfAlarm;$('notif-self-detail').style.display=notif.selfAlarm?'flex':'none';$('notif-self-min').value=notif.selfMin||30;
+  $('notif-partner-miss').checked=notif.partnerMiss;$('notif-miss-detail').style.display=notif.partnerMiss?'flex':'none';$('notif-miss-min').value=notif.partnerMissMin||60;
+  // 계정 섹션 업데이트
+  const guestSection=$('guest-account-section');
+  const emailRow=$('my-email-row');
+  if(isAnonymous){
+    if(guestSection)guestSection.innerHTML=`<div style="margin:0 14px 8px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:var(--rc);padding:16px;box-shadow:var(--shadow)"><div style="font-size:14px;font-weight:700;color:#E65100;margin-bottom:4px">👋 게스트 모드</div><div style="font-size:12px;color:#BF360C;margin-bottom:12px;line-height:1.5">계정을 만들면 어디서든 데이터를 불러올 수 있어요.</div><button onclick="document.getElementById('modal-upgrade').style.display='flex'" style="width:100%;padding:12px;border-radius:var(--rp);background:#FF9800;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer">계정 만들기</button></div>`;
+    if(emailRow)emailRow.style.display='none';
+  }else{
+    if(guestSection)guestSection.innerHTML='';
+    if(emailRow)emailRow.style.display='flex';
+  }
+  // 탈퇴 버튼 - 게스트는 숨김
+  const deleteBtn=$('delete-account-btn');
+  if(deleteBtn)deleteBtn.style.display=isAnonymous?'none':'block';
+
+  renderCodeDigits();
+  updateGoogleLinkBtn();
 }
 const renderCodeDigits = function(){const el=$('my-code-digits');if(!el)return;el.innerHTML='';(ucode||'------').split('').forEach(ch=>{const d=document.createElement('div');d.className='cdig';d.textContent=ch;el.appendChild(d);});}
+
+// ── 프로필 사진 ──
 window.handlePhoto=async e=>{
-const file=e.target.files?.[0];if(!file)return;
-if(!file.type.startsWith('image/')){toast('이미지 파일을 선택해주세요.');return;}
-showLoad('사진 처리 중...');
-try{
-const dataUrl=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
-const resized=await resizeImg(dataUrl,200);uphoto=resized;
-await setDoc(doc(db,'users',uid),{photoURL:resized},{merge:true});
-for(const p of partners){try{await setDoc(doc(db,'users',p.uid,'partners',uid),{photoURL:resized},{merge:true});}catch(e){}}
-syncMyUI();toast('📷 프로필 사진 업데이트됐어요!');
-}catch{toast('사진 처리 실패');}finally{hideLoad();e.target.value='';}
+  const file=e.target.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){toast('이미지 파일을 선택해주세요.');return;}
+  showLoad('사진 처리 중...');
+  try{
+    const dataUrl=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+    const resized=await resizeImg(dataUrl,200);uphoto=resized;
+    await setDoc(doc(db,'users',uid),{photoURL:resized},{merge:true});
+    for(const p of partners){try{await setDoc(doc(db,'users',p.uid,'partners',uid),{photoURL:resized},{merge:true});}catch(e){}}
+    syncMyUI();toast('📷 프로필 사진 업데이트됐어요!');
+  }catch{toast('사진 처리 실패');}finally{hideLoad();e.target.value='';}
 };
 const resizeImg = function(dataUrl,size){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');const min=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-min)/2,(img.height-min)/2,min,min,0,0,size,size);res(c.toDataURL('image/jpeg',.8));};img.onerror=rej;img.src=dataUrl;});}
+
+// ── 시간 스킵 토글 ──
 window.toggleTimeSkip=()=>{
-timeSkipMode=!timeSkipMode;
-const btn=$('time-skip-btn'),input=$('med-time-exact');
-btn.classList.toggle('on',timeSkipMode);
-input.disabled=timeSkipMode;
-if(timeSkipMode){
-input.value='';
-$('alarm-sel').value='-1';
-$('alarm-sel').disabled=true;
-toast('⏰ 시간 미설정 시 알림이 자동으로 꺼져요');
-} else {
-$('alarm-sel').disabled=false;
-}
+  
+  timeSkipMode=!timeSkipMode;
+  const btn=$('time-skip-btn'),input=$('med-time-exact');
+  btn.classList.toggle('on',timeSkipMode);
+  input.disabled=timeSkipMode;
+  if(timeSkipMode){
+    input.value='';
+    // 시간 설정 안함 → 알림 없음 강제 설정
+    $('alarm-sel').value='-1';
+    $('alarm-sel').disabled=true;
+    toast('⏰ 시간 미설정 시 알림이 자동으로 꺼져요');
+  } else {
+    $('alarm-sel').disabled=false;
+  }
 };
 window.toggleEditTimeSkip=()=>{
-editTimeSkipMode=!editTimeSkipMode;
-const btn=$('edit-time-skip'),input=$('edit-med-time');
-btn.classList.toggle('on',editTimeSkipMode);
-input.disabled=editTimeSkipMode;
-if(editTimeSkipMode)input.value='';
+  
+  editTimeSkipMode=!editTimeSkipMode;
+  const btn=$('edit-time-skip'),input=$('edit-med-time');
+  btn.classList.toggle('on',editTimeSkipMode);
+  input.disabled=editTimeSkipMode;
+  if(editTimeSkipMode)input.value='';
 };
+
+// ── 아이콘 직접 입력 ──
 window.previewCustomIcon=val=>{
-const p=$('icon-preview');
-if(val){p.textContent=val;document.querySelectorAll('#icon-grid .iopt').forEach(x=>x.classList.remove('on'));}
-else p.textContent='✏️';
+  const p=$('icon-preview');
+  if(val){p.textContent=val;document.querySelectorAll('#icon-grid .iopt').forEach(x=>x.classList.remove('on'));}
+  else p.textContent='✏️';
 };
+
+// ── 구독 ──
 const startListeners = function(){
-unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
-unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
-unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
-unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
-if(window._reordering)return; // 순서 변경 중엔 snapshot 무시
-const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;
-await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
-buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();buildGardenView();buildHomePlant();
-unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
-partners.forEach(p=>{
-unsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
-unsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
-unsubs.push(onSnapshot(doc(db,'users',p.uid),snap=>{if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||'';buildPartnerTabs();buildPartnerSections();buildPartnersList();}}));
-});
-}));
-// 앱내(포그라운드) 알림 수신 - toast + sound만
-// 푸시 알림은 sendPushToPartner()가 FCM으로 직접 발송 → SW가 수신 (중복 없음)
-if(!window._firedNotifs)window._firedNotifs=new Set();
-unsubs.push(onSnapshot(query(collection(db,'users',uid,'notifications'),where('read','==',false)),s=>{
-s.docChanges().forEach(async c=>{
-if(c.type!=='added')return;
-const docId=c.doc.id;
-// 중복 방지 (같은 문서 2번 added 이벤트 방어)
-if(window._firedNotifs.has(docId)){await setDoc(c.doc.ref,{read:true},{merge:true});return;}
-window._firedNotifs.add(docId);
-const d=c.doc.data();
-// 앱 시작 이전에 생성된 알림은 무음 처리
-// serverTimestamp가 null이면 로컬 추정값이므로 일단 통과시킴
-const createdMs=d.createdAt?.toMillis?.()??Date.now();
-if(createdMs < APP_START_TS){await setDoc(c.doc.ref,{read:true},{merge:true});return;}
-// 포그라운드 toast + sound
-playSound('notif');
-const nm=d.fromName||'파트너';
-if(d.type==='checked'&&notif.partnerCheck)toast(`💚 ${nm}님이 ${d.medName||'약'} 복용 완료! 건강 지켜요 🌟`);
-if(d.type==='poke')toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);
-if(d.type==='praise')toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);
-if(d.type==='plantSelected')toast('🌱 '+nm+'님이 "'+(d.plantName||'식물')+'"를 심었어요! 함께 키워봐요 🌿');
-// 푸시: SW showNotification (앱이 백그라운드거나 잠겨있을 때 표시)
-// 푸시 알림은 Cloud Functions(sendNotif)가 FCM으로 발송 → 여기서 중복 발송 안 함
-await setDoc(c.doc.ref,{read:true},{merge:true});
-});
-}));
-rebuildCal();buildMedList();buildPartnerSections();
-// 내 식물 구독
-unsubs.push(onSnapshot(collection(db,'users',uid,'plants'),s=>{
-  if(window._plantLock)return;
-  plants={};
-  const partnerUids=new Set(partners.map(p=>p.uid));
-  const junkDocs=[]; // plantTypeId 없는 잘못된 문서
-  s.docs.forEach(d=>{
-    const data=d.data();
-    // 유효한 식물 데이터인지 확인
-    if(!data.plantTypeId){
-      // plantTypeId 없는 문서는 정리 대상
-      junkDocs.push(d.id);
-      return;
-    }
-    if(partnerUids.has(d.id)){
-      plants[d.id]={...data,partnerUid:d.id,docId:d.id};
-    } else {
-      const unmapped=partners.find(p=>!plants[p.uid]);
-      if(unmapped){
-        plants[unmapped.uid]={...data,partnerUid:unmapped.uid,docId:d.id};
-        setDoc(doc(db,'users',uid,'plants',unmapped.uid),{...data,partnerUid:unmapped.uid})
-          .then(()=>deleteDoc(doc(db,'users',uid,'plants',d.id)))
-          .catch(e=>console.warn('마이그레이션 실패:',e));
+  unsubs.forEach(u=>u&&u());unsubs=[];
+  unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
+  unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
+  unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
+    const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;
+    await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
+    buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
+    unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
+    partners.forEach(p=>{
+      unsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
+      unsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
+      unsubs.push(onSnapshot(doc(db,'users',p.uid),snap=>{if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||'';buildPartnerTabs();buildPartnerSections();buildPartnersList();}}));
+    });
+  }));
+  unsubs.push(onSnapshot(query(collection(db,'users',uid,'notifications'),where('read','==',false)),s=>{
+    s.docChanges().forEach(async c=>{
+      if(c.type==='added'){
+        const d=c.doc.data();const age=d.createdAt?Date.now()-d.createdAt.toMillis():99999;
+        if(age<15000){
+          playSound('notif');
+          const nm=d.fromName||'파트너';
+          if(d.type==='checked'&&notif.partnerCheck){
+            toast(`💚 ${nm}님이 ${d.medName} 복용 완료! 건강 지켜요 🌟`);
+            if(Notification.permission==='granted')new Notification('약 쏘옥 💚',{body:`${nm}님이 오늘도 약을 잘 챙겼어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys'});
+          }
+          if(d.type==='poke'){toast(`👉 ${d.msg?.replace('○○',nm)||nm+'님이 약 먹기를 기다리고 있어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 👉',{body:d.msg?.replace('○○',nm)||`${nm}님이 약 먹기를 기다리고 있어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-poke'});}
+          if(d.type==='praise'){toast(`🌟 ${d.msg?.replace('○○',nm)||nm+'님이 칭찬해줬어요!'}`);if(Notification.permission==='granted')new Notification('약 쏘옥 🌟',{body:d.msg?.replace('○○',nm)||`${nm}님이 오늘 약 잘 먹은 걸 칭찬해줬어요!`,icon:location.origin+BASE_PATH+'/icon-192.png',tag:'ys-praise'});}
+        }
+        await setDoc(c.doc.ref,{read:true},{merge:true});
       }
-    }
-  });
-  // 잘못된 문서(plantTypeId null) 삭제
-  junkDocs.forEach(id=>{
-    deleteDoc(doc(db,'users',uid,'plants',id)).catch(()=>{});
-  });
-  buildHomePlant();buildGardenView();
-  if(partners.length)checkGardenNotice();
-}));
+    });
+  }));
+  rebuildCal();buildMedList();buildPartnerSections();
 }
+
+// ── 파트너 탭 ──
 const buildPartnerTabs = function(){
-const row=$('partner-tabs-row');row.innerHTML='';
-if(!partners.length)return;
-const all=document.createElement('button');all.className='ptab'+(calPartnerIdx===-1?' on':'');all.textContent='🌐 모두';all.onclick=()=>{setCalPartner(-1);};row.appendChild(all);
-partners.forEach((p,i)=>{
-const btn=document.createElement('button');btn.className='ptab'+(calPartnerIdx===i?' on':'');
-const rel=p.relation?` (${p.relation})`:'';
-btn.textContent=getPDN(p)+rel;btn.onclick=()=>{setCalPartner(i);};row.appendChild(btn);
-});
+  const row=$('partner-tabs-row');row.innerHTML='';
+  if(!partners.length)return;
+  const all=document.createElement('button');all.className='ptab'+(calPartnerIdx===-1?' on':'');all.textContent='🌐 모두';all.onclick=()=>{setCalPartner(-1);};row.appendChild(all);
+  partners.forEach((p,i)=>{
+    const btn=document.createElement('button');btn.className='ptab'+(calPartnerIdx===i?' on':'');
+    const rel=p.relation?` (${p.relation})`:'';
+    btn.textContent=getPDN(p)+rel;btn.onclick=()=>{setCalPartner(i);};row.appendChild(btn);
+  });
 }
 const setCalPartner = function(idx){calPartnerIdx=idx;buildPartnerTabs();rebuildCal();buildDetailPanel();}
 const calPartners = function(){if(calPartnerIdx===-1)return partners;if(calPartnerIdx>=0&&calPartnerIdx<partners.length)return[partners[calPartnerIdx]];return[];}
+
+// ── 달력 ──
 window.setCalMode=mode=>{calMode=mode;$('cmb-week').classList.toggle('on',mode==='week');$('cmb-month').classList.toggle('on',mode==='month');$('cal-week').style.display=mode==='week'?'block':'none';$('cal-month').style.display=mode==='month'?'block':'none';rebuildCal();};
 const rebuildCal = function(){calMode==='week'?buildWeek():buildMonth();}
+
 const buildWeek = function(){
-const today=new Date();const base=new Date(today);base.setDate(today.getDate()+weekOff*7);const sun=new Date(base);sun.setDate(base.getDate()-base.getDay());
-const days=Array.from({length:7},(_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
-const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;$('week-lbl').textContent=`${fmt(days[0])} ~ ${fmt(days[6])}`;
-const g=$('week-grid');g.innerHTML='';
-days.forEach(d=>{
-const isT=d.toDateString()===today.toDateString();const isSel=selDate&&d.toDateString()===new Date(selDate.y,selDate.m,selDate.d).toDateString();
-const dow=WDS[d.getDay()];const key=dKey(d.getFullYear(),d.getMonth(),d.getDate());
-const ml=medsOn(dow),ml_=logs[key]||{};
-let myR=ml.map(m=>ml_[m.id]?`<span class="wic-ok">${m.icon}</span>`:`<span class="wic-miss"></span>`).join('');
-let pR='';calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};pR+=pm.map(m=>pl[m.id]?`<span class="wic-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="wic-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
-const el=document.createElement('div');el.className=`wday${isT?' today':''}${isSel&&!isT?' sel':''}${d.getDay()===0?' wsun':''}${d.getDay()===6?' wsat':''}`;
-el.innerHTML=`<span class="wdow">${dow}</span><span class="wnum">${d.getDate()}</span><div class="wicons">${myR?`<div class="wic-row">${myR}</div>`:''}${pR?`<div class="wic-row">${pR}</div>`:''}</div>`;
-el.onclick=()=>{selDay(d.getFullYear(),d.getMonth(),d.getDate());};g.appendChild(el);
-});
-if(!selDate)selDay(today.getFullYear(),today.getMonth(),today.getDate());else buildDetailPanel();
+  const today=new Date();const base=new Date(today);base.setDate(today.getDate()+weekOff*7);const sun=new Date(base);sun.setDate(base.getDate()-base.getDay());
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
+  const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;$('week-lbl').textContent=`${fmt(days[0])} ~ ${fmt(days[6])}`;
+  const g=$('week-grid');g.innerHTML='';
+  days.forEach(d=>{
+    const isT=d.toDateString()===today.toDateString();const isSel=selDate&&d.toDateString()===new Date(selDate.y,selDate.m,selDate.d).toDateString();
+    const dow=WDS[d.getDay()];const key=dKey(d.getFullYear(),d.getMonth(),d.getDate());
+    const ml=medsOn(dow),ml_=logs[key]||{};
+    let myR=ml.map(m=>ml_[m.id]?`<span class="wic-ok">${m.icon}</span>`:`<span class="wic-miss"></span>`).join('');
+    let pR='';calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};pR+=pm.map(m=>pl[m.id]?`<span class="wic-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="wic-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
+    const el=document.createElement('div');el.className=`wday${isT?' today':''}${isSel&&!isT?' sel':''}${d.getDay()===0?' wsun':''}${d.getDay()===6?' wsat':''}`;
+    el.innerHTML=`<span class="wdow">${dow}</span><span class="wnum">${d.getDate()}</span><div class="wicons">${myR?`<div class="wic-row">${myR}</div>`:''}${pR?`<div class="wic-row">${pR}</div>`:''}</div>`;
+    el.onclick=()=>{selDay(d.getFullYear(),d.getMonth(),d.getDate());};g.appendChild(el);
+  });
+  if(!selDate)selDay(today.getFullYear(),today.getMonth(),today.getDate());else buildDetailPanel();
 }
 window.shiftWeek=dir=>{weekOff+=dir;buildWeek();};
+
 const buildMonth = function(){
-const today=new Date();$('month-lbl').textContent=`${mYear}년 ${mMonth+1}월`;
-const g=$('month-grid');g.innerHTML='';
-['일','월','화','수','목','금','토'].forEach(w=>{const e=document.createElement('div');e.className='mwd';e.textContent=w;g.appendChild(e);});
-const fd=new Date(mYear,mMonth,1).getDay(),ld=new Date(mYear,mMonth+1,0).getDate(),pl=new Date(mYear,mMonth,0).getDate();
-for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='mday mother';e.innerHTML=`<span class="mnum">${pl-fd+1+i}</span>`;g.appendChild(e);}
-for(let d=1;d<=ld;d++){
-const isT=mYear===today.getFullYear()&&mMonth===today.getMonth()&&d===today.getDate();const isSel=selDate&&selDate.y===mYear&&selDate.m===mMonth&&selDate.d===d;
-const dow=WDS[new Date(mYear,mMonth,d).getDay()];const key=dKey(mYear,mMonth,d);
-const ml=medsOn(dow),ml_=logs[key]||{};
-let dots=ml.map(m=>ml_[m.id]?`<span class="mdot-ok">${m.icon}</span>`:`<span class="mdot-miss"></span>`).join('');
-calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl2=(pLogs[p.uid]||{})[key]||{};dots+=pm.map(m=>pl2[m.id]?`<span class="mdot-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="mdot-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
-const dn=new Date(mYear,mMonth,d).getDay();
-const el=document.createElement('div');el.className=`mday${isT?' mtoday':''}${isSel&&!isT?' msel':''}${dn===0?' msun':''}${dn===6?' msat':''}`;
-el.innerHTML=`<span class="mnum">${d}</span><div class="mdots">${dots}</div>`;el.onclick=()=>{selDay(mYear,mMonth,d);};g.appendChild(el);
-}
-const tot=fd+ld,rem=(7-tot%7)%7;for(let i=1;i<=rem;i++){const e=document.createElement('div');e.className='mday mother';e.innerHTML=`<span class="mnum">${i}</span>`;g.appendChild(e);}
-if(!selDate)selDay(today.getFullYear(),today.getMonth(),today.getDate());else buildDetailPanel();
+  const today=new Date();$('month-lbl').textContent=`${mYear}년 ${mMonth+1}월`;
+  const g=$('month-grid');g.innerHTML='';
+  ['일','월','화','수','목','금','토'].forEach(w=>{const e=document.createElement('div');e.className='mwd';e.textContent=w;g.appendChild(e);});
+  const fd=new Date(mYear,mMonth,1).getDay(),ld=new Date(mYear,mMonth+1,0).getDate(),pl=new Date(mYear,mMonth,0).getDate();
+  for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='mday mother';e.innerHTML=`<span class="mnum">${pl-fd+1+i}</span>`;g.appendChild(e);}
+  for(let d=1;d<=ld;d++){
+    const isT=mYear===today.getFullYear()&&mMonth===today.getMonth()&&d===today.getDate();const isSel=selDate&&selDate.y===mYear&&selDate.m===mMonth&&selDate.d===d;
+    const dow=WDS[new Date(mYear,mMonth,d).getDay()];const key=dKey(mYear,mMonth,d);
+    const ml=medsOn(dow),ml_=logs[key]||{};
+    let dots=ml.map(m=>ml_[m.id]?`<span class="mdot-ok">${m.icon}</span>`:`<span class="mdot-miss"></span>`).join('');
+    calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl2=(pLogs[p.uid]||{})[key]||{};dots+=pm.map(m=>pl2[m.id]?`<span class="mdot-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="mdot-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
+    const dn=new Date(mYear,mMonth,d).getDay();
+    const el=document.createElement('div');el.className=`mday${isT?' mtoday':''}${isSel&&!isT?' msel':''}${dn===0?' msun':''}${dn===6?' msat':''}`;
+    el.innerHTML=`<span class="mnum">${d}</span><div class="mdots">${dots}</div>`;el.onclick=()=>{selDay(mYear,mMonth,d);};g.appendChild(el);
+  }
+  const tot=fd+ld,rem=(7-tot%7)%7;for(let i=1;i<=rem;i++){const e=document.createElement('div');e.className='mday mother';e.innerHTML=`<span class="mnum">${i}</span>`;g.appendChild(e);}
+  if(!selDate)selDay(today.getFullYear(),today.getMonth(),today.getDate());else buildDetailPanel();
 }
 window.shiftMonth=dir=>{mMonth+=dir;if(mMonth>11){mMonth=0;mYear++;}if(mMonth<0){mMonth=11;mYear--;}buildMonth();};
+
 const selDay = function(y,m,d){selDate={y,m,d};rebuildCal();}
+
 const buildDetailPanel = function(){
-if(!selDate)return;
-const{y,m,d}=selDate;const key=dKey(y,m,d);const wk=WDS[new Date(y,m,d).getDay()];
-$('dpanel-date').textContent=`${m+1}월 ${d}일 (${wk})`;
-const tabs=$('dtabs');tabs.innerHTML='';
-const tabList=[{lbl:'나',p:'me'},...calPartners().map(p=>({lbl:getPDN(p),p:p.uid}))];
-tabList.forEach(({lbl,p})=>{const t=document.createElement('div');t.className='dtab'+(selPanel===p?' on':'');t.textContent=lbl;t.onclick=()=>{selPanel=p;buildDetailPanel();};tabs.appendChild(t);});
-const body=$('dpanel-body');body.innerHTML='';const dow=WDS[new Date(y,m,d).getDay()];
-if(selPanel==='me'){
-const dm=medsOn(dow),dl=logs[key]||{};
-if(!dm.length){body.innerHTML=`<div class="dpanel-empty">이날 복용할 약이 없어요</div>`;return;}
-dm.forEach(med=>body.appendChild(makeRow(med,!!dl[med.id])));
-}else{
-const p=partners.find(x=>x.uid===selPanel);if(!p){body.innerHTML=`<div class="dpanel-empty">파트너를 찾을 수 없어요</div>`;return;}
-const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};
-if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${getPDN(p)}님의 이날 약이 없어요</div>`;return;}
-pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id])));
-}
+  if(!selDate)return;
+  const{y,m,d}=selDate;const key=dKey(y,m,d);const wk=WDS[new Date(y,m,d).getDay()];
+  $('dpanel-date').textContent=`${m+1}월 ${d}일 (${wk})`;
+  const tabs=$('dtabs');tabs.innerHTML='';
+  const tabList=[{lbl:'나',p:'me'},...calPartners().map(p=>({lbl:getPDN(p),p:p.uid}))];
+  tabList.forEach(({lbl,p})=>{const t=document.createElement('div');t.className='dtab'+(selPanel===p?' on':'');t.textContent=lbl;t.onclick=()=>{selPanel=p;buildDetailPanel();};tabs.appendChild(t);});
+  const body=$('dpanel-body');body.innerHTML='';const dow=WDS[new Date(y,m,d).getDay()];
+  if(selPanel==='me'){
+    const dm=medsOn(dow),dl=logs[key]||{};
+    if(!dm.length){body.innerHTML=`<div class="dpanel-empty">이날 복용할 약이 없어요</div>`;return;}
+    dm.forEach(med=>body.appendChild(makeRow(med,!!dl[med.id])));
+  }else{
+    const p=partners.find(x=>x.uid===selPanel);if(!p){body.innerHTML=`<div class="dpanel-empty">파트너를 찾을 수 없어요</div>`;return;}
+    const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};
+    if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${getPDN(p)}님의 이날 약이 없어요</div>`;return;}
+    pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id])));
+  }
 }
 const makeRow = function(med,ok){
-const r=document.createElement('div');r.className='drow';
-r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
-return r;
+  const r=document.createElement('div');r.className='drow';
+  r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+  return r;
 }
+
+// ── 오늘 복용 목록 ──
 const buildMedList = function(){
-const list=$('med-list'),tms=medsOn(todayDow());
-if(!tms.length){list.innerHTML=`<div class="empty"><div class="empty-ic">💊</div><p>오늘 복용할 약이 없어요<br><span style="color:var(--tx3);font-size:14px">+ 버튼으로 약을 등록해보세요</span></p></div>`;return;}
-list.innerHTML='';
-tms.forEach(m=>{
-const chk=isOk(m.id);
-const el=document.createElement('div');el.className='mcard';
-el.innerHTML=`<div class="micon" style="background:${m.color}">${m.icon}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mtime">${fmtMedTime(m)}</div></div><div class="chk ${chk?'on':''}" onclick="doCheck('${m.id}',event)">${chk?'✓':''}</div>`;
-list.appendChild(el);
-});
+  const list=$('med-list'),tms=medsOn(todayDow());
+  if(!tms.length){list.innerHTML=`<div class="empty"><div class="empty-ic">💊</div><p>오늘 복용할 약이 없어요<br><span style="color:var(--tx3);font-size:14px">+ 버튼으로 약을 등록해보세요</span></p></div>`;return;}
+  list.innerHTML='';
+  tms.forEach(m=>{
+    const chk=isOk(m.id);
+    const el=document.createElement('div');el.className='mcard';
+    el.innerHTML=`<div class="micon" style="background:${m.color}">${m.icon}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mtime">${fmtMedTime(m)}</div></div><div class="chk ${chk?'on':''}" onclick="doCheck('${m.id}',event)">${chk?'✓':''}</div>`;
+    list.appendChild(el);
+  });
 }
+
+// ── 파트너 섹션 ──
 const buildPartnerSections = function(){
-const area=$('partner-med-sections');area.innerHTML='';
-if(!partners.length)return;
-const dow=todayDow(),todayK=todayKey();
-partners.forEach(p=>{
-const pn=getPDN(p);const rel=p.relation?` · ${p.relation}`:'';
-const pTodayMeds=pMedsOn(p.uid,dow);const pTodayLogs=(pLogs[p.uid]||{})[todayK]||{};
-const done=pTodayMeds.filter(m=>pTodayLogs[m.id]).length;
-const allDone=pTodayMeds.length>0&&done===pTodayMeds.length;
-const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
-const sec=document.createElement('div');sec.className='partner-section';
-let medRows='';
-if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
-else pTodayMeds.forEach(m=>{
-const ok=!!pTodayLogs[m.id];
-medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
-});
-sec.innerHTML=`
-<div class="p-sec-hdr">
-<div class="av-lg">${avH}</div>
-<div class="p-sec-info"><div class="p-sec-name">${pn}<span style="font-size:12px;color:var(--tx3);font-weight:400;margin-left:4px">${rel}</span></div><div class="p-sec-sub">오늘 ${done}/${pTodayMeds.length}개 복용</div></div>
-<div class="p-sec-btns">
-<button class="praise-btn" onclick="praisePartner('${p.uid}')" ${!allDone?'disabled':''} title="${allDone?'칭찬하기':'약을 모두 복용해야 칭찬할 수 있어요'}">⭐ 참 잘했어요!</button>
-<button class="poke-btn" onclick="pokePartner('${p.uid}')" ${allDone?'disabled':''} title="${!allDone?'쿡 찌르기':'이미 모두 복용했어요'}">👉 쿡 찌르기</button>
-</div>
-</div>
-${medRows}`;
-area.appendChild(sec);
-});
+  const area=$('partner-med-sections');area.innerHTML='';
+  if(!partners.length)return;
+  const dow=todayDow(),todayK=todayKey();
+  partners.forEach(p=>{
+    const pn=getPDN(p);const rel=p.relation?` · ${p.relation}`:'';
+    const pTodayMeds=pMedsOn(p.uid,dow);const pTodayLogs=(pLogs[p.uid]||{})[todayK]||{};
+    const done=pTodayMeds.filter(m=>pTodayLogs[m.id]).length;
+    const allDone=pTodayMeds.length>0&&done===pTodayMeds.length;
+    const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const sec=document.createElement('div');sec.className='partner-section';
+    let medRows='';
+    if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
+    else pTodayMeds.forEach(m=>{
+      const ok=!!pTodayLogs[m.id];
+      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
+    });
+    sec.innerHTML=`
+      <div class="p-sec-hdr">
+        <div class="av-lg">${avH}</div>
+        <div class="p-sec-info"><div class="p-sec-name">${pn}<span style="font-size:12px;color:var(--tx3);font-weight:400;margin-left:4px">${rel}</span></div><div class="p-sec-sub">오늘 ${done}/${pTodayMeds.length}개 복용</div></div>
+        <div class="p-sec-btns">
+          <button class="praise-btn" onclick="praisePartner('${p.uid}')" ${!allDone?'disabled':''} title="${allDone?'칭찬하기':'약을 모두 복용해야 칭찬할 수 있어요'}">⭐ 참 잘했어요!</button>
+          <button class="poke-btn" onclick="pokePartner('${p.uid}')" ${allDone?'disabled':''} title="${!allDone?'쿡 찌르기':'이미 모두 복용했어요'}">👉 쿡 찌르기</button>
+        </div>
+      </div>
+      ${medRows}`;
+    area.appendChild(sec);
+  });
 }
+
+// ── 체크 ──
 const doCheck = async (mid,e)=>{
-e.stopPropagation();playSound('check');
-const v=!isOk(mid);const m=meds.find(x=>x.id===mid);
-showLoad('저장 중...');
-try{
-await setDoc(doc(db,'users',uid,'logs',todayKey()),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
-if(v&&m){
-showWaterAnim();
-if(partners.length){
-for(const p of partners){try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m.name,type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}}
-const pNames=partners.map(p=>getPDN(p)).join(', ');toast('💚 '+pNames+'에게 복용 알림 전송!');
-for(const p of partners){await growPlant(p.uid).catch(()=>{});}
-}else{toast('✅ '+m.name+' 복용 완료!');}
-}
-}catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
+  e.stopPropagation();playSound('check');
+  const v=!isOk(mid);const m=meds.find(x=>x.id===mid);
+  showLoad('저장 중...');
+  try{
+    await setDoc(doc(db,'users',uid,'logs',todayKey()),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
+    if(v&&m&&partners.length){
+      for(const p of partners){try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m.name,type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}}
+      const pNames=partners.map(p=>getPDN(p)).join(', ');toast(`💚 ${pNames}에게 복용 알림 전송!`);
+    }else if(v&&m){toast(`✅ '${m.name}' 복용 완료!`);}
+  }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 }
 window.doCheck=doCheck;
+
+// ── 쿡 찌르기 ──
 window.pokePartner=async puid=>{
-playSound('poke');const p=partners.find(x=>x.uid===puid);if(!p)return;
-const pn=getPDN(p);
-const msgTemplate=POKE_MSGS[Math.floor(Math.random()*POKE_MSGS.length)];
-const msg=msgTemplate.replace('○○',uname||'파트너');
-showLoad('전송 중...');
-try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',msg,type:'poke',read:false,createdAt:serverTimestamp()});toast(`👉 ${pn}에게 쿡 찔렀어요!`);}
-catch(err){toast('전송 실패');}finally{hideLoad();}
+  playSound('poke');const p=partners.find(x=>x.uid===puid);if(!p)return;
+  const pn=getPDN(p);
+  const msgTemplate=POKE_MSGS[Math.floor(Math.random()*POKE_MSGS.length)];
+  const msg=msgTemplate.replace('○○',uname||'파트너');
+  showLoad('전송 중...');
+  try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',msg,type:'poke',read:false,createdAt:serverTimestamp()});toast(`👉 ${pn}에게 쿡 찔렀어요!`);}
+  catch(err){toast('전송 실패');}finally{hideLoad();}
 };
+
+// ── 칭찬하기 ──
 window.praisePartner=async puid=>{
-playSound('praise');const p=partners.find(x=>x.uid===puid);if(!p)return;
-const pn=getPDN(p);
-const msgTemplate=PRAISE_MSGS[Math.floor(Math.random()*PRAISE_MSGS.length)];
-const msg=msgTemplate.replace('○○',uname||'파트너');
-showLoad('전송 중...');
-try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',msg,type:'praise',read:false,createdAt:serverTimestamp()});toast(`⭐ ${pn}에게 칭찬을 보냈어요!`);}
-catch(err){toast('전송 실패');}finally{hideLoad();}
+  playSound('praise');const p=partners.find(x=>x.uid===puid);if(!p)return;
+  const pn=getPDN(p);
+  const msgTemplate=PRAISE_MSGS[Math.floor(Math.random()*PRAISE_MSGS.length)];
+  const msg=msgTemplate.replace('○○',uname||'파트너');
+  showLoad('전송 중...');
+  try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',msg,type:'praise',read:false,createdAt:serverTimestamp()});toast(`⭐ ${pn}에게 칭찬을 보냈어요!`);}
+  catch(err){toast('전송 실패');}finally{hideLoad();}
 };
+
+// ── 약 등록 ──
 const addMed = async ()=>{
-const name=$('mn-name').value.trim();if(!name){toast('약 이름을 입력해주세요!');return;}
-const customIcon=$('icon-custom').value.trim();
-const gridIcon=document.querySelector('#icon-grid .iopt.on')?.textContent||'💊';
-const icon=customIcon||gridIcon;
-const time=document.querySelector('#time-chips .chip.on')?.textContent||'아침 식후';
-const timeExact=timeSkipMode?'':($('med-time-exact').value||'');
-const days=[...document.querySelectorAll('#day-chips .chip.on')].map(c=>c.textContent);
-const alarm=timeSkipMode?'-1':$('alarm-sel').value;
-if(!days.length){toast('복용 요일을 선택해주세요!');return;}
-showLoad('저장 중...');
-try{
-await addDoc(collection(db,'users',uid,'meds'),{name,icon,time,timeExact,days,alarm,color:COLORS[meds.length%COLORS.length],createdAt:serverTimestamp()});
-go('home');toast(`✅ '${name}' 등록 완료!`);
-}catch(err){toast('등록 실패: '+err.message);}finally{hideLoad();}
+  const name=$('mn-name').value.trim();if(!name){toast('약 이름을 입력해주세요!');return;}
+  const customIcon=$('icon-custom').value.trim();
+  const gridIcon=document.querySelector('#icon-grid .iopt.on')?.textContent||'💊';
+  const icon=customIcon||gridIcon;
+  const time=document.querySelector('#time-chips .chip.on')?.textContent||'아침 식후';
+  const timeExact=timeSkipMode?'':($('med-time-exact').value||'');
+  const days=[...document.querySelectorAll('#day-chips .chip.on')].map(c=>c.textContent);
+  // 시간 미설정 시 알림 없음 강제
+  const alarm=timeSkipMode?'-1':$('alarm-sel').value;
+  if(!days.length){toast('복용 요일을 선택해주세요!');return;}
+  showLoad('저장 중...');
+  try{
+    const newRef=await addDoc(collection(db,'users',uid,'meds'),{name,icon,time,timeExact,days,alarm,color:COLORS[meds.length%COLORS.length],createdAt:serverTimestamp()});
+    meds=[...meds,{id:newRef.id,name,icon,time,timeExact,days,alarm,color:COLORS[meds.length%COLORS.length]}];
+    go('home');toast(`✅ '${name}' 등록 완료!`);
+  }catch(err){toast('등록 실패: '+err.message);}finally{hideLoad();}
 }
 window.addMed=addMed;
+
 window.openEditMedTime=id=>{
-const m=meds.find(x=>x.id===id);if(!m)return;
-editMedId=id;editTimeSkipMode=!m.timeExact;
-$('edit-med-name').value=m.name;$('edit-med-time').value=m.timeExact||'';
-$('edit-med-time').disabled=editTimeSkipMode;$('edit-time-skip').classList.toggle('on',editTimeSkipMode);
-$('edit-med-err').textContent='';$('modal-edit-med').style.display='flex';
+  const m=meds.find(x=>x.id===id);if(!m)return;
+  editMedId=id;editTimeSkipMode=!m.timeExact;
+  $('edit-med-name').value=m.name;$('edit-med-time').value=m.timeExact||'';
+  $('edit-med-time').disabled=editTimeSkipMode;$('edit-time-skip').classList.toggle('on',editTimeSkipMode);
+  $('edit-med-err').textContent='';$('modal-edit-med').style.display='flex';
 };
 window.saveEditMedTime=async()=>{
-const timeExact=editTimeSkipMode?'':($('edit-med-time').value||'');
-showLoad('저장 중...');
-try{await setDoc(doc(db,'users',uid,'meds',editMedId),{timeExact},{merge:true});closeModal('modal-edit-med');toast('복용 시각이 저장됐어요!');}
-catch(err){$('edit-med-err').textContent='저장 실패: '+err.message;}finally{hideLoad();}
+  const timeExact=editTimeSkipMode?'':($('edit-med-time').value||'');
+  showLoad('저장 중...');
+  try{await setDoc(doc(db,'users',uid,'meds',editMedId),{timeExact},{merge:true});closeModal('modal-edit-med');toast('복용 시각이 저장됐어요!');}
+  catch(err){$('edit-med-err').textContent='저장 실패: '+err.message;}finally{hideLoad();}
 };
+
 window.deleteMed=async(id,name)=>{if(!confirm(`'${name}'을 삭제할까요?`))return;showLoad('삭제 중...');try{await deleteDoc(doc(db,'users',uid,'meds',id));toast(`🗑 '${name}' 삭제됨`);}catch{toast('삭제 실패');}finally{hideLoad();}};
+
 const buildMedManage = function(){
-const el=$('med-manage');
-if(!meds.length){el.innerHTML=`<div style="padding:12px 16px;font-size:14px;color:var(--tx3)">등록된 약이 없어요.</div>`;return;}
-el.innerHTML='';
-meds.forEach(m=>{
-const r=document.createElement('div');r.className='mmrow';
-r.setAttribute('data-mid', m.id);
-r.innerHTML='<div class="mm-ic" style="background:'+(m.color||'#E8F8F0')+'">'+m.icon+'</div><div class="mm-info"><div class="mm-name">'+m.name+'</div><div class="mm-sub">'+fmtMedTime(m)+' · '+(m.days||[]).join(' ')+'요일</div></div><button class="mm-edit" data-id="'+m.id+'" onclick="openEditMedTime(this.dataset.id)">시각 수정</button><div class="mm-del" data-id="'+m.id+'" data-name="'+encodeURIComponent(m.name)+'" onclick="deleteMed(this.dataset.id,decodeURIComponent(this.dataset.name))">🗑</div>';
-el.appendChild(r);
-});
+  const el=$('med-manage');
+  if(!meds.length){el.innerHTML=`<div style="padding:12px 16px;font-size:14px;color:var(--tx3)">등록된 약이 없어요.</div>`;return;}
+  el.innerHTML='';
+  meds.forEach(m=>{
+    const r=document.createElement('div');r.className='mmrow';
+    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" onclick="openEditMedTime('${m.id}')">시각 수정</button><div class="mm-del" onclick="deleteMed('${m.id}','${m.name.replace(/'/g,"\\'")}')">🗑</div>`;
+    el.appendChild(r);
+  });
 }
+
 const buildPartnersList = function(){
-const list=$('partners-list');
-if(!partners.length){list.innerHTML=`<div class="empty" style="padding:24px"><div class="empty-ic">🔗</div><p>아직 연결된 파트너가 없어요</p></div>`;return;}
-list.innerHTML='';
-partners.forEach(p=>{
-const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
-const el=document.createElement('div');el.className='rel-row';el.style.margin='6px 14px';
-el.innerHTML=`<div class="rel-top"><div class="av-lg" style="width:40px;height:40px;border-radius:50%;background:var(--t100);border:2px solid var(--t200);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--t600)">${avH}</div><div style="flex:1;min-width:0"><div style="font-size:var(--fs-base);font-weight:700;color:var(--tx)">${pn}</div><div style="font-size:12px;color:var(--tx3)">코드 ${p.code||''}</div></div><button class="del-btn" onclick="removePartner('${p.uid}')">해제</button></div>
-<div class="rel-fields">
-<input type="text" placeholder="별명 (예: 엄마💕)" value="${p.nickname||''}" oninput="updatePartnerLocal('${p.uid}','nickname',this.value)"/>
-<select onchange="updatePartnerLocal('${p.uid}','relation',this.value)">
-<option value="">관계 선택</option>
-<option value="가족" ${p.relation==='가족'?'selected':''}>가족</option>
-<option value="연인" ${p.relation==='연인'?'selected':''}>연인</option>
-<option value="친구" ${p.relation==='친구'?'selected':''}>친구</option>
-<option value="기타" ${p.relation==='기타'?'selected':''}>기타</option>
-</select>
-</div>
-<button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>`;
-list.appendChild(el);
-});
+  const list=$('partners-list');
+  if(!partners.length){list.innerHTML=`<div class="empty" style="padding:24px"><div class="empty-ic">🔗</div><p>아직 연결된 파트너가 없어요</p></div>`;return;}
+  list.innerHTML='';
+  partners.forEach(p=>{
+    const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const el=document.createElement('div');el.className='rel-row';el.style.margin='6px 14px';
+    el.innerHTML=`<div class="rel-top"><div class="av-lg" style="width:40px;height:40px;border-radius:50%;background:var(--t100);border:2px solid var(--t200);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--t600)">${avH}</div><div style="flex:1;min-width:0"><div style="font-size:var(--fs-base);font-weight:700;color:var(--tx)">${pn}</div><div style="font-size:12px;color:var(--tx3)">코드 ${p.code||''}</div></div><button class="del-btn" onclick="removePartner('${p.uid}')">해제</button></div>
+      <div class="rel-fields">
+        <input type="text" placeholder="별명 (예: 엄마💕)" value="${p.nickname||''}" oninput="updatePartnerLocal('${p.uid}','nickname',this.value)"/>
+        <select onchange="updatePartnerLocal('${p.uid}','relation',this.value)">
+          <option value="">관계 선택</option>
+          <option value="가족" ${p.relation==='가족'?'selected':''}>가족</option>
+          <option value="연인" ${p.relation==='연인'?'selected':''}>연인</option>
+          <option value="친구" ${p.relation==='친구'?'selected':''}>친구</option>
+          <option value="기타" ${p.relation==='기타'?'selected':''}>기타</option>
+        </select>
+      </div>
+      <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>`;
+    list.appendChild(el);
+  });
 }
+
 window.updatePartnerLocal=(puid,key,val)=>{const p=partners.find(x=>x.uid===puid);if(p)p[key]=val;};
 window.saveRelation=async puid=>{
-const p=partners.find(x=>x.uid===puid);if(!p)return;
-try{await setDoc(doc(db,'users',uid,'partners',puid),{nickname:p.nickname||'',relation:p.relation||''},{merge:true});buildPartnerTabs();buildPartnerSections();toast('저장됐어요!');}catch{toast('저장 실패');}
+  const p=partners.find(x=>x.uid===puid);if(!p)return;
+  try{await setDoc(doc(db,'users',uid,'partners',puid),{nickname:p.nickname||'',relation:p.relation||''},{merge:true});buildPartnerTabs();buildPartnerSections();toast('저장됐어요!');}catch{toast('저장 실패');}
 };
+
 const buildPartnerOrderList = function(){
-const list=$('partner-order-list');if(!list)return;
-if(!partners.length){list.innerHTML='';return;}
-list.innerHTML='';
-partners.forEach((p,i)=>{
-const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
-const el=document.createElement('div');el.className='order-row';
-el.innerHTML=`<div class="order-av">${avH}</div><div class="order-name">${pn}</div><div class="order-btns"><button class="order-btn" onclick="movePartner(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="order-btn" onclick="movePartner(${i},1)" ${i===partners.length-1?'disabled':''}>↓</button></div>`;
-list.appendChild(el);
-});
+  const list=$('partner-order-list');if(!list)return;
+  if(!partners.length){list.innerHTML='';return;}
+  list.innerHTML='';
+  partners.forEach((p,i)=>{
+    const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const el=document.createElement('div');el.className='order-row';
+    el.innerHTML=`<div class="order-av">${avH}</div><div class="order-name">${pn}</div><div class="order-btns"><button class="order-btn" onclick="movePartner(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="order-btn" onclick="movePartner(${i},1)" ${i===partners.length-1?'disabled':''}>↓</button></div>`;
+    list.appendChild(el);
+  });
 }
 window.movePartner=async(i,dir)=>{
-const j=i+dir;if(j<0||j>=partners.length)return;
-[partners[i],partners[j]]=[partners[j],partners[i]];
-window._reordering=true;
-for(let k=0;k<partners.length;k++){try{await setDoc(doc(db,'users',uid,'partners',partners[k].uid),{order:k},{merge:true});}catch(e){}}
-window._reordering=false;
-buildPartnerOrderList();buildPartnerTabs();buildPartnerSections();
+  const j=i+dir;if(j<0||j>=partners.length)return;
+  [partners[i],partners[j]]=[partners[j],partners[i]];
+  for(let k=0;k<partners.length;k++){try{await setDoc(doc(db,'users',uid,'partners',partners[k].uid),{order:k},{merge:true});}catch(e){}}
+  buildPartnerOrderList();buildPartnerTabs();buildPartnerSections();
 };
+
 window.connectByCode=async()=>{
-if(checkGuestBeforeConnect())return;
-const code=$('code-input').value.trim().toUpperCase();
-if(code.length!==6){toast('6자리 코드를 입력해주세요!');return;}
-if(code===ucode){toast('자신의 코드는 사용할 수 없어요!');return;}
-if(partners.find(p=>p.code===code)){toast('이미 연결된 파트너예요!');return;}
-showLoad('파트너 찾는 중...');
-try{
-const s=await getDocs(query(collection(db,'users'),where('code','==',code)));
-if(s.empty){hideLoad();toast('해당 코드의 유저를 찾을 수 없어요.');return;}
-const pd=s.docs[0],pData=pd.data();const pName=pData.name||'파트너';
-// 내 partners에 상대 저장
-await setDoc(doc(db,'users',uid,'partners',pd.id),{uid:pd.id,name:pName,code,photoURL:pData.photoURL||'',nickname:'',relation:'',order:partners.length,connectedAt:serverTimestamp()});
-// 상대 partners에 나 저장 (실패해도 연결은 계속)
-try{
-await setDoc(doc(db,'users',pd.id,'partners',uid),{uid,name:uname||'파트너',code:ucode,photoURL:uphoto||'',nickname:'',relation:'',order:0,connectedAt:serverTimestamp()});
-}catch(e2){console.warn('상대방 partners 쓰기 실패(보안규칙):', e2.message);}
-$('code-input').value='';
-hideLoad();
-toast(`💚 ${pName}님과 연결됐어요!`);
-// 연결 시 항상 식물 선택 팝업 표시 (재연결 포함)
-setTimeout(()=>{
-  showPlantPick(pd.id,pName);
-}, 600);
-}catch(err){
-const msg=err.code==='permission-denied'
-  ?'연결 실패: Firebase 보안 규칙 미적용 상태예요. Console에서 규칙을 업데이트해주세요.'
-  :'연결 실패: '+err.message;
-toast(msg);
-}finally{hideLoad();}
+  if(checkGuestBeforeConnect())return;
+  const code=$('code-input').value.trim().toUpperCase();
+  if(code.length!==6){toast('6자리 코드를 입력해주세요!');return;}
+  if(code===ucode){toast('자신의 코드는 사용할 수 없어요!');return;}
+  if(partners.find(p=>p.code===code)){toast('이미 연결된 파트너예요!');return;}
+  showLoad('파트너 찾는 중...');
+  try{
+    const s=await getDocs(query(collection(db,'users'),where('code','==',code)));
+    if(s.empty){toast('해당 코드의 유저를 찾을 수 없어요.');return;}
+    const pd=s.docs[0],pData=pd.data();const pName=pData.name||'파트너';
+    await setDoc(doc(db,'users',uid,'partners',pd.id),{uid:pd.id,name:pName,code,photoURL:pData.photoURL||'',nickname:'',relation:'',order:partners.length,connectedAt:serverTimestamp()});
+    await setDoc(doc(db,'users',pd.id,'partners',uid),{uid,name:uname||'파트너',code:ucode,photoURL:uphoto||'',nickname:'',relation:'',order:0,connectedAt:serverTimestamp()});
+    $('code-input').value='';toast(`💚 ${pName}님과 연결 완료!`);
+  }catch(err){toast('연결 실패: '+err.message);}finally{hideLoad();}
 };
-window.removePartner=async uid2=>{
-if(!confirm('파트너 연결을 해제할까요?\n연결된 식물 데이터도 함께 삭제돼요.'))return;
-showLoad('연결 해제 중...');
-try{
-  await deleteDoc(doc(db,'users',uid,'partners',uid2));
-  try{await deleteDoc(doc(db,'users',uid2,'partners',uid));}catch(e){console.warn('상대방 파트너 해제 실패:',e.message);}
-  // 식물 삭제: plants 컬렉션 전체 스캔해서 해당 파트너 관련 문서 모두 삭제
-  const myPlantsSnap=await getDocs(collection(db,'users',uid,'plants'));
-  for(const pd of myPlantsSnap.docs){
-    // 문서 ID가 파트너 uid이거나, 로컬 plants에서 해당 파트너 uid와 매핑된 것
-    if(pd.id===uid2||plants[uid2]?.docId===pd.id){
-      try{await deleteDoc(doc(db,'users',uid,'plants',pd.id));}catch(e){}
-    }
-  }
-  // 상대방 쪽도 삭제
-  const partnerPlantsSnap=await getDocs(collection(db,'users',uid2,'plants'));
-  for(const pd of partnerPlantsSnap.docs){
-    if(pd.id===uid){
-      try{await deleteDoc(doc(db,'users',uid2,'plants',pd.id));}catch(e){}
-    }
-  }
-  // 로컬 즉시 반영
-  delete plants[uid2];
-  partners=partners.filter(p=>p.uid!==uid2);
-  buildHomePlant();buildGardenView();buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
-  toast('연결이 해제되었어요.');
-}catch(e){toast('해제 실패: '+e.message);}
-finally{hideLoad();}
-};
+window.removePartner=async uid2=>{if(!confirm('파트너 연결을 해제할까요?'))return;showLoad('연결 해제 중...');try{await deleteDoc(doc(db,'users',uid,'partners',uid2));await deleteDoc(doc(db,'users',uid2,'partners',uid));toast('연결이 해제되었어요.');}catch{toast('해제 실패');}finally{hideLoad();}};
 window.copyCode=()=>{const msg=`나랑 약 쏘옥해~! 💊\n초대 코드: ${ucode}\n👉 ${APP_URL}`;try{navigator.clipboard.writeText(msg);}catch(e){}toast('💌 초대 메시지가 복사됐어요! 카카오톡으로 보내보세요');};
+
 window.saveName=async()=>{
-const v=$('my-name').value.trim();if(!v){toast('이름을 입력해주세요!');return;}uname=v;showLoad('저장 중...');
-try{await setDoc(doc(db,'users',uid),{name:uname},{merge:true});for(const p of partners){try{await setDoc(doc(db,'users',p.uid,'partners',uid),{name:uname},{merge:true});}catch(e){}}syncMyUI();toast('이름이 저장됐어요!');}
-catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
+  const v=$('my-name').value.trim();if(!v){toast('이름을 입력해주세요!');return;}uname=v;showLoad('저장 중...');
+  try{await setDoc(doc(db,'users',uid),{name:uname},{merge:true});for(const p of partners){try{await setDoc(doc(db,'users',p.uid,'partners',uid),{name:uname},{merge:true});}catch(e){}}syncMyUI();toast('이름이 저장됐어요!');}
+  catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 };
+
 window.saveNotif=async()=>{
-notif.partnerCheck=$('notif-partner-check').checked;notif.selfAlarm=$('notif-self').checked;notif.selfMin=parseInt($('notif-self-min').value)||30;notif.partnerMiss=$('notif-partner-miss').checked;notif.partnerMissMin=parseInt($('notif-miss-min').value)||60;
-$('notif-self-detail').style.display=notif.selfAlarm?'flex':'none';$('notif-miss-detail').style.display=notif.partnerMiss?'flex':'none';
-try{await setDoc(doc(db,'users',uid),{notif},{merge:true});toast('알림 설정 저장됨!');}catch{toast('저장 실패');}
+  notif.partnerCheck=$('notif-partner-check').checked;notif.selfAlarm=$('notif-self').checked;notif.selfMin=parseInt($('notif-self-min').value)||30;notif.partnerMiss=$('notif-partner-miss').checked;notif.partnerMissMin=parseInt($('notif-miss-min').value)||60;
+  $('notif-self-detail').style.display=notif.selfAlarm?'flex':'none';$('notif-miss-detail').style.display=notif.partnerMiss?'flex':'none';
+  try{await setDoc(doc(db,'users',uid),{notif},{merge:true});toast('알림 설정 저장됨!');}catch{toast('저장 실패');}
 };
+
 const updateStats = function(){
-$('stat-count').textContent=meds.length;
-const k=todayKey(),tl=logs[k]||{},tms=medsOn(todayDow());const done=tms.filter(m=>tl[m.id]).length;
-$('stat-rate').textContent=tms.length?Math.round(done/tms.length*100)+'%':'0%';
-let streak=0;const today=new Date();
-for(let i=0;i<60;i++){const d=new Date(today);d.setDate(today.getDate()-i);const dk=dKey(d.getFullYear(),d.getMonth(),d.getDate());const dow=WDS[d.getDay()];const dm=meds.filter(m=>m.days?.includes(dow));if(!dm.length)continue;if(dm.every(m=>(logs[dk]||{})[m.id]))streak++;else if(i>0)break;}
-$('stat-streak').textContent=streak;
+  $('stat-count').textContent=meds.length;
+  const k=todayKey(),tl=logs[k]||{},tms=medsOn(todayDow());const done=tms.filter(m=>tl[m.id]).length;
+  $('stat-rate').textContent=tms.length?Math.round(done/tms.length*100)+'%':'0%';
+  let streak=0;const today=new Date();
+  for(let i=0;i<60;i++){const d=new Date(today);d.setDate(today.getDate()-i);const dk=dKey(d.getFullYear(),d.getMonth(),d.getDate());const dow=WDS[d.getDay()];const dm=meds.filter(m=>m.days?.includes(dow));if(!dm.length)continue;if(dm.every(m=>(logs[dk]||{})[m.id]))streak++;else if(i>0)break;}
+  $('stat-streak').textContent=streak;
 }
+
 const go = function(name){
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$('s-'+name).classList.add('active');
-document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const ni=$('n-'+name);if(ni)ni.classList.add('on');
-$('fab').style.display=name==='home'?'flex':'none';
-if(name==='home'){rebuildCal();buildMedList();buildPartnerSections();}
-if(name==='my'){syncMyUI();updateStats();buildMedManage();}
-if(name==='connect'){buildPartnersList();buildPartnerOrderList();}
-if(name==='garden'){buildGardenView();}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$('s-'+name).classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const ni=$('n-'+name);if(ni)ni.classList.add('on');
+  $('fab').style.display=name==='home'?'flex':'none';
+  if(name==='home'){rebuildCal();buildMedList();buildPartnerSections();}
+  if(name==='my'){syncMyUI();updateStats();buildMedManage();}
+  if(name==='connect'){buildPartnersList();buildPartnerOrderList();}
 }
 window.go=go;
+
 const buildAddForm = function(){
-const ig=$('icon-grid');if(!ig)return;ig.innerHTML='';
-ICONS.forEach((ic,i)=>{const d=document.createElement('div');d.className='iopt'+(i===0?' on':'');d.textContent=ic;d.onclick=()=>{ig.querySelectorAll('.iopt').forEach(x=>x.classList.remove('on'));d.classList.add('on');$('icon-custom').value='';$('icon-preview').textContent='✏️';};ig.appendChild(d);});
-const tc=$('time-chips');tc.innerHTML='';
-TIMES.forEach((t,i)=>{const c=document.createElement('div');c.className='chip'+(i===1?' on':'');c.textContent=t;c.onclick=()=>{tc.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');};tc.appendChild(c);});
-const dc=$('day-chips');dc.innerHTML='';
-DAYS.forEach((d,i)=>{const c=document.createElement('div');c.className='chip'+(i<5?' on':'');c.textContent=d;c.onclick=()=>{c.classList.toggle('on');};dc.appendChild(c);});
-$('mn-name').value='';$('icon-custom').value='';$('icon-preview').textContent='✏️';$('med-time-exact').value='';
-timeSkipMode=false;$('time-skip-btn').classList.remove('on');$('med-time-exact').disabled=false;$('alarm-sel').disabled=false;$('alarm-sel').value='30';
+  const ig=$('icon-grid');if(!ig)return;ig.innerHTML='';
+  ICONS.forEach((ic,i)=>{const d=document.createElement('div');d.className='iopt'+(i===0?' on':'');d.textContent=ic;d.onclick=()=>{ig.querySelectorAll('.iopt').forEach(x=>x.classList.remove('on'));d.classList.add('on');$('icon-custom').value='';$('icon-preview').textContent='✏️';};ig.appendChild(d);});
+  const tc=$('time-chips');tc.innerHTML='';
+  TIMES.forEach((t,i)=>{const c=document.createElement('div');c.className='chip'+(i===1?' on':'');c.textContent=t;c.onclick=()=>{tc.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');};tc.appendChild(c);});
+  const dc=$('day-chips');dc.innerHTML='';
+  DAYS.forEach((d,i)=>{const c=document.createElement('div');c.className='chip'+(i<5?' on':'');c.textContent=d;c.onclick=()=>{c.classList.toggle('on');};dc.appendChild(c);});
+  $('mn-name').value='';$('icon-custom').value='';$('icon-preview').textContent='✏️';$('med-time-exact').value='';
+  timeSkipMode=false;$('time-skip-btn').classList.remove('on');$('med-time-exact').disabled=false;$('alarm-sel').disabled=false;$('alarm-sel').value='30';
 }
+
 const buildPushBanner = function(show){const a=$('push-banner');if(!a)return;a.innerHTML=show?`<div class="push-banner"><p>🔔 알림을 켜면 파트너 복용 시 바로 알림이 와요!</p><button class="push-btn-sm" onclick="requestPush()">알림 켜기</button></div>`:'';}
 const setPushUI = function(on){$('push-txt').textContent=on?'🔔 알림 켜짐':'알림 꺼짐';$('push-txt').style.color=on?'var(--t400)':'var(--tx3)';$('fb-dot').classList.toggle('on',on);buildPushBanner(!on);updatePushToggleUI();}
 const SW_PATH=BASE_PATH+'/service-worker.js';
 const registerSW = async ()=>{
-if(!('serviceWorker'in navigator))return;
-try{await navigator.serviceWorker.register(SW_PATH);}catch(e){console.warn('SW 등록 실패:',e);}
+  if(!('serviceWorker'in navigator))return;
+  try{await navigator.serviceWorker.register(SW_PATH);}catch(e){console.warn('SW 등록 실패:',e);}
 };
 const swReadyWithTimeout = (ms=8000)=>{
-if(!('serviceWorker' in navigator)) return Promise.reject(new Error('SW not supported'));
-return Promise.race([
-navigator.serviceWorker.ready,
-new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),ms))
-]);
+  if(!('serviceWorker' in navigator)) return Promise.reject(new Error('SW not supported'));
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),ms))
+  ]);
 };
 let msgInited=false;
 const initMsg = async ()=>{
-if(!('Notification'in window))return;
-try{
-if(!msgInited){
-messaging=getMessaging(fbApp);
-onMessage(messaging,p=>{
-  // data-only 메시지: notification 필드 없으므로 data에서 읽음
-  const d=p.data||{};
-  const n=p.notification||{};
-  const title=n.title||d.title||'';
-  const body=n.body||d.body||'';
-  if(title||body)toast(`🔔 ${title}: ${body}`);
-});
-msgInited=true;
-}
-if(Notification.permission==='granted')await refreshFCM();
-setPushUI(Notification.permission==='granted');
-}catch(e){console.warn('initMsg 실패:',e);}
+  if(!('Notification'in window))return;
+  try{
+    if(!msgInited){
+      messaging=getMessaging(fbApp);
+      onMessage(messaging,p=>{const{title,body}=p.notification||{};toast(`🔔 ${title||'알림'}: ${body||''}`);});
+      msgInited=true;
+    }
+    if(Notification.permission==='granted')await refreshFCM();
+    setPushUI(Notification.permission==='granted');
+  }catch(e){console.warn('initMsg 실패:',e);}
 };
 const refreshFCM = async ()=>{
-if(!messaging||!uid)return;
-try{
-const sw=await swReadyWithTimeout();
-const token=await getToken(messaging,{vapidKey:VAPID,serviceWorkerRegistration:sw});
-if(token){await setDoc(doc(db,'users',uid),{fcmToken:token},{merge:true});setPushUI(true);}
-}catch(e){console.warn('FCM 토큰 갱신 실패:',e);}
+  if(!messaging||!uid)return;
+  try{
+    const sw=await swReadyWithTimeout();
+    const token=await getToken(messaging,{vapidKey:VAPID,serviceWorkerRegistration:sw});
+    if(token){await setDoc(doc(db,'users',uid),{fcmToken:token},{merge:true});setPushUI(true);}
+  }catch(e){console.warn('FCM 토큰 갱신 실패:',e);}
 };
 const updatePushToggleUI = function(){
-const lb=$('push-toggle-lb');const item=$('push-toggle-item');if(!lb)return;
-const on=Notification.permission==='granted';
-lb.textContent=on?'푸시 알림 끄기':'푸시 알림 켜기';
-if(item)item.querySelector('.si-ic').textContent=on?'🔕':'🔔';
+  const lb=$('push-toggle-lb');const item=$('push-toggle-item');if(!lb)return;
+  const on=Notification.permission==='granted';
+  lb.textContent=on?'푸시 알림 끄기':'푸시 알림 켜기';
+  if(item)item.querySelector('.si-ic').textContent=on?'🔕':'🔔';
 }
-// 연결 후 알림 유도
-const promptPushAfterConnect=(partnerName)=>{
-if(Notification.permission==='granted')return;
-const msg=`${partnerName}님과 연결됐어요! 🎉\n\n알림을 켜면 파트너가 약을 먹었을 때, 쿡 찌르기/칭찬을 받을 때 바로 알 수 있어요.\n\n알림을 허용할까요?`;
-if(confirm(msg))requestPush();
-};
 window.togglePushNotif=async()=>{
-const on=Notification.permission==='granted';
-if(on){
-// 알림 끄기 경고
-if(!confirm('알림을 끄면 파트너의 복용 알림, 쿡 찌르기, 칭찬을 받을 수 없어요.\n그래도 끄시겠어요?'))return;
-if(confirm('푸시 알림을 끄려면 브라우저 설정에서 변경해야 해요.\n\n설정 방법:\n• Safari: 설정 → 앱 이름 → 알림 끄기\n• Chrome: 주소창 자물쇠 → 알림 → 차단\n\n설정 페이지로 이동할까요?')){
-try{await setDoc(doc(db,'users',uid),{fcmToken:null},{merge:true});}catch(e){}
-setPushUI(false);
-toast('🔕 앱 알림 설정에서 알림을 끄면 완전히 꺼져요');
-}
-}else{
-await requestPush();
-}
-updatePushToggleUI();
+  const on=Notification.permission==='granted';
+  if(on){
+    // 끄기: 브라우저 정책상 JS로 직접 권한 취소 불가 → 안내
+    if(confirm('푸시 알림을 끄려면 브라우저 설정에서 변경해야 해요.\n\n설정 방법:\n• Safari: 설정 → 앱 이름 → 알림 끄기\n• Chrome: 주소창 자물쇠 → 알림 → 차단\n\n설정 페이지로 이동할까요?')){
+      // FCM 토큰 삭제
+      try{await setDoc(doc(db,'users',uid),{fcmToken:null},{merge:true});}catch(e){}
+      setPushUI(false);
+      toast('🔕 앱 알림 설정에서 알림을 끄면 완전히 꺼져요');
+    }
+  }else{
+    await requestPush();
+  }
+  updatePushToggleUI();
 };
 window.requestPush=async()=>{
-if(!('Notification'in window)){toast('이 브라우저는 알림을 지원하지 않아요.');return;}
-if(Notification.permission==='denied'){toast('브라우저 설정에서 알림을 허용해주세요.');return;}
-showLoad('알림 권한 요청 중...');
-try{
-const p=await Notification.requestPermission();
-if(p!=='granted'){hideLoad();toast('알림 허용이 필요해요.');return;}
-hideLoad();
-showLoad('알림 등록 중...');
-await registerSW();
-await refreshFCM();
-hideLoad();
-toast('🔔 푸시 알림이 켜졌어요!');
-updatePushToggleUI();
-}catch(e){
-hideLoad();
-toast('알림 설정 실패: '+e.message);
-}
+  if(!('Notification'in window)){toast('이 브라우저는 알림을 지원하지 않아요.');return;}
+  if(Notification.permission==='denied'){toast('브라우저 설정에서 알림을 허용해주세요.');return;}
+  showLoad('알림 권한 요청 중...');
+  try{
+    const p=await Notification.requestPermission();
+    if(p!=='granted'){hideLoad();toast('알림 허용이 필요해요.');return;}
+    hideLoad();
+    showLoad('알림 등록 중...');
+    await registerSW();
+    await refreshFCM();
+    hideLoad();
+    toast('🔔 푸시 알림이 켜졌어요!');
+    updatePushToggleUI();
+  }catch(e){
+    hideLoad();
+    toast('알림 설정 실패: '+e.message);
+  }
 };
+
 let tt;
 const toast = function(msg){clearTimeout(tt);$('toast-msg').textContent=msg;$('toast').classList.add('show');tt=setTimeout(()=>$('toast').classList.remove('show'),3800);}
 const showLoad = function(msg){$('load-msg').textContent=msg||'처리 중...';$('loading').classList.add('show');}
 const hideLoad = function(){$('loading').classList.remove('show');}
-
-// ── 식물 이모지 반환 ──
-const getPlantEmoji=(typeId,level)=>{
-  if(!typeId)return '🌱';
-  const p=PLANT_TYPES.find(x=>x.id===typeId);
-  if(!p)return '🌱';
-  const idx=Math.min(level,p.stages.length-1);
-  return p.stages[idx];
-};
-// SVG 식물 HTML 반환 (이모지 fallback 포함)
-const getPlantHTML=(typeId,level,size=72)=>{
-  if(!typeId)return '<span style="font-size:'+(size*0.6)+'px">🌱</span>';
-  try{return getPlantSVG(typeId,level,size);}catch(e){return '<span style="font-size:'+(size*0.6)+'px">'+getPlantEmoji(typeId,level)+'</span>';}
-};
-const getPlantStageName=(typeId,level)=>{
-  const p=PLANT_TYPES.find(x=>x.id===typeId);
-  if(!p)return '씨앗';
-  const names=p.type==='flower'?PLANT_STAGE_NAMES_FLOWER:PLANT_STAGE_NAMES_TREE;
-  return names[Math.min(level,9)];
-};
-
-// ── 홈 대표 식물 ──
-const buildHomePlant=()=>{
-  const area=$('home-plant-area');if(!area)return;
-  const myPlants=Object.values(plants).filter(p=>p.plantTypeId);
-  // 파트너 1명이면 자동으로 그 식물 표시 (homePick 무관)
-  let homePlant=null;
-  if(myPlants.length===1){
-    homePlant=myPlants[0];
-  }else{
-    homePlant=myPlants.find(p=>p.homePick)||myPlants[0]||null;
-  }
-  if(!homePlant){area.innerHTML='';return;}
-  const p=homePlant;
-  const partner=partners.find(x=>x.uid===p.partnerUid);
-  const pName=partner?getPDN(partner):'파트너';
-  const emoji=getPlantEmoji(p.plantTypeId,p.level||0);
-  const stageName=getPlantStageName(p.plantTypeId,p.level||0);
-  const doses=p.doses||0;
-  const progress=Math.min((doses%DOSES_PER_LEVEL)/DOSES_PER_LEVEL*100,100);
-  const customName=p.plantCustomName||'우리 식물';
-  area.innerHTML='<div class="home-plant-wrap">'
-    +'<div class="home-plant-svg" onclick="touchHomePlant()">'+getPlantHTML(p.plantTypeId,p.level||0,80)+'</div>'
-    +'<div class="home-plant-name">'+customName+'</div>'
-    +'<div class="home-plant-level">Lv.'+(+(p.level||0)+1)+' '+stageName+' · '+pName+'와 함께</div>'
-    +'<div style="width:140px;margin-top:6px"><div class="garden-progress"><div class="garden-progress-bar" style="width:'+progress+'%"></div></div></div>'
-    +(myPlants.length>1?'<div class="home-plant-select" onclick="showHomePlantPicker()">식물 변경 ›</div>':'')
-    +'</div>';
-};
-
-// ── 홈 식물 변경 ──
-window.showHomePlantPicker=()=>{
-  const list=Object.values(plants).filter(p=>p.plantTypeId);
-  if(!list.length){toast('연결된 파트너와 식물을 먼저 선택해주세요!');return;}
-  // 내 정원 탭으로 이동해서 선택하도록 유도
-  go('garden');
-  toast('홈에 표시할 식물을 내 정원에서 선택해주세요 🌿');
-};
-window.setHomePlant=async(partnerUid)=>{
-  // 로컬 plants 즉시 업데이트 (onSnapshot 응답 전 UI 깜빡임 방지)
-  for(const p of Object.values(plants)){
-    p.homePick=(p.partnerUid===partnerUid);
-  }
-  buildHomePlant();buildGardenView();
-  // Firestore 비동기 업데이트
-  for(const p of Object.values(plants)){
-    try{await setDoc(doc(db,'users',uid,'plants',p.partnerUid),{homePick:p.partnerUid===partnerUid},{merge:true});}catch(e){}
-  }
-};
-
-// ── 식물 흔들기 ──
-window.wigglePlant=(el)=>{
-  el.classList.add('wiggle');
-  setTimeout(()=>el.classList.remove('wiggle'),400);
-};
-
-// 홈 식물 터치 상호작용
-window.touchHomePlant=()=>{
-  const el=document.querySelector('.home-plant-svg');
-  if(!el)return;
-  el.style.transition='transform .1s';
-  el.style.transform='scale(1.15) rotate(5deg)';
-  setTimeout(()=>{el.style.transform='scale(0.95) rotate(-3deg)';},100);
-  setTimeout(()=>{el.style.transform='scale(1.05) rotate(2deg)';},200);
-  setTimeout(()=>{el.style.transform='scale(1)';},300);
-  // 랜덤 반응 이모지 띄우기
-  const reactions=['💚','🌟','😊','✨','🌿','💕'];
-  const r=reactions[Math.floor(Math.random()*reactions.length)];
-  const div=document.createElement('div');
-  div.style.cssText='position:fixed;font-size:28px;pointer-events:none;z-index:200;animation:floatUp 1s ease forwards';
-  const rect=el.getBoundingClientRect();
-  div.style.left=(rect.left+rect.width/2-14)+'px';
-  div.style.top=(rect.top-20)+'px';
-  div.textContent=r;
-  document.body.appendChild(div);
-  setTimeout(()=>div.remove(),1000);
-};
-
-// 자세히 보기 모달
-let _detailPuid=null;
-window.showPlantDetail=(puid)=>{
-  const plant=plants[puid];if(!plant||!plant.plantTypeId)return;
-  _detailPuid=puid;
-  const pt=PLANT_TYPES.find(x=>x.id===plant.plantTypeId);
-  const info=PLANT_INFO[plant.plantTypeId]||{};
-  const level=plant.level||0;
-  $('pd-plant-display').innerHTML=getPlantHTML(plant.plantTypeId,level,100);
-  $('pd-plant-name').textContent=(plant.plantCustomName||pt?.name||'식물')+' (Lv.'+(level+1)+')';
-  $('pd-plant-type').textContent=(pt?.type==='flower'?'🌸 꽃':'🌳 나무')+' · '+getPlantStageName(plant.plantTypeId,level);
-  $('pd-habitat').textContent=info.habitat||'-';
-  $('pd-trait').textContent=info.trait||'-';
-  $('pd-personality').textContent=info.personality||'-';
-  $('modal-plant-detail').style.display='flex';
-};
-window.wigglePlantDetail=()=>{
-  const el=$('pd-plant-display');if(!el)return;
-  // 더 역동적인 꿈틀 애니메이션
-  el.style.transition='transform .08s';
-  const frames=[
-    'scale(1.2) rotate(-8deg)',
-    'scale(0.9) rotate(10deg)',
-    'scale(1.15) rotate(-6deg)',
-    'scale(0.95) rotate(6deg)',
-    'scale(1.08) rotate(-3deg)',
-    'scale(1)',
-  ];
-  frames.forEach((f,i)=>{
-    setTimeout(()=>{el.style.transform=f;},i*80);
-  });
-  // 반응 이모지
-  const plant=_detailPuid&&plants[_detailPuid];
-  const info=plant&&PLANT_INFO[plant.plantTypeId];
-  const emoji=info?.sound||'💚';
-  const div=document.createElement('div');
-  div.style.cssText='position:fixed;font-size:32px;pointer-events:none;z-index:300;animation:floatUp 1s ease forwards;left:50%;top:30%;transform:translateX(-50%)';
-  div.textContent=emoji;
-  document.body.appendChild(div);
-  setTimeout(()=>div.remove(),1000);
-};
-
-// ── 복용 애니메이션 ──
-const showWaterAnim=()=>{
-  const emojis=['💧','🌊','☀️','✨','🌟'];
-  const e=document.createElement('div');
-  e.className='water-anim';
-  e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-  document.body.appendChild(e);
-  setTimeout(()=>e.remove(),1200);
-};
-
-// ── 식물 성장 처리 ──
-const growPlant=async(partnerUid)=>{
-  const plant=plants[partnerUid];if(!plant||!plant.plantTypeId)return;
-  const newDoses=(plant.doses||0)+1;
-  const newLevel=Math.min(Math.floor(newDoses/DOSES_PER_LEVEL),9);
-  const leveled=newLevel>(plant.level||0);
-  // 내 plants 성장
-  await setDoc(doc(db,'users',uid,'plants',partnerUid),{doses:newDoses,level:newLevel},{merge:true});
-  // 상대방 plants도 동기화
-  try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{doses:newDoses,level:newLevel},{merge:true});}catch(e){}
-  if(leveled){
-    const emoji=getPlantEmoji(plant.plantTypeId,newLevel);
-    const stageName=getPlantStageName(plant.plantTypeId,newLevel);
-    const msgs=[
-      '약 복용으로 식물이 성장했어요! '+emoji,
-      '함께 키운 식물이 쑥쑥 자랐어요! '+emoji,
-      '오늘도 약을 잘 챙긴 덕분에 '+emoji+' '+stageName+' 단계가 됐어요!',
-      '대단해요! '+emoji+' '+stageName+' 단계로 성장했어요 🎉',
-    ];
-    toast(msgs[Math.floor(Math.random()*msgs.length)]);
-  }
-};
-
-// ── 내 정원 뷰 ──
-const buildGardenView=()=>{
-  buildGardenPlants();
-  buildPlantDex();
-};
-const buildGardenPlants=()=>{
-  const list=$('garden-plants-list');if(!list)return;
-  const myPlants=Object.values(plants);
-  list.innerHTML='';
-  // 파트너 중 식물 없는 파트너 먼저 표시
-  const missingPartners=partners.filter(p=>!plants[p.uid]||!plants[p.uid].plantTypeId);
-  missingPartners.forEach(p=>{
-    const card=document.createElement('div');card.className='garden-card';
-    card.style.cssText='border:2px dashed var(--t200);background:var(--t50)';
-    card.innerHTML='<div class="garden-card-top"><div class="plant-avatar" style="background:var(--g100);font-size:32px">🌱</div>'
-      +'<div class="garden-card-info"><div class="garden-plant-name">식물을 선택해주세요</div>'
-      +'<div class="garden-partner-name">'+getPDN(p)+'님과 함께 키울 식물</div>'
-      +'<button class="abtn" style="margin-top:8px;padding:8px 16px;font-size:13px" data-uid="'+p.uid+'" data-pname="'+encodeURIComponent(getPDN(p))+'" onclick="showPlantPick(this.dataset.uid,decodeURIComponent(this.dataset.pname))">🌸 식물 선택하기</button>'
-      +'</div></div>';
-    list.appendChild(card);
-  });
-  if(!myPlants.length||myPlants.every(p=>!p.plantTypeId))return;
-  myPlants.filter(p=>p.plantTypeId).forEach(p=>{
-    const partner=partners.find(x=>x.uid===p.partnerUid);
-    const pName=partner?getPDN(partner):'파트너';
-    const emoji=getPlantEmoji(p.plantTypeId,p.level||0);
-    const stageName=getPlantStageName(p.plantTypeId,p.level||0);
-    const doses=p.doses||0;
-    const progress=Math.min((doses%DOSES_PER_LEVEL)/DOSES_PER_LEVEL*100,100);
-    const remain=DOSES_PER_LEVEL-(doses%DOSES_PER_LEVEL);
-    const isHome=!!p.homePick;
-    const card=document.createElement('div');card.className='garden-card';
-    card.innerHTML=`<div class="garden-card-top">
-      <div class="plant-avatar">${getPlantHTML(p.plantTypeId,p.level||0,64)}</div>
-      <div class="garden-card-info">
-        <div class="garden-plant-name">${p.plantCustomName||'우리 식물'}</div>
-        <div class="garden-partner-name">with ${pName} · ${PLANT_TYPES.find(x=>x.id===p.plantTypeId)?.name||''}</div>
-        <div class="garden-level">Lv.${(p.level||0)+1} ${stageName}</div>
-        <div class="garden-progress"><div class="garden-progress-bar" style="width:${progress}%"></div></div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:3px">다음 단계까지 ${remain}번 복용</div>
-      </div>
-    </div>
-    ${myPlants.filter(x=>x.plantTypeId).length>1?`<div class="garden-home-toggle">
-      <span>${isHome?'🏠 홈 화면에 표시 중':'홈 화면에 표시하기'}</span>
-      <label class="toggle-wrap" style="transform:scale(.85)"><input type="checkbox" ${isHome?'checked':''} data-puid="${p.partnerUid}" onchange="setHomePlant(this.dataset.puid)"/><span class="toggle-slider"></span></label>
-    </div>`:'<div style="padding:10px 16px;font-size:12px;color:var(--tx3)">🏠 홈 화면에 표시 중</div>'}
-    <div style="display:flex;gap:8px;padding:0 16px 14px;flex-wrap:wrap">
-      <button class="garden-detail-btn" data-puid="${p.partnerUid}" onclick="showPlantDetail(this.dataset.puid)">🔍 자세히 보기</button>
-      <button class="garden-detail-btn" style="color:#1D9E75;background:#E8F8F0" data-puid="${p.partnerUid}" data-cname="${p.plantCustomName||''}" onclick="renamePlant(this.dataset.puid,this.dataset.cname)">✏️ 이름 변경</button>
-      <button class="garden-detail-btn" style="color:#E53935;background:#FFF0F0" data-puid="${p.partnerUid}" onclick="changePlant(this.dataset.puid)">🔄 식물 변경</button>
-    </div>`;
-    list.appendChild(card);
-  });
-};
-const buildPlantDex=()=>{
-  const dex=$('dex-grid');if(!dex)return;
-  const myPlantTypes=new Set(Object.values(plants).filter(p=>p.plantTypeId).map(p=>p.plantTypeId));
-  const myPlantLevels={};
-  Object.values(plants).filter(p=>p.plantTypeId).forEach(p=>{myPlantLevels[p.plantTypeId]=p.level||0;});
-  dex.innerHTML='';
-  PLANT_TYPES.forEach(pt=>{
-    const owned=myPlantTypes.has(pt.id);
-    const level=myPlantLevels[pt.id]||0;
-    const item=document.createElement('div');
-    item.className='dex-item'+(owned?'':' dex-locked');
-    const stages=Array.from({length:10},(_,i)=>{const cls='dex-stage-dot'+(i<=level&&owned?'':' locked');return '<div class="'+cls+'"></div>';}).join('');
-    const dexEmoji=owned?getPlantHTML(pt.id,myPlantLevels[pt.id]||0,40):'<span style="font-size:30px;opacity:.25">🌱</span>';
-    const dexName=owned?pt.name:'???';
-    item.innerHTML='<div class="dex-emoji">'+dexEmoji+'</div><div class="dex-name">'+dexName+'</div><div class="dex-stages">'+stages+'</div>';
-    dex.appendChild(item);
-  });
-};
-
-// ── 정원/도감 뷰 토글 ──
-window.toggleGardenView=()=>{
-  const dexView=$('garden-dex-view');
-  const plantsView=$('garden-plants-view');
-  const btn=$('garden-dex-btn');
-  const isDex=dexView.style.display!=='none';
-  dexView.style.display=isDex?'none':'block';
-  plantsView.style.display=isDex?'block':'none';
-  btn.textContent=isDex?'🔍 식물 도감':'🌿 내 정원';
-};
-
-// ── 식물 선택 팝업 ──
-window.renamePlant=async(partnerUid,currentName)=>{
-  const newName=prompt('식물의 새 이름을 입력해주세요 ✏️', currentName||'');
-  if(newName===null)return; // 취소
-  const trimmed=newName.trim();
-  if(!trimmed){toast('이름을 입력해주세요!');return;}
-  if(trimmed.length>12){toast('이름은 12자 이내로 입력해주세요!');return;}
-  showLoad('저장 중...');
-  try{
-    await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantCustomName:trimmed},{merge:true});
-    try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantCustomName:trimmed},{merge:true});}catch(e){}
-    if(plants[partnerUid])plants[partnerUid].plantCustomName=trimmed;
-    buildGardenView();buildHomePlant();
-    toast('✅ 이름이 변경됐어요!');
-  }catch(e){toast('저장 실패: '+e.message);}
-  finally{hideLoad();}
-};
-window.changePlant=async(partnerUid)=>{
-  const plant=plants[partnerUid];if(!plant)return;
-  const pName=partners.find(x=>x.uid===partnerUid)?getPDN(partners.find(x=>x.uid===partnerUid)):'파트너';
-  const customName=plant.plantCustomName||'우리 식물';
-  if(!confirm('⚠️ 식물 종을 변경하면 '+customName+'의 모든 경험치와 레벨이 초기화돼요.\n\n정말 변경할까요?'))return;
-  showLoad('초기화 중...');
-  window._plantLock=true; // onSnapshot 덮어쓰기 방지
-  try{
-    // 로컬 즉시 초기화
-    if(plants[partnerUid]){plants[partnerUid].plantTypeId=null;plants[partnerUid].plantCustomName=null;}
-    await setDoc(doc(db,'users',uid,'plants',partnerUid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});
-    try{await setDoc(doc(db,'users',partnerUid,'plants',uid),{plantTypeId:null,plantCustomName:null,level:0,doses:0},{merge:true});}catch(e){}
-    hideLoad();
-    buildGardenView();buildHomePlant();
-    showPlantPick(partnerUid,pName);
-  }catch(e){hideLoad();window._plantLock=false;toast('변경 실패: '+e.message);}
-};
-window.showPlantPick=(partnerUid,partnerName)=>{
-  pendingPlantPartnerUid=partnerUid;
-  selectedPlantTypeId=null;
-  $('plant-pick-partner-label').textContent=`👫 ${partnerName}님과 함께 키울 식물`;
-  $('plant-name-input').value='';
-  $('plant-pick-err').textContent='';
-  // 꽃
-  const fg=$('plant-pick-grid-flower');fg.innerHTML='';
-  PLANT_TYPES.filter(p=>p.type==='flower').forEach(p=>{
-    const el=document.createElement('div');el.className='plant-pick-item';
-    el.innerHTML='<div class="plant-pick-svg" style="width:52px;height:52px">'+getPlantHTML(p.id,5,52)+'</div><div class="plant-pick-label">'+p.name+'</div>';
-    el.onclick=()=>{document.querySelectorAll('.plant-pick-item').forEach(x=>x.classList.remove('on'));el.classList.add('on');selectedPlantTypeId=p.id;};
-    fg.appendChild(el);
-  });
-  // 나무
-  const tg=$('plant-pick-grid-tree');tg.innerHTML='';
-  PLANT_TYPES.filter(p=>p.type==='tree').forEach(p=>{
-    const el=document.createElement('div');el.className='plant-pick-item';
-    el.innerHTML='<div class="plant-pick-svg" style="width:52px;height:52px">'+getPlantHTML(p.id,5,52)+'</div><div class="plant-pick-label">'+p.name+'</div>';
-    el.onclick=()=>{document.querySelectorAll('.plant-pick-item').forEach(x=>x.classList.remove('on'));el.classList.add('on');selectedPlantTypeId=p.id;};
-    tg.appendChild(el);
-  });
-  $('modal-plant-pick').style.display='flex';
-};
-window.confirmPlantPick=async()=>{
-  if(!selectedPlantTypeId){$('plant-pick-err').textContent='식물을 선택해주세요!';return;}
-  const name=$('plant-name-input').value.trim();
-  if(!name){$('plant-pick-err').textContent='식물 이름을 지어주세요!';return;}
-  showLoad('식물 심는 중...');
-  try{
-    const myPlantCount=Object.values(plants).filter(p=>p.plantTypeId).length;
-    const isFirst=(myPlantCount===0);
-    const autoHome=isFirst;
-    const plantData={
-      plantTypeId:selectedPlantTypeId,
-      plantCustomName:name,
-      level:0,doses:0,
-      homePick:autoHome,
-      createdAt:serverTimestamp()
-    };
-    // 내 plants에 저장
-    await setDoc(doc(db,'users',uid,'plants',pendingPlantPartnerUid),plantData);
-    // 상대방 plants에 저장 (homePick은 상대방이 각자 결정 - 저장 안 함)
-    try{
-      await setDoc(doc(db,'users',pendingPlantPartnerUid,'plants',uid),{
-        plantTypeId:selectedPlantTypeId,
-        plantCustomName:name,
-        level:0,doses:0,
-        homePick:true,
-        createdAt:serverTimestamp()
-      });
-    }catch(e2){
-      console.error('[confirmPlantPick] 상대방 plants 저장 실패:', e2.code, e2.message);
-    }
-    // 상대방에게 알림 (알림 type: plantSelected)
-    try{
-      await addDoc(collection(db,'users',pendingPlantPartnerUid,'notifications'),{
-        from:uid,fromName:uname||'파트너',
-        type:'plantSelected',
-        plantName:name,
-        plantTypeId:selectedPlantTypeId,
-        read:false,
-        createdAt:serverTimestamp()
-      });
-    }catch(e3){console.warn('알림 전송 실패:',e3.message);}
-    window._plantLock=false;
-    // 로컬 즉시 반영
-    plants[pendingPlantPartnerUid]={plantTypeId:selectedPlantTypeId,plantCustomName:name,level:0,doses:0,homePick:autoHome,partnerUid:pendingPlantPartnerUid};
-    closeModal('modal-plant-pick');
-    buildHomePlant();buildGardenView();
-    toast('🌱 '+name+' 심기 완료! 함께 잘 키워봐요!');
-    // 알림 요청 (처음 식물 선택 시)
-    const _partner=partners.find(x=>x.uid===pendingPlantPartnerUid);
-    if(_partner&&isFirst)setTimeout(()=>promptPushAfterConnect(getPDN(_partner)),800);
-  }catch(e){$('plant-pick-err').textContent='저장 실패: '+e.message;}
-  finally{hideLoad();}
-};
-
-// ── 기존 유저 공지 ──
-const checkGardenNotice=async()=>{
-  if(!partners.length)return;
-  // 식물 유무와 무관하게 gardenNoticeSeen 플래그만으로 최초 1회 판단
-  try{
-    const snap=await getDoc(doc(db,'users',uid));
-    if(snap.data()?.gardenNoticeSeen)return;
-    $('notice-garden-update').style.display='flex';
-    await setDoc(doc(db,'users',uid),{gardenNoticeSeen:true},{merge:true});
-  }catch(e){console.warn('gardenNotice 체크 실패:',e);}
-};
-window.closeNoticeGarden=()=>{$('notice-garden-update').style.display='none';};
-window.startGardenForExisting=()=>{
-  closeNoticeGarden();
-  go('garden');
-  pickNextMissingPlant();
-};
-// 파트너 순서대로 식물 없는 것 순차 선택
-const pickNextMissingPlant=()=>{
-  const missing=partners.filter(p=>!plants[p.uid]||!plants[p.uid].plantTypeId);
-  if(missing.length)showPlantPick(missing[0].uid,getPDN(missing[0]));
-};
-
-const tick = function(){
-const d=new Date();
-$('clock').textContent=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-// 시간 기반 로컬 알림 체크
-if(notif.selfAlarm&&Notification.permission==='granted'&&meds.length){
-  const hh=d.getHours(),mm=d.getMinutes(),dow=WDS[d.getDay()],tk=todayKey();
-  meds.filter(m=>m.days?.includes(dow)&&m.timeExact&&m.alarm&&m.alarm!=='-1').forEach(m=>{
-    const[mh,mmin]=m.timeExact.split(':').map(Number);
-    const alarmMin=parseInt(m.alarm)||0;
-    // 알림 시각 = 복용시각 - alarmMin
-    const targetMin=mh*60+mmin-alarmMin;
-    const nowMin=hh*60+mm;
-    // 현재 분이 알림 시각과 일치하고, 아직 복용 안 했으면 알림
-    // Cloud Functions scheduledAlarms가 FCM으로 처리
-  });
-}
-}
-tick();
-// 매 분 정각에 tick 실행 (알림 타이밍 정확도 향상)
-(function scheduleTick(){
-  const now=new Date();
-  const msToNext=60000-now.getSeconds()*1000-now.getMilliseconds();
-  setTimeout(()=>{tick();setInterval(tick,60000);},msToNext);
-})();
+const tick = function(){const d=new Date();$('clock').textContent=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;}
+tick();setInterval(tick,30000);
 window.addEventListener('beforeinstallprompt',e=>e.preventDefault());
 </script>
-<div class="onboard-overlay" id="onboard" style="display:none">
-<div class="onboard-card">
-<div class="onboard-dots" id="odots"></div>
-<div class="onboard-step active" id="os-0"><div class="onboard-ic">💊</div><div class="onboard-title">약 쏘옥에 오신 걸 환영해요!</div><div class="onboard-desc">가족, 연인, 친구와 함께 약 복용을 관리해요.<br>묻지 않아도 서로 안심할 수 있어요 😊</div></div>
-<div class="onboard-step" id="os-1"><div class="onboard-ic">➕</div><div class="onboard-title">약을 등록해요</div><div class="onboard-desc">하단 <b>+</b> 버튼으로 복용할 약을 등록하세요.<br>이름, 아이콘, 시간, 요일, 정확한 시각도 설정해요.</div></div>
-<div class="onboard-step" id="os-2"><div class="onboard-ic">✅</div><div class="onboard-title">복용 후 체크해요</div><div class="onboard-desc">약을 먹고 나서 동그라미를 탭하세요.<br>파트너에게 즉시 알림이 가요!</div></div>
-<div class="onboard-step" id="os-3"><div class="onboard-ic">🔗</div><div class="onboard-title">파트너를 연결해요</div><div class="onboard-desc"><b>연결 탭</b>에서 내 초대 코드를 공유하거나<br>상대방 코드를 입력해서 연결하세요.</div></div>
-<div class="onboard-step" id="os-4"><div class="onboard-ic">🗓</div><div class="onboard-title">달력으로 한눈에 확인</div><div class="onboard-desc">상단 탭으로 나/파트너별 달력을 전환하고<br>날짜를 탭하면 상세 내역이 보여요.</div></div>
-<div class="onboard-step" id="os-5"><div class="onboard-ic">🌿</div><div class="onboard-title">식물을 함께 키워요!</div><div class="onboard-desc">파트너와 연결하면 함께 키울 식물을 선택해요.<br>약을 먹을 때마다 식물이 쑥쑥 자라요 🌱<br><br><b>내 정원</b> 탭에서 성장을 확인하고<br>식물 도감도 채워보세요!</div></div>
-<button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">다음</button>
-</div>
-</div>
 </body>
 </html>
