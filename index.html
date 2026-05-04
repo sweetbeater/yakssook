@@ -536,10 +536,9 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
       <div class="dpanel-body" id="dpanel-body"></div>
     </div>
     <div id="push-banner"></div>
-    <div id="partner-med-sections"></div>
     <div id="big-check-area"></div>
-    <div class="slabel">💊 오늘 내 복용 목록</div>
-    <div id="med-list"></div>
+    <div id="partner-med-sections"></div>
+    <div id="med-list" style="display:none"></div>
   </div>
 
   <!-- ADD -->
@@ -1354,14 +1353,8 @@ const buildMedList = function(){
       bigArea.innerHTML='<div class="big-check-wrap"><div class="big-check-btn all-done">🎉 오늘 약을 모두 복용했어요!</div></div>';
     }
   }else if(bigArea){bigArea.innerHTML='';}
-  if(!tms.length){list.innerHTML=`<div class="empty"><div class="empty-ic">💊</div><p>오늘 복용할 약이 없어요<br><span style="color:var(--tx3);font-size:14px">+ 버튼으로 약을 등록해보세요</span></p></div>`;return;}
-  list.innerHTML='';
-  tms.forEach(m=>{
-    const chk=isOk(m.id);
-    const el=document.createElement('div');el.className='mcard';
-    el.innerHTML=`<div class="micon" style="background:${m.color}">${m.icon}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mtime">${fmtMedTime(m)}</div></div><div class="chk ${chk?'on':''}" onclick="doCheck('${m.id}',event)">${chk?'✓':''}</div>`;
-    list.appendChild(el);
-  });
+  // med-list는 숨김 (big-check-area가 대체)
+  list.style.display='none';
 }
 
 // ── 파트너 섹션 ──
@@ -1388,7 +1381,7 @@ const buildPartnerSections = function(){
         <div class="p-sec-info"><div class="p-sec-name">${pn}<span style="font-size:12px;color:var(--tx3);font-weight:400;margin-left:4px">${rel}</span></div><div class="p-sec-sub">오늘 ${done}/${pTodayMeds.length}개 복용</div></div>
         <div class="p-sec-btns">
           <button class="praise-btn" onclick="praisePartner('${p.uid}')" ${!allDone?'disabled':''} title="${allDone?'칭찬하기':'약을 모두 복용해야 칭찬할 수 있어요'}">⭐ 참 잘했어요!</button>
-          <button class="poke-btn" onclick="pokePartner('${p.uid}')" ${allDone?'disabled':''} title="${!allDone?'쿡 찌르기':'이미 모두 복용했어요'}">👉 쿡 찌르기</button>
+          <button class="poke-btn" onclick="pokePartner('${p.uid}')" ${allDone||!pTodayMeds.length?'disabled':''} title="${!pTodayMeds.length?'등록된 약이 없어요':allDone?'이미 모두 복용했어요':'쿡 찌르기'}">👉 쿡 찌르기</button>
         </div>
       </div>
       ${medRows}`;
