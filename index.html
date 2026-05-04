@@ -676,7 +676,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 </div>
 
 
-<!-- 약 시각 수정 모달 -->
+<!-- 약 정보 수정 모달 -->
 <div class="modal-overlay" id="modal-edit-med" style="display:none">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto">
     <div class="modal-title">✏️ 약 정보 수정</div>
@@ -1510,12 +1510,12 @@ window.openEditMed=id=>{
 
   // 아이콘 그리드
   const ig=$('edit-icon-grid');ig.innerHTML='';
-  const ICONS=['💊','💉','🩺','🌡','🧬','🫀','🧪','🩹','🫁','🌿','🍃','🌱','🫐','🍎','🥦','🐟','🥕','🌸','⭐','🔵'];
+  // 전역 ICONS 사용
   ICONS.forEach(ic=>{
     const btn=document.createElement('div');
-    btn.className='icon-cell'+(editSelIcon===ic?' on':'');
+    btn.className='iopt'+(editSelIcon===ic?' on':'');
     btn.textContent=ic;
-    btn.onclick=()=>{editSelIcon=ic;document.querySelectorAll('#edit-icon-grid .icon-cell').forEach(b=>b.classList.remove('on'));btn.classList.add('on');$('edit-icon-preview').textContent=ic;};
+    btn.onclick=()=>{editSelIcon=ic;document.querySelectorAll('#edit-icon-grid .iopt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');$('edit-icon-preview').textContent=ic;};
     ig.appendChild(btn);
   });
   $('edit-icon-preview').textContent=editSelIcon;
@@ -1546,7 +1546,7 @@ window.previewEditCustomIcon=(v)=>{
   if(!v)return;
   editSelIcon=v;
   $('edit-icon-preview').textContent=v;
-  document.querySelectorAll('#edit-icon-grid .icon-cell').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#edit-icon-grid .iopt').forEach(b=>b.classList.remove('on'));
 };
 window.saveEditMed=async()=>{
   const name=$('edit-med-name').value.trim();
@@ -1599,7 +1599,7 @@ const buildMedManage = function(){
   el.innerHTML='';
   meds.forEach(m=>{
     const r=document.createElement('div');r.className='mmrow';
-    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" onclick="openEditMedTime('${m.id}')">시각 수정</button><div class="mm-del" onclick="deleteMed('${m.id}','${m.name.replace(/'/g,"\\'")}')">🗑</div>`;
+    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" data-id="'+m.id+'" onclick="openEditMed(this.dataset.id)">정보 수정</button><div class="mm-del" onclick="deleteMed('${m.id}','${m.name.replace(/'/g,"\\'")}')">🗑</div>`;
     el.appendChild(r);
   });
 }
