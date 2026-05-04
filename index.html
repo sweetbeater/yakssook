@@ -1599,7 +1599,7 @@ const buildMedManage = function(){
   el.innerHTML='';
   meds.forEach(m=>{
     const r=document.createElement('div');r.className='mmrow';
-    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" data-id="'+m.id+'" onclick="openEditMed(this.dataset.id)">정보 수정</button><div class="mm-del" onclick="deleteMed('${m.id}','${m.name.replace(/'/g,"\\'")}')">🗑</div>`;
+    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" data-id="${m.id}" onclick="openEditMed(this.dataset.id)">정보 수정</button><div class="mm-del" data-id="${m.id}" data-name="${encodeURIComponent(m.name)}" onclick="deleteMed(this.dataset.id,decodeURIComponent(this.dataset.name))">🗑</div>`;
     el.appendChild(r);
   });
 }
