@@ -385,6 +385,12 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .lmsg{font-size:var(--fs-base);color:var(--tx2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 #photo-input{display:none}
+/* 시니어용 큰 체크 버튼 */
+.big-check-wrap{padding:16px 16px 0;display:flex;flex-direction:column;gap:8px}
+.big-check-btn{width:100%;padding:18px;border-radius:20px;border:none;cursor:pointer;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;font-family:inherit}
+.big-check-btn.done{background:linear-gradient(135deg,var(--t400),var(--t600));color:#fff;box-shadow:0 4px 16px rgba(29,158,117,.35)}
+.big-check-btn.todo{background:var(--g100);color:var(--tx2);border:2px dashed var(--g200)}
+.big-check-btn.all-done{background:linear-gradient(135deg,#1D9E75,#085041);color:#fff;box-shadow:0 4px 16px rgba(29,158,117,.5)}
 </style>
 </head>
 <body>
@@ -440,6 +446,22 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
   </div>
 </div>
 
+<!-- 약 삭제 선택 모달 -->
+<div class="modal-overlay" id="modal-del-med" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">💊 <span id="del-med-name"></span> 삭제</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:18px;line-height:1.7">삭제 방식을 선택해주세요.</div>
+    <button class="abtn" style="margin-bottom:10px;background:var(--g100);color:var(--tx);border:1.5px solid var(--bd2)" onclick="confirmDelMed('stop')">
+      <div style="font-weight:800;margin-bottom:3px">📅 복용 중단</div>
+      <div style="font-size:12px;font-weight:400;opacity:.7">복용 기록은 남기고, 앞으로는 목록에서 사라져요</div>
+    </button>
+    <button class="abtn" style="margin-bottom:10px;background:#FFF0F0;color:#E53935;border:1.5px solid #FFCDD2" onclick="confirmDelMed('all')">
+      <div style="font-weight:800;margin-bottom:3px">🗑 전체 삭제</div>
+      <div style="font-size:12px;font-weight:400;opacity:.8">복용 기록 포함 모든 데이터를 삭제해요</div>
+    </button>
+    <button style="width:100%;padding:12px;border-radius:var(--rp);background:none;border:none;color:var(--tx3);font-size:13px;cursor:pointer" onclick="closeModal('modal-del-med')">취소</button>
+  </div>
+</div>
 <!-- 계정 연동 유도 모달 -->
 <div class="modal-overlay" id="modal-upgrade" style="display:none">
   <div class="modal-box">
@@ -515,6 +537,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     </div>
     <div id="push-banner"></div>
     <div id="partner-med-sections"></div>
+    <div id="big-check-area"></div>
     <div class="slabel">💊 오늘 내 복용 목록</div>
     <div id="med-list"></div>
   </div>
@@ -722,7 +745,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, deleteField, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, deleteUser, signInAnonymously, GoogleAuthProvider, signInWithPopup, linkWithCredential, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
@@ -1284,23 +1307,53 @@ const buildDetailPanel = function(){
   if(selPanel==='me'){
     const dm=medsOn(dow),dl=logs[key]||{};
     if(!dm.length){body.innerHTML=`<div class="dpanel-empty">이날 복용할 약이 없어요</div>`;return;}
-    dm.forEach(med=>body.appendChild(makeRow(med,!!dl[med.id])));
+    dm.forEach(med=>body.appendChild(makeRow(med,!!dl[med.id],key,true)));
   }else{
     const p=partners.find(x=>x.uid===selPanel);if(!p){body.innerHTML=`<div class="dpanel-empty">파트너를 찾을 수 없어요</div>`;return;}
     const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};
     if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${getPDN(p)}님의 이날 약이 없어요</div>`;return;}
-    pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id])));
+    pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id],key,false)));
   }
 }
-const makeRow = function(med,ok){
+const makeRow = function(med,ok,dateKey,isMyPanel){
   const r=document.createElement('div');r.className='drow';
-  r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+  const today=new Date();today.setHours(0,0,0,0);
+  // 선택 날짜 계산
+  const selD=selDate?new Date(selDate.y,selDate.m,selDate.d):today;
+  selD.setHours(0,0,0,0);
+  const isPast=selD<today; // 어제 이전
+  const isToday=selD.getTime()===today.getTime();
+  // 본인 탭 + 오늘 또는 어제(자정 넘어 복용 케이스): 체크 가능
+  const canCheck=isMyPanel&&(isToday||isPast)&&dateKey;
+  if(canCheck){
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
+  }else{
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+  }
   return r;
 }
 
 // ── 오늘 복용 목록 ──
 const buildMedList = function(){
   const list=$('med-list'),tms=medsOn(todayDow());
+  // 큰 체크 버튼 영역 빌드
+  const bigArea=$('big-check-area');
+  if(bigArea&&tms.length){
+    const todayK=todayKey();
+    const todayL=logs[todayK]||{};
+    const done=tms.filter(m=>todayL[m.id]).length;
+    const allDone=done===tms.length;
+    bigArea.innerHTML='<div class="big-check-wrap">'
+      +tms.map(m=>{
+        const ok=!!todayL[m.id];
+        return '<button class="big-check-btn '+(ok?'done':'todo')+'" data-mid="'+m.id+'" onclick="doBigCheck(this.dataset.mid,this)">'
+          +(ok?'✅':'⬜')+' '+m.name+(ok?' 복용 완료':' 복용하기')+'</button>';
+      }).join('')
+      +'</div>';
+    if(allDone&&tms.length>0){
+      bigArea.innerHTML='<div class="big-check-wrap"><div class="big-check-btn all-done">🎉 오늘 약을 모두 복용했어요!</div></div>';
+    }
+  }else if(bigArea){bigArea.innerHTML='';}
   if(!tms.length){list.innerHTML=`<div class="empty"><div class="empty-ic">💊</div><p>오늘 복용할 약이 없어요<br><span style="color:var(--tx3);font-size:14px">+ 버튼으로 약을 등록해보세요</span></p></div>`;return;}
   list.innerHTML='';
   tms.forEach(m=>{
@@ -1357,6 +1410,44 @@ const doCheck = async (mid,e)=>{
   }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 }
 window.doCheck=doCheck;
+
+// 시니어용 큰 버튼 체크
+window.doBigCheck=async(mid,btn)=>{
+  const m=meds.find(x=>x.id===mid);if(!m)return;
+  const todayK=todayKey();
+  const v=!(logs[todayK]||{})[mid];
+  playSound('check');
+  btn.disabled=true;
+  showLoad('저장 중...');
+  try{
+    await setDoc(doc(db,'users',uid,'logs',todayK),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
+    if(!logs[todayK])logs[todayK]={};
+    logs[todayK][mid]=v;
+    if(v&&partners.length){
+      for(const p of partners){try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m.name,type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}}
+      const pNames=partners.map(p=>getPDN(p)).join(', ');toast(`💚 ${pNames}에게 복용 알림 전송!`);
+    }else if(v){toast(`✅ '${m.name}' 복용 완료!`);}
+    buildMedList();rebuildCal();
+  }catch(err){toast('저장 실패: '+err.message);btn.disabled=false;}
+  finally{hideLoad();}
+};
+
+// 날짜 지정 체크 (달력에서 전날 복용 기록용 - 알림 없음)
+window.doCheckDate=async(mid,dateKey,e)=>{
+  if(e)e.stopPropagation();
+  const dayLogs=logs[dateKey]||{};
+  const v=!dayLogs[mid];
+  playSound('check');
+  showLoad('저장 중...');
+  try{
+    await setDoc(doc(db,'users',uid,'logs',dateKey),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
+    // 로컬 즉시 반영
+    if(!logs[dateKey])logs[dateKey]={};
+    logs[dateKey][mid]=v;
+    rebuildCal();buildDetailPanel();
+    toast(v?'✅ 복용 기록 추가!':'복용 기록 취소');
+  }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
+};
 
 // ── 쿡 찌르기 ──
 window.pokePartner=async puid=>{
@@ -1415,7 +1506,36 @@ window.saveEditMedTime=async()=>{
   catch(err){$('edit-med-err').textContent='저장 실패: '+err.message;}finally{hideLoad();}
 };
 
-window.deleteMed=async(id,name)=>{if(!confirm(`'${name}'을 삭제할까요?`))return;showLoad('삭제 중...');try{await deleteDoc(doc(db,'users',uid,'meds',id));toast(`🗑 '${name}' 삭제됨`);}catch{toast('삭제 실패');}finally{hideLoad();}};
+let _delMedId=null,_delMedName=null;
+window.deleteMed=async(id,name)=>{
+  _delMedId=id;_delMedName=name;
+  $('del-med-name').textContent=name;
+  $('modal-del-med').style.display='flex';
+};
+window.confirmDelMed=async(mode)=>{
+  closeModal('modal-del-med');
+  if(!_delMedId)return;
+  showLoad('처리 중...');
+  try{
+    if(mode==='all'){
+      // 전체 삭제: meds 문서 + 모든 logs에서 해당 약 기록 제거
+      await deleteDoc(doc(db,'users',uid,'meds',_delMedId));
+      // logs에서 해당 mid 필드 제거
+      const logsSnap=await getDocs(collection(db,'users',uid,'logs'));
+      for(const ld of logsSnap.docs){
+        if(ld.data()[_delMedId]!==undefined){
+          await setDoc(ld.ref,{[_delMedId]:deleteField()},{merge:true});
+        }
+      }
+      toast(`🗑 '${_delMedName}' 전체 삭제됨`);
+    }else{
+      // 복용 중단: days를 빈 배열로 설정 (목록에서 안 보이되 기록 유지)
+      await setDoc(doc(db,'users',uid,'meds',_delMedId),{days:[],active:false},{merge:true});
+      toast(`📅 '${_delMedName}' 복용 중단. 기록은 달력에 남아있어요.`);
+    }
+  }catch(e){toast('처리 실패: '+e.message);}
+  finally{hideLoad();_delMedId=null;_delMedName=null;}
+};
 
 const buildMedManage = function(){
   const el=$('med-manage');
