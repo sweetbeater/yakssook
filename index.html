@@ -1442,15 +1442,25 @@ window.doCheckDate=async(mid,dateKey,e)=>{
   if(e)e.stopPropagation();
   const dayLogs=logs[dateKey]||{};
   const v=!dayLogs[mid];
+  const isToday=(dateKey===todayKey());
   playSound('check');
   showLoad('저장 중...');
   try{
     await setDoc(doc(db,'users',uid,'logs',dateKey),{[mid]:v,updatedAt:serverTimestamp()},{merge:true});
-    // 로컬 즉시 반영
     if(!logs[dateKey])logs[dateKey]={};
     logs[dateKey][mid]=v;
-    rebuildCal();buildDetailPanel();
-    toast(v?'✅ 복용 기록 추가!':'복용 기록 취소');
+    rebuildCal();buildDetailPanel();buildMedList();
+    // 오늘 날짜 복용 체크 시에만 파트너 알림 발송
+    if(isToday&&v&&partners.length){
+      const m=meds.find(x=>x.id===mid);
+      for(const p of partners){
+        try{await addDoc(collection(db,'users',p.uid,'notifications'),{from:uid,fromName:uname||'파트너',medName:m?.name||'약',type:'checked',read:false,createdAt:serverTimestamp()});}catch(e){}
+      }
+      const pNames=partners.map(p=>getPDN(p)).join(', ');
+      toast(`💚 ${pNames}에게 복용 알림 전송!`);
+    }else{
+      toast(v?'✅ 복용 기록 추가!':'복용 기록 취소');
+    }
   }catch(err){toast('저장 실패: '+err.message);}finally{hideLoad();}
 };
 
