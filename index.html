@@ -1215,6 +1215,17 @@ const startListeners = function(){
     await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
     buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
     unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
+    await Promise.all(partners.map(async p=>{
+      if(pMeds[p.uid]!==undefined)return;
+      try{
+        const ms=await getDocs(collection(db,'users',p.uid,'meds'));
+        pMeds[p.uid]=ms.docs.map(d=>({id:d.id,...d.data()}));
+        const ls=await getDocs(collection(db,'users',p.uid,'logs'));
+        if(!pLogs[p.uid])pLogs[p.uid]={};ls.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});
+        p.todayLogs=pLogs[p.uid][todayKey()]||{};
+      }catch(e){if(pMeds[p.uid]===undefined)pMeds[p.uid]=[];}
+    }));
+    buildPartnerSections();rebuildCal();buildDetailPanel();
     partners.forEach(p=>{
       unsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
       unsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
@@ -1382,7 +1393,8 @@ const buildPartnerSections = function(){
     const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
     const sec=document.createElement('div');sec.className='partner-section';
     let medRows='';
-    if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
+    if(pMeds[p.uid]===undefined)medRows=`<div class="p-empty">불러오는 중...</div>`;
+    else if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
     else pTodayMeds.forEach(m=>{
       const ok=!!pTodayLogs[m.id];
       medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
