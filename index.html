@@ -1422,10 +1422,10 @@ const buildDetailPanel = function(){
     const p=partners.find(x=>x.uid===selPanel);if(!p){body.innerHTML=`<div class="dpanel-empty">파트너를 찾을 수 없어요</div>`;return;}
     const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};
     if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${getPDN(p)}님의 이날 약이 없어요</div>`;return;}
-    pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id],key,false)));
+    pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id],key,false,p.showContra===true)));
   }
 }
-const makeRow = function(med,ok,dateKey,isMyPanel){
+const makeRow = function(med,ok,dateKey,isMyPanel,showContra){
   const r=document.createElement('div');r.className='drow';
   const today=new Date();today.setHours(0,0,0,0);
   // 선택 날짜 계산
@@ -1435,9 +1435,10 @@ const makeRow = function(med,ok,dateKey,isMyPanel){
   const isToday=selD.getTime()===today.getTime();
   // 본인 탭 + 오늘 또는 어제(자정 넘어 복용 케이스): 체크 가능
   const canCheck=isMyPanel&&(isToday||isPast)&&dateKey;
-  // 피임약 단서(링·N일차 라벨)는 본인 패널에서만 노출. 파트너에겐 일반 약처럼 표시
-  const cLbl=isMyPanel?contraLabel(med,selD):'';
-  const ring=isMyPanel?contraRing(med,selD):'';
+  // 피임약 단서(링·N일차 라벨): 본인 패널 또는 공개(showContra)한 파트너에게만 노출
+  const showC=isMyPanel||showContra===true;
+  const cLbl=showC?contraLabel(med,selD):'';
+  const ring=showC?contraRing(med,selD):'';
   const timeHtml=`${fmtMedTime(med)}${cLbl?` · ${cLbl}`:''}`;
   if(canCheck){
     r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
@@ -1490,8 +1491,11 @@ const buildPartnerSections = function(){
     else if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
     else pTodayMeds.forEach(m=>{
       const ok=!!pTodayLogs[m.id];
-      // 파트너 화면에선 피임약 단서(링·N일차 라벨) 숨기고 일반 약처럼 표시
-      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
+      // 피임약 단서(링·N일차 라벨)는 이 파트너에게 공개(showContra)한 경우만 표시. 아니면 일반 약처럼.
+      const showC=p.showContra===true;
+      const ring=showC?contraRing(m,new Date()):'';
+      const pcLbl=showC?contraLabel(m,new Date()):'';
+      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'};${ring}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}${pcLbl?` · ${pcLbl}`:''}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
     });
     sec.innerHTML=`
       <div class="p-sec-hdr">
@@ -1739,8 +1743,14 @@ const buildPartnersList = function(){
   if(!partnersLoaded){list.innerHTML=partnerLoadingHTML('파트너 정보를 불러오는 중...');return;}
   if(!partners.length){list.innerHTML=`<div class="empty" style="padding:24px"><div class="empty-ic">🔗</div><p>아직 연결된 파트너가 없어요</p></div>`;return;}
   list.innerHTML='';
+  const iHaveContra=meds.some(m=>m.isContra); // 내가 피임약을 등록한 경우에만 공개 토글 노출
   partners.forEach(p=>{
     const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const contraToggle=iHaveContra?`
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--bd)">
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--tx)">💊 피임약 정보 공개</div><div style="font-size:11px;color:var(--tx3);line-height:1.4">끄면 이 파트너에겐 핑크·흰약·N일차가 안 보여요 (약·복용 여부는 보임)</div></div>
+        <label class="toggle-wrap"><input type="checkbox" ${p.shareContra?'checked':''} onchange="toggleShareContra('${p.uid}',this.checked)"/><span class="toggle-slider"></span></label>
+      </div>`:'';
     const el=document.createElement('div');el.className='rel-row';el.style.margin='6px 14px';
     el.innerHTML=`<div class="rel-top"><div class="av-lg" style="width:40px;height:40px;border-radius:50%;background:var(--t100);border:2px solid var(--t200);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--t600)">${avH}</div><div style="flex:1;min-width:0"><div style="font-size:var(--fs-base);font-weight:700;color:var(--tx)">${pn}</div><div style="font-size:12px;color:var(--tx3)">코드 ${p.code||''}</div></div><button class="del-btn" onclick="removePartner('${p.uid}')">해제</button></div>
       <div class="rel-fields">
@@ -1752,7 +1762,7 @@ const buildPartnersList = function(){
           <option value="친구" ${p.relation==='친구'?'selected':''}>친구</option>
           <option value="기타" ${p.relation==='기타'?'selected':''}>기타</option>
         </select>
-      </div>
+      </div>${contraToggle}
       <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>`;
     list.appendChild(el);
   });
@@ -1762,6 +1772,15 @@ window.updatePartnerLocal=(puid,key,val)=>{const p=partners.find(x=>x.uid===puid
 window.saveRelation=async puid=>{
   const p=partners.find(x=>x.uid===puid);if(!p)return;
   try{await setDoc(doc(db,'users',uid,'partners',puid),{nickname:p.nickname||'',relation:p.relation||''},{merge:true});buildPartnerTabs();buildPartnerSections();toast('저장됐어요!');}catch{toast('저장 실패');}
+};
+// 파트너별 피임약 공개 토글: 내 문서엔 UI용 shareContra, 상대 문서엔 상대 앱이 읽는 showContra 기록
+window.toggleShareContra=async(puid,on)=>{
+  const p=partners.find(x=>x.uid===puid);if(p)p.shareContra=on;
+  try{
+    await setDoc(doc(db,'users',uid,'partners',puid),{shareContra:on},{merge:true});
+    await setDoc(doc(db,'users',puid,'partners',uid),{showContra:on},{merge:true});
+    toast(on?'이 파트너에게 피임약 정보를 공개해요 💊':'이 파트너에겐 피임약 표시를 숨겨요');
+  }catch(e){toast('저장 실패');}
 };
 
 const buildPartnerOrderList = function(){
