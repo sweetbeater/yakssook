@@ -53,7 +53,7 @@ self.addEventListener('notificationclick', e => {
 // ─────────────────────────────────────────────
 // 캐시 버전 전략
 // 앱 배포 후 강제로 캐시를 비우고 싶을 때 아래 버전 숫자만 올리면 됩니다.
-const CACHE = 'yakssook-v2';
+const CACHE = 'yakssook-v3';
 // 오프라인 폴백용 앱 셸 (네트워크 우선이라 온라인이면 항상 최신본을 받습니다)
 const PRECACHE = ['./', './index.html'];
 

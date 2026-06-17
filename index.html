@@ -267,11 +267,11 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 
 /* 피임약 체크 카드 */
 .contra-card{display:flex;flex-direction:column;gap:3px;cursor:pointer;margin-bottom:0;padding:10px 12px;border:2px solid var(--bd2);border-radius:var(--rb);background:var(--g100);box-sizing:border-box;max-width:100%;transition:border-color .2s,background .2s}
-.contra-card .cc-row{display:flex;align-items:center;gap:10px}
+.contra-card .cc-row{display:flex;align-items:center;gap:10px;min-width:0}
 .contra-card input[type=checkbox]{-webkit-appearance:none;appearance:none;width:18px;height:18px;min-width:18px;flex-shrink:0;margin:0;padding:0;cursor:pointer;border:2px solid var(--bd2);border-radius:5px;background:var(--card);transition:background .15s,border-color .15s}
 .contra-card input[type=checkbox]:checked{background:#E91E63 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/12px no-repeat;border-color:#E91E63}
-.contra-card .cc-main{font-weight:700;color:var(--tx);font-size:14px;line-height:1.25}
-.contra-card .cc-sub{display:block;font-weight:400;color:var(--tx3);font-size:11px;margin-left:28px;line-height:1.35;word-break:keep-all}
+.contra-card .cc-main{font-weight:700;color:var(--tx);font-size:14px;line-height:1.25;white-space:nowrap;flex-shrink:0}
+.contra-card .cc-sub{flex:1;min-width:0;font-weight:400;color:var(--tx3);font-size:11px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .contra-card:has(input:checked){border-color:#E91E63;background:#FCE4EC}
 @media(prefers-color-scheme:dark){.contra-card:has(input:checked){background:#3A1020}}
 /* iOS date input 오버플로 방지 */
@@ -554,8 +554,8 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
           <span class="cc-row">
             <input type="checkbox" id="mn-contra" onchange="toggleContra()"/>
             <span class="cc-main">💊 피임약이에요</span>
+            <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
           </span>
-          <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
         </label>
       </div>
       <div class="fg" id="contra-date-wrap" style="display:none">
@@ -703,8 +703,8 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
         <span class="cc-row">
           <input type="checkbox" id="edit-contra" onchange="toggleEditContra()"/>
           <span class="cc-main">💊 피임약이에요</span>
+          <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
         </span>
-        <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
       </label>
     </div>
     <div class="modal-field" id="edit-contra-date-wrap" style="display:none">
@@ -787,7 +787,7 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, deleteField, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, addDoc, deleteDoc, deleteField, onSnapshot, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider, deleteUser, signInAnonymously, GoogleAuthProvider, signInWithPopup, linkWithCredential, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
@@ -807,7 +807,8 @@ const FB={apiKey:"AIzaSyArCJz3f9WKjIl9N-nzFtQzy7EAE8KjnAM",authDomain:"yakssook-
 const VAPID="BKtNTGD4U70OkHBXST3o89XpL7rsRFWTbrr_HcRM6-84w1VmNDoySybxDjBLOlZoabdzVuhp7fDy96kZt2e0rz4";
 const APP_URL=location.origin+BASE_PATH;
 const fbApp=initializeApp(FB);
-const db=getFirestore(fbApp);
+// 오프라인 지원: IndexedDB 영구 캐시 + 멀티탭 동기화. 네트워크 없으면 캐시에서 읽고, 복귀 시 자동 동기화.
+const db=initializeFirestore(fbApp,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
 const auth=getAuth(fbApp);
 let messaging=null;
 
