@@ -267,6 +267,17 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .sbtn{width:100%;padding:16px;border-radius:var(--rp);background:linear-gradient(135deg,var(--t400),var(--t600));color:#fff;font-size:var(--fs-lg);font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:8px;box-shadow:0 4px 14px rgba(29,158,117,.35);transition:transform .15s}
 .sbtn:active{transform:scale(.97)}
 
+/* 피임약 체크 카드 */
+.contra-card{display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:0;padding:14px;border:2px solid var(--bd2);border-radius:var(--rb);background:var(--g100);box-sizing:border-box;max-width:100%;transition:border-color .2s,background .2s}
+.contra-card input[type=checkbox]{width:24px;height:24px;flex-shrink:0;accent-color:#E91E63;margin:0;cursor:pointer}
+.contra-card .cc-txt{min-width:0;flex:1}
+.contra-card .cc-main{font-weight:700;color:var(--tx);font-size:15px;line-height:1.3}
+.contra-card .cc-sub{display:block;font-weight:400;color:var(--tx3);font-size:12px;margin-top:3px;line-height:1.4;word-break:keep-all}
+.contra-card:has(input:checked){border-color:#E91E63;background:#FCE4EC}
+@media(prefers-color-scheme:dark){.contra-card:has(input:checked){background:#3A1020}}
+/* iOS date input 오버플로 방지 */
+#contra-date-wrap input[type=date],#edit-contra-date-wrap input[type=date]{-webkit-appearance:none;appearance:none;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+
 /* CONNECT */
 .chero{background:linear-gradient(160deg,var(--t800),var(--t600));padding:28px 20px 24px;color:#fff;flex-shrink:0}
 .chtitle{font-size:var(--fs-xl);font-weight:900;margin-bottom:6px}
@@ -547,9 +558,12 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="fbody">
       <div class="fg"><label>약 이름</label><input type="text" id="mn-name" placeholder="예: 혈압약, 비타민D"/></div>
       <div class="fg" id="contra-toggle-fg">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0">
-          <input type="checkbox" id="mn-contra" onchange="toggleContra()" style="width:20px;height:20px;flex-shrink:0;accent-color:#E91E63"/>
-          <span>💊 피임약이에요 <span style="font-weight:400;color:var(--tx3);font-size:13px">(28일 · 핑크약 24 + 흰약 4)</span></span>
+        <label class="contra-card">
+          <input type="checkbox" id="mn-contra" onchange="toggleContra()"/>
+          <span class="cc-txt">
+            <span class="cc-main">💊 피임약이에요</span>
+            <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
+          </span>
         </label>
       </div>
       <div class="fg" id="contra-date-wrap" style="display:none">
@@ -693,6 +707,20 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="modal-title">✏️ 약 정보 수정</div>
     <div class="modal-field"><label>약 이름</label><input type="text" id="edit-med-name" placeholder="약 이름"/></div>
     <div class="modal-field">
+      <label class="contra-card">
+        <input type="checkbox" id="edit-contra" onchange="toggleEditContra()"/>
+        <span class="cc-txt">
+          <span class="cc-main">💊 피임약이에요</span>
+          <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
+        </span>
+      </label>
+    </div>
+    <div class="modal-field" id="edit-contra-date-wrap" style="display:none">
+      <label>최근 팩 복용 시작일</label>
+      <input type="date" id="edit-contra-start" oninput="updateEditContraPreview()"/>
+      <div id="edit-contra-preview" style="font-size:13px;color:var(--t600);margin-top:6px"></div>
+    </div>
+    <div class="modal-field">
       <label>아이콘</label>
       <div class="igrid" id="edit-icon-grid"></div>
       <div class="icon-custom-row">
@@ -703,17 +731,6 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="modal-field">
       <label>복용 요일</label>
       <div class="chips" id="edit-day-chips"></div>
-    </div>
-    <div class="modal-field">
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0">
-        <input type="checkbox" id="edit-contra" onchange="toggleEditContra()" style="width:20px;height:20px;flex-shrink:0;accent-color:#E91E63"/>
-        <span>💊 피임약 <span style="font-weight:400;color:var(--tx3);font-size:12px">(28일 · 핑크24 + 흰4)</span></span>
-      </label>
-    </div>
-    <div class="modal-field" id="edit-contra-date-wrap" style="display:none">
-      <label>최근 팩 복용 시작일</label>
-      <input type="date" id="edit-contra-start" oninput="updateEditContraPreview()"/>
-      <div id="edit-contra-preview" style="font-size:13px;color:var(--t600);margin-top:6px"></div>
     </div>
     <div class="modal-field">
       <label>복용 시각 (24시간)</label>
