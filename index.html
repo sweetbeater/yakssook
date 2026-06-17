@@ -146,8 +146,8 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 /* MONTH CAL */
 .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;width:100%;min-width:0}
 .mwd{font-size:10px;font-weight:700;color:var(--tx3);text-align:center;padding:2px 0 6px}
-.mwd:first-child{color:var(--r400)}
-.mwd:last-child{color:#1565C0}
+.mwd:nth-child(6){color:#1565C0}
+.mwd:nth-child(7){color:var(--r400)}
 .mday{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;border-radius:12px;cursor:pointer;transition:all .15s;border:1.5px solid transparent;min-height:46px}
 .mday:hover{background:var(--t50)}
 .mday.mtoday{background:linear-gradient(135deg,var(--t400),var(--t600));box-shadow:0 2px 8px rgba(29,158,117,.3)}
@@ -1365,8 +1365,8 @@ window.setCalMode=mode=>{calMode=mode;$('cmb-week').classList.toggle('on',mode==
 const rebuildCal = function(){calMode==='week'?buildWeek():buildMonth();}
 
 const buildWeek = function(){
-  const today=new Date();const base=new Date(today);base.setDate(today.getDate()+weekOff*7);const sun=new Date(base);sun.setDate(base.getDate()-base.getDay());
-  const days=Array.from({length:7},(_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
+  const today=new Date();const base=new Date(today);base.setDate(today.getDate()+weekOff*7);const mon=new Date(base);mon.setDate(base.getDate()-((base.getDay()+6)%7));
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
   const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;$('week-lbl').textContent=`${fmt(days[0])} ~ ${fmt(days[6])}`;
   const g=$('week-grid');g.innerHTML='';
   days.forEach(d=>{
@@ -1386,8 +1386,8 @@ window.shiftWeek=dir=>{weekOff+=dir;buildWeek();};
 const buildMonth = function(){
   const today=new Date();$('month-lbl').textContent=`${mYear}년 ${mMonth+1}월`;
   const g=$('month-grid');g.innerHTML='';
-  ['일','월','화','수','목','금','토'].forEach(w=>{const e=document.createElement('div');e.className='mwd';e.textContent=w;g.appendChild(e);});
-  const fd=new Date(mYear,mMonth,1).getDay(),ld=new Date(mYear,mMonth+1,0).getDate(),pl=new Date(mYear,mMonth,0).getDate();
+  ['월','화','수','목','금','토','일'].forEach(w=>{const e=document.createElement('div');e.className='mwd';e.textContent=w;g.appendChild(e);});
+  const fd=(new Date(mYear,mMonth,1).getDay()+6)%7,ld=new Date(mYear,mMonth+1,0).getDate(),pl=new Date(mYear,mMonth,0).getDate();
   for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='mday mother';e.innerHTML=`<span class="mnum">${pl-fd+1+i}</span>`;g.appendChild(e);}
   for(let d=1;d<=ld;d++){
     const isT=mYear===today.getFullYear()&&mMonth===today.getMonth()&&d===today.getDate();const isSel=selDate&&selDate.y===mYear&&selDate.m===mMonth&&selDate.d===d;
@@ -1762,8 +1762,8 @@ const buildPartnersList = function(){
           <option value="친구" ${p.relation==='친구'?'selected':''}>친구</option>
           <option value="기타" ${p.relation==='기타'?'selected':''}>기타</option>
         </select>
-      </div>${contraToggle}
-      <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>`;
+      </div>
+      <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>${contraToggle}`;
     list.appendChild(el);
   });
 }
