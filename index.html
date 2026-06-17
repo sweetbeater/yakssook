@@ -834,6 +834,7 @@ const PRAISE_MSGS=[
 
 let uid='',uname='',ucode='',uemail='',uphoto='';
 let meds=[],logs={},partners=[],pMeds={},pLogs={};
+let partnersLoaded=false; // 파트너 스냅샷이 1번이라도 도착했는지 (로딩 중 vs 진짜 0명 구분)
 let notif={partnerCheck:true,selfAlarm:false,selfMin:30,partnerMiss:false,partnerMissMin:60};
 let calMode='week',weekOff=0,mYear=new Date().getFullYear(),mMonth=new Date().getMonth();
 let selDate=null,selPanel='me',calPartnerIdx=-1;
@@ -849,6 +850,7 @@ const isOk=mid=>!!(logs[todayKey()]?.[mid]);
 const genCode=()=>Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 const $=id=>document.getElementById(id);
 const getPDN=p=>p.nickname||p.name||'파트너';
+const partnerLoadingHTML=msg=>`<div class="p-empty" style="padding:22px;text-align:center;line-height:1.7">${msg}<br><button onclick="location.reload()" style="margin-top:8px;padding:6px 16px;border:1px solid var(--bd);background:var(--card);border-radius:10px;color:var(--tx2);font-size:12px;cursor:pointer">🔄 새로고침</button></div>`;
 
 // 햅틱
 
@@ -1146,7 +1148,7 @@ if(!window._lastUid||window._lastUid!==uid){
     updateGuestBanner();
     hideLoad();hideSplash();
   }else{
-    unsubs.forEach(u=>u&&u());unsubs=[];meds=[];logs={};partners=[];pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
+    unsubs.forEach(u=>u&&u());unsubs=[];meds=[];logs={};partners=[];partnersLoaded=false;pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
     $('main-wrap').classList.remove('show');$('auth-wrap').classList.add('show');hideSplash();
   }
 });
@@ -1292,11 +1294,11 @@ window.previewCustomIcon=val=>{
 
 // ── 구독 ──
 const startListeners = function(){
-  unsubs.forEach(u=>u&&u());unsubs=[];
+  unsubs.forEach(u=>u&&u());unsubs=[];partnersLoaded=false;buildPartnerSections();buildPartnersList();
   unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
   unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
   unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
-    const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;
+    const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;partnersLoaded=true;
     await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
     buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
     unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
@@ -1470,6 +1472,7 @@ const buildMedList = function(){
 // ── 파트너 섹션 ──
 const buildPartnerSections = function(){
   const area=$('partner-med-sections');area.innerHTML='';
+  if(!partnersLoaded){area.innerHTML=`<div class="partner-section">${partnerLoadingHTML('파트너 정보를 불러오는 중...')}</div>`;return;}
   if(!partners.length)return;
   const dow=todayDow(),todayK=todayKey();
   partners.forEach(p=>{
@@ -1730,6 +1733,7 @@ const buildMedManage = function(){
 
 const buildPartnersList = function(){
   const list=$('partners-list');
+  if(!partnersLoaded){list.innerHTML=partnerLoadingHTML('파트너 정보를 불러오는 중...');return;}
   if(!partners.length){list.innerHTML=`<div class="empty" style="padding:24px"><div class="empty-ic">🔗</div><p>아직 연결된 파트너가 없어요</p></div>`;return;}
   list.innerHTML='';
   partners.forEach(p=>{
