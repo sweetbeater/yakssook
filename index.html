@@ -1646,7 +1646,7 @@ window.openEditMed=id=>{
 
   // 요일 chips
   const dc=$('edit-day-chips');dc.innerHTML='';
-  WDS.forEach(w=>{
+  DAYS.forEach(w=>{
     const btn=document.createElement('div');
     btn.className='chip'+(editSelDays.includes(w)?' on':'');
     btn.textContent=w;
