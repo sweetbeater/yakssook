@@ -1748,7 +1748,7 @@ const buildPartnersList = function(){
     const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
     const contraToggle=iHaveContra?`
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--bd)">
-        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--tx)">💊 피임약 정보 공개</div><div style="font-size:11px;color:var(--tx3);line-height:1.4">정보 공개를 해제하면 이 파트너에겐 피임약 정보가 공개되지 않아요<br>(약 이름 및 복용 여부는 보임)</div></div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--tx)">💊 피임약 정보 공개</div><div style="font-size:11px;color:var(--tx3);line-height:1.4">해제하면 이 파트너에겐 피임약 복용 여부를 숨겨요<br>(약 이름 및 복용 여부는 보임)</div></div>
         <label class="toggle-wrap"><input type="checkbox" ${p.shareContra?'checked':''} onchange="toggleShareContra('${p.uid}',this.checked)"/><span class="toggle-slider"></span></label>
       </div>`:'';
     const el=document.createElement('div');el.className='rel-row';el.style.margin='6px 14px';
