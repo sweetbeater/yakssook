@@ -1435,12 +1435,14 @@ const makeRow = function(med,ok,dateKey,isMyPanel){
   const isToday=selD.getTime()===today.getTime();
   // 본인 탭 + 오늘 또는 어제(자정 넘어 복용 케이스): 체크 가능
   const canCheck=isMyPanel&&(isToday||isPast)&&dateKey;
-  const cLbl=contraLabel(med,selD);
+  // 피임약 단서(링·N일차 라벨)는 본인 패널에서만 노출. 파트너에겐 일반 약처럼 표시
+  const cLbl=isMyPanel?contraLabel(med,selD):'';
+  const ring=isMyPanel?contraRing(med,selD):'';
   const timeHtml=`${fmtMedTime(med)}${cLbl?` · ${cLbl}`:''}`;
   if(canCheck){
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${contraRing(med,selD)}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
   }else{
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${contraRing(med,selD)}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
   }
   return r;
 }
@@ -1488,8 +1490,8 @@ const buildPartnerSections = function(){
     else if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
     else pTodayMeds.forEach(m=>{
       const ok=!!pTodayLogs[m.id];
-      const pcLbl=contraLabel(m,new Date());
-      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'};${contraRing(m,new Date())}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}${pcLbl?` · ${pcLbl}`:''}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
+      // 파트너 화면에선 피임약 단서(링·N일차 라벨) 숨기고 일반 약처럼 표시
+      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
     });
     sec.innerHTML=`
       <div class="p-sec-hdr">
