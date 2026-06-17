@@ -266,12 +266,12 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 .sbtn:active{transform:scale(.97)}
 
 /* 피임약 체크 카드 */
-.contra-card{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:0;padding:10px 12px;border:2px solid var(--bd2);border-radius:var(--rb);background:var(--g100);box-sizing:border-box;max-width:100%;transition:border-color .2s,background .2s}
-.contra-card input[type=checkbox]{-webkit-appearance:none;appearance:none;width:18px;height:18px;min-width:18px;flex-shrink:0;margin:2px 0 0;padding:0;cursor:pointer;border:2px solid var(--bd2);border-radius:5px;background:var(--card);transition:background .15s,border-color .15s}
+.contra-card{display:flex;flex-direction:column;gap:3px;cursor:pointer;margin-bottom:0;padding:10px 12px;border:2px solid var(--bd2);border-radius:var(--rb);background:var(--g100);box-sizing:border-box;max-width:100%;transition:border-color .2s,background .2s}
+.contra-card .cc-row{display:flex;align-items:center;gap:10px}
+.contra-card input[type=checkbox]{-webkit-appearance:none;appearance:none;width:18px;height:18px;min-width:18px;flex-shrink:0;margin:0;padding:0;cursor:pointer;border:2px solid var(--bd2);border-radius:5px;background:var(--card);transition:background .15s,border-color .15s}
 .contra-card input[type=checkbox]:checked{background:#E91E63 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/12px no-repeat;border-color:#E91E63}
-.contra-card .cc-txt{min-width:0;flex:1}
 .contra-card .cc-main{font-weight:700;color:var(--tx);font-size:14px;line-height:1.25}
-.contra-card .cc-sub{display:block;font-weight:400;color:var(--tx3);font-size:11px;margin-top:2px;line-height:1.35;word-break:keep-all}
+.contra-card .cc-sub{display:block;font-weight:400;color:var(--tx3);font-size:11px;margin-left:28px;line-height:1.35;word-break:keep-all}
 .contra-card:has(input:checked){border-color:#E91E63;background:#FCE4EC}
 @media(prefers-color-scheme:dark){.contra-card:has(input:checked){background:#3A1020}}
 /* iOS date input 오버플로 방지 */
@@ -551,11 +551,11 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
       <div class="fg"><label>약 이름</label><input type="text" id="mn-name" placeholder="예: 혈압약, 비타민D"/></div>
       <div class="fg" id="contra-toggle-fg">
         <label class="contra-card">
-          <input type="checkbox" id="mn-contra" onchange="toggleContra()"/>
-          <span class="cc-txt">
+          <span class="cc-row">
+            <input type="checkbox" id="mn-contra" onchange="toggleContra()"/>
             <span class="cc-main">💊 피임약이에요</span>
-            <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
           </span>
+          <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
         </label>
       </div>
       <div class="fg" id="contra-date-wrap" style="display:none">
@@ -700,11 +700,11 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="modal-field"><label>약 이름</label><input type="text" id="edit-med-name" placeholder="약 이름"/></div>
     <div class="modal-field">
       <label class="contra-card">
-        <input type="checkbox" id="edit-contra" onchange="toggleEditContra()"/>
-        <span class="cc-txt">
+        <span class="cc-row">
+          <input type="checkbox" id="edit-contra" onchange="toggleEditContra()"/>
           <span class="cc-main">💊 피임약이에요</span>
-          <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
         </span>
+        <span class="cc-sub">28일 · 핑크약 24 + 흰약 4</span>
       </label>
     </div>
     <div class="modal-field" id="edit-contra-date-wrap" style="display:none">
