@@ -546,6 +546,17 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="fhdr"><button class="back" onclick="go('home')">←</button><span class="ftitle">💊 약 등록</span></div>
     <div class="fbody">
       <div class="fg"><label>약 이름</label><input type="text" id="mn-name" placeholder="예: 혈압약, 비타민D"/></div>
+      <div class="fg" id="contra-toggle-fg">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0">
+          <input type="checkbox" id="mn-contra" onchange="toggleContra()" style="width:20px;height:20px;flex-shrink:0;accent-color:#E91E63"/>
+          <span>💊 피임약이에요 <span style="font-weight:400;color:var(--tx3);font-size:13px">(28일 · 핑크약 24 + 흰약 4)</span></span>
+        </label>
+      </div>
+      <div class="fg" id="contra-date-wrap" style="display:none">
+        <label>최근 팩 복용 시작일</label>
+        <input type="date" id="mn-contra-start" oninput="updateContraPreview()"/>
+        <div id="contra-preview" style="font-size:13px;color:var(--t600);margin-top:8px;line-height:1.5"></div>
+      </div>
       <div class="fg">
         <label>아이콘 선택</label>
         <div class="igrid" id="icon-grid"></div>
@@ -692,6 +703,17 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
     <div class="modal-field">
       <label>복용 요일</label>
       <div class="chips" id="edit-day-chips"></div>
+    </div>
+    <div class="modal-field">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0">
+        <input type="checkbox" id="edit-contra" onchange="toggleEditContra()" style="width:20px;height:20px;flex-shrink:0;accent-color:#E91E63"/>
+        <span>💊 피임약 <span style="font-weight:400;color:var(--tx3);font-size:12px">(28일 · 핑크24 + 흰4)</span></span>
+      </label>
+    </div>
+    <div class="modal-field" id="edit-contra-date-wrap" style="display:none">
+      <label>최근 팩 복용 시작일</label>
+      <input type="date" id="edit-contra-start" oninput="updateEditContraPreview()"/>
+      <div id="edit-contra-preview" style="font-size:13px;color:var(--t600);margin-top:6px"></div>
     </div>
     <div class="modal-field">
       <label>복용 시각 (24시간)</label>
@@ -893,6 +915,25 @@ const playSound = async function(type){
 
 // 시간 포맷
 const fmtMedTime=m=>{let s=m.time||'';if(m.timeExact)s+=` (${m.timeExact})`;return s;};
+
+// ── 피임약(28일 팩: 핑크약 24 + 흰약 4) ──
+const isoToday=()=>{const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;};
+const contraPhase=(m,dateObj)=>{
+  if(!m||!m.isContra||!m.packStart)return null;
+  const start=new Date(m.packStart+'T00:00:00');if(isNaN(start.getTime()))return null;
+  const d=new Date(dateObj);d.setHours(0,0,0,0);start.setHours(0,0,0,0);
+  const diff=Math.floor((d-start)/86400000);if(diff<0)return null;
+  const cycleDay=(diff%28)+1;
+  return {cycleDay,phase:cycleDay<=24?'pink':'white'};
+};
+const contraRing=(m,dateObj)=>{
+  const p=contraPhase(m,dateObj);if(!p)return '';
+  return p.phase==='pink'?'box-shadow:0 0 0 3px #E91E63;':'box-shadow:0 0 0 3px #fff,0 0 0 4.5px #607D8B;';
+};
+const contraLabel=(m,dateObj)=>{
+  const p=contraPhase(m,dateObj);if(!p)return '';
+  return p.phase==='pink'?`💗 핑크약 ${p.cycleDay}일차`:`🤍 흰약 ${p.cycleDay}일차`;
+};
 
 // ── AUTH ──
 window.setTab=tab=>{
@@ -1198,6 +1239,41 @@ window.toggleEditTimeSkip=()=>{
   if(editTimeSkipMode)input.value='';
 };
 
+// ── 피임약 토글/미리보기 ──
+window.toggleContra=()=>{
+  const on=$('mn-contra').checked;
+  $('contra-date-wrap').style.display=on?'block':'none';
+  if(on){
+    document.querySelectorAll('#day-chips .chip').forEach(c=>c.classList.add('on'));
+    if(!$('mn-contra-start').value)$('mn-contra-start').value=isoToday();
+    updateContraPreview();
+  }
+};
+window.updateContraPreview=()=>{
+  const el=$('contra-preview');const v=$('mn-contra-start').value;
+  if(!v){el.textContent='';return;}
+  const p=contraPhase({isContra:true,packStart:v},new Date());
+  if(!p){el.textContent='⚠️ 오늘 또는 이전 날짜로 선택해주세요';return;}
+  el.innerHTML=`오늘은 <b>${p.cycleDay}일차</b> · ${p.phase==='pink'?'💗 핑크약(활성)':'🤍 흰약(휴약)'} <span style="color:var(--tx3)">— 핑크 24 + 흰 4</span>`;
+};
+window.toggleEditContra=()=>{
+  const on=$('edit-contra').checked;
+  $('edit-contra-date-wrap').style.display=on?'block':'none';
+  if(on){
+    editSelDays=[...WDS];
+    document.querySelectorAll('#edit-day-chips .chip').forEach(c=>c.classList.add('on'));
+    if(!$('edit-contra-start').value)$('edit-contra-start').value=isoToday();
+    updateEditContraPreview();
+  }
+};
+window.updateEditContraPreview=()=>{
+  const el=$('edit-contra-preview');const v=$('edit-contra-start').value;
+  if(!v){el.textContent='';return;}
+  const p=contraPhase({isContra:true,packStart:v},new Date());
+  if(!p){el.textContent='⚠️ 오늘 또는 이전 날짜로 선택해주세요';return;}
+  el.innerHTML=`오늘은 <b>${p.cycleDay}일차</b> · ${p.phase==='pink'?'💗 핑크약(활성)':'🤍 흰약(휴약)'}`;
+};
+
 // ── 아이콘 직접 입력 ──
 window.previewCustomIcon=val=>{
   const p=$('icon-preview');
@@ -1347,10 +1423,12 @@ const makeRow = function(med,ok,dateKey,isMyPanel){
   const isToday=selD.getTime()===today.getTime();
   // 본인 탭 + 오늘 또는 어제(자정 넘어 복용 케이스): 체크 가능
   const canCheck=isMyPanel&&(isToday||isPast)&&dateKey;
+  const cLbl=contraLabel(med,selD);
+  const timeHtml=`${fmtMedTime(med)}${cLbl?` · ${cLbl}`:''}`;
   if(canCheck){
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${contraRing(med,selD)}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
   }else{
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${fmtMedTime(med)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${contraRing(med,selD)}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
   }
   return r;
 }
@@ -1397,7 +1475,8 @@ const buildPartnerSections = function(){
     else if(!pTodayMeds.length)medRows=`<div class="p-empty">오늘 등록된 약이 없어요</div>`;
     else pTodayMeds.forEach(m=>{
       const ok=!!pTodayLogs[m.id];
-      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
+      const pcLbl=contraLabel(m,new Date());
+      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'};${contraRing(m,new Date())}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}${pcLbl?` · ${pcLbl}`:''}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
     });
     sec.innerHTML=`
       <div class="p-sec-hdr">
@@ -1510,10 +1589,13 @@ const addMed = async ()=>{
   // 시간 미설정 시 알림 없음 강제
   const alarm=timeSkipMode?'-1':$('alarm-sel').value;
   if(!days.length){toast('복용 요일을 선택해주세요!');return;}
+  const isContra=$('mn-contra').checked;
+  const packStart=isContra?($('mn-contra-start').value||''):'';
+  if(isContra&&!packStart){toast('피임약 팩 시작일을 입력해주세요!');return;}
   showLoad('저장 중...');
   try{
-    const newRef=await addDoc(collection(db,'users',uid,'meds'),{name,icon,time,timeExact,days,alarm,color:COLORS[meds.length%COLORS.length],createdAt:serverTimestamp()});
-    meds=[...meds,{id:newRef.id,name,icon,time,timeExact,days,alarm,color:COLORS[meds.length%COLORS.length]}];
+    const newRef=await addDoc(collection(db,'users',uid,'meds'),{name,icon,time,timeExact,days,alarm,isContra,packStart,color:COLORS[meds.length%COLORS.length],createdAt:serverTimestamp()});
+    meds=[...meds,{id:newRef.id,name,icon,time,timeExact,days,alarm,isContra,packStart,color:COLORS[meds.length%COLORS.length]}];
     go('home');toast(`✅ '${name}' 등록 완료!`);
   }catch(err){toast('등록 실패: '+err.message);}finally{hideLoad();}
 }
@@ -1561,6 +1643,13 @@ window.openEditMed=id=>{
   $('edit-med-time').value=m.timeExact||'';
   $('edit-med-time').disabled=editTimeSkipMode;
   $('edit-time-skip').classList.toggle('on',editTimeSkipMode);
+
+  // 피임약
+  $('edit-contra').checked=!!m.isContra;
+  $('edit-contra-start').value=m.packStart||'';
+  $('edit-contra-date-wrap').style.display=m.isContra?'block':'none';
+  updateEditContraPreview();
+
   $('edit-med-err').textContent='';
   $('modal-edit-med').style.display='flex';
 };
@@ -1575,9 +1664,12 @@ window.saveEditMed=async()=>{
   if(!name){$('edit-med-err').textContent='약 이름을 입력해주세요.';return;}
   if(!editSelDays.length){$('edit-med-err').textContent='복용 요일을 선택해주세요.';return;}
   const timeExact=editTimeSkipMode?'':($('edit-med-time').value||'');
+  const isContra=$('edit-contra').checked;
+  const packStart=isContra?($('edit-contra-start').value||''):'';
+  if(isContra&&!packStart){$('edit-med-err').textContent='피임약 팩 시작일을 입력해주세요.';return;}
   showLoad('저장 중...');
   try{
-    await setDoc(doc(db,'users',uid,'meds',editMedId),{name,icon:editSelIcon,days:editSelDays,timeExact},{merge:true});
+    await setDoc(doc(db,'users',uid,'meds',editMedId),{name,icon:editSelIcon,days:editSelDays,timeExact,isContra,packStart},{merge:true});
     closeModal('modal-edit-med');
     toast('약 정보가 저장됐어요!');
   }catch(err){$('edit-med-err').textContent='저장 실패: '+err.message;}
@@ -1621,7 +1713,8 @@ const buildMedManage = function(){
   el.innerHTML='';
   meds.forEach(m=>{
     const r=document.createElement('div');r.className='mmrow';
-    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일</div></div><button class="mm-edit" data-id="${m.id}" onclick="openEditMed(this.dataset.id)">정보 수정</button><div class="mm-del" data-id="${m.id}" data-name="${encodeURIComponent(m.name)}" onclick="deleteMed(this.dataset.id,decodeURIComponent(this.dataset.name))">🗑</div>`;
+    const sub=m.isContra?`💊 피임약 · ${contraLabel(m,new Date())||'시작일 미설정'}`:`${fmtMedTime(m)} · ${(m.days||[]).join(' ')}요일`;
+    r.innerHTML=`<div class="mm-ic" style="background:${m.color||'#E8F8F0'};${contraRing(m,new Date())}">${m.icon}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-sub">${sub}</div></div><button class="mm-edit" data-id="${m.id}" onclick="openEditMed(this.dataset.id)">정보 수정</button><div class="mm-del" data-id="${m.id}" data-name="${encodeURIComponent(m.name)}" onclick="deleteMed(this.dataset.id,decodeURIComponent(this.dataset.name))">🗑</div>`;
     el.appendChild(r);
   });
 }
@@ -1732,6 +1825,7 @@ const buildAddForm = function(){
   DAYS.forEach((d,i)=>{const c=document.createElement('div');c.className='chip'+(i<5?' on':'');c.textContent=d;c.onclick=()=>{c.classList.toggle('on');};dc.appendChild(c);});
   $('mn-name').value='';$('icon-custom').value='';$('icon-preview').textContent='✏️';$('med-time-exact').value='';
   timeSkipMode=false;$('time-skip-btn').classList.remove('on');$('med-time-exact').disabled=false;$('alarm-sel').disabled=false;$('alarm-sel').value='30';
+  $('mn-contra').checked=false;$('contra-date-wrap').style.display='none';$('mn-contra-start').value='';$('contra-preview').textContent='';
 }
 
 const buildPushBanner = function(show){const a=$('push-banner');if(!a)return;a.innerHTML=show?`<div class="push-banner"><p>🔔 알림을 켜면 파트너 복용 시 바로 알림이 와요!</p><button class="push-btn-sm" onclick="requestPush()">알림 켜기</button></div>`:'';}
