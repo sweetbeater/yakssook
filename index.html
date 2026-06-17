@@ -339,9 +339,9 @@ html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:'Noto S
 /* 관계/순서 */
 .rel-row{margin:6px 14px;background:var(--card);border-radius:var(--rc);box-shadow:var(--shadow);padding:14px 16px}
 .rel-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.rel-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rel-fields input,.rel-fields select{width:100%;padding:10px 12px;border-radius:var(--rb);border:1.5px solid var(--bd2);background:var(--bg);font-size:var(--fs-sm);color:var(--tx);outline:none;font-family:inherit}
-.rel-save{margin-top:10px;width:100%;padding:11px;border-radius:var(--rp);background:var(--t400);color:#fff;font-size:var(--fs-sm);font-weight:700;border:none;cursor:pointer}
+.rel-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:stretch}
+.rel-fields input,.rel-fields select{width:100%;min-width:0;padding:10px 12px;border-radius:var(--rb);border:1.5px solid var(--bd2);background:var(--bg);font-size:var(--fs-sm);color:var(--tx);outline:none;font-family:inherit}
+.rel-save{padding:10px 16px;border-radius:var(--rb);background:var(--t400);color:#fff;font-size:var(--fs-sm);font-weight:700;border:none;cursor:pointer;white-space:nowrap}
 .order-row{margin:6px 14px;background:var(--card);border-radius:var(--rc);box-shadow:var(--shadow);padding:12px 16px;display:flex;align-items:center;gap:12px}
 .order-av{width:36px;height:36px;border-radius:50%;background:var(--t100);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--t600);flex-shrink:0;overflow:hidden;border:2px solid var(--t200)}
 .order-av img{width:100%;height:100%;object-fit:cover}
@@ -1762,8 +1762,8 @@ const buildPartnersList = function(){
           <option value="친구" ${p.relation==='친구'?'selected':''}>친구</option>
           <option value="기타" ${p.relation==='기타'?'selected':''}>기타</option>
         </select>
-      </div>
-      <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>${contraToggle}`;
+        <button class="rel-save" onclick="saveRelation('${p.uid}')">저장</button>
+      </div>${contraToggle}`;
     list.appendChild(el);
   });
 }
