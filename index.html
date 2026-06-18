@@ -850,6 +850,8 @@ const pMedsOn=(uid2,dow)=>(pMeds[uid2]||[]).filter(m=>m.days?.includes(dow));
 const isOk=mid=>!!(logs[todayKey()]?.[mid]);
 const genCode=()=>Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 const $=id=>document.getElementById(id);
+// innerHTML에 들어가는 사용자/파트너 입력값 이스케이프 (저장형 XSS 방지)
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const getPDN=p=>p.nickname||p.name||'파트너';
 const partnerLoadingHTML=msg=>`<div class="p-empty" style="padding:22px;text-align:center;line-height:1.7">${msg}<br><button onclick="location.reload()" style="margin-top:8px;padding:6px 16px;border:1px solid var(--bd);background:var(--card);border-radius:10px;color:var(--tx2);font-size:12px;cursor:pointer">🔄 새로고침</button></div>`;
 
@@ -1374,7 +1376,7 @@ const buildWeek = function(){
     const dow=WDS[d.getDay()];const key=dKey(d.getFullYear(),d.getMonth(),d.getDate());
     const ml=medsOn(dow),ml_=logs[key]||{};
     let myR=ml.map(m=>ml_[m.id]?`<span class="wic-ok">${m.icon}</span>`:`<span class="wic-miss"></span>`).join('');
-    let pR='';calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};pR+=pm.map(m=>pl[m.id]?`<span class="wic-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="wic-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
+    let pR='';calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};pR+=pm.map(m=>pl[m.id]?`<span class="wic-ok" style="filter:hue-rotate(200deg)">${esc(m.icon)}</span>`:`<span class="wic-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
     const el=document.createElement('div');el.className=`wday${isT?' today':''}${isSel&&!isT?' sel':''}${d.getDay()===0?' wsun':''}${d.getDay()===6?' wsat':''}`;
     el.innerHTML=`<span class="wdow">${dow}</span><span class="wnum">${d.getDate()}</span><div class="wicons">${myR?`<div class="wic-row">${myR}</div>`:''}${pR?`<div class="wic-row">${pR}</div>`:''}</div>`;
     el.onclick=()=>{selDay(d.getFullYear(),d.getMonth(),d.getDate());};g.appendChild(el);
@@ -1394,7 +1396,7 @@ const buildMonth = function(){
     const dow=WDS[new Date(mYear,mMonth,d).getDay()];const key=dKey(mYear,mMonth,d);
     const ml=medsOn(dow),ml_=logs[key]||{};
     let dots=ml.map(m=>ml_[m.id]?`<span class="mdot-ok">${m.icon}</span>`:`<span class="mdot-miss"></span>`).join('');
-    calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl2=(pLogs[p.uid]||{})[key]||{};dots+=pm.map(m=>pl2[m.id]?`<span class="mdot-ok" style="filter:hue-rotate(200deg)">${m.icon}</span>`:`<span class="mdot-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
+    calPartners().forEach(p=>{const pm=pMedsOn(p.uid,dow),pl2=(pLogs[p.uid]||{})[key]||{};dots+=pm.map(m=>pl2[m.id]?`<span class="mdot-ok" style="filter:hue-rotate(200deg)">${esc(m.icon)}</span>`:`<span class="mdot-miss" style="background:rgba(21,101,192,.2)"></span>`).join('');});
     const dn=new Date(mYear,mMonth,d).getDay();
     const el=document.createElement('div');el.className=`mday${isT?' mtoday':''}${isSel&&!isT?' msel':''}${dn===0?' msun':''}${dn===6?' msat':''}`;
     el.innerHTML=`<span class="mnum">${d}</span><div class="mdots">${dots}</div>`;el.onclick=()=>{selDay(mYear,mMonth,d);};g.appendChild(el);
@@ -1421,7 +1423,7 @@ const buildDetailPanel = function(){
   }else{
     const p=partners.find(x=>x.uid===selPanel);if(!p){body.innerHTML=`<div class="dpanel-empty">파트너를 찾을 수 없어요</div>`;return;}
     const pm=pMedsOn(p.uid,dow),pl=(pLogs[p.uid]||{})[key]||{};
-    if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${getPDN(p)}님의 이날 약이 없어요</div>`;return;}
+    if(!pm.length){body.innerHTML=`<div class="dpanel-empty">${esc(getPDN(p))}님의 이날 약이 없어요</div>`;return;}
     pm.forEach(med=>body.appendChild(makeRow(med,!!pl[med.id],key,false,p.showContra===true)));
   }
 }
@@ -1441,9 +1443,9 @@ const makeRow = function(med,ok,dateKey,isMyPanel,showContra){
   const ring=showC?contraRing(med,selD):'';
   const timeHtml=`${fmtMedTime(med)}${cLbl?` · ${cLbl}`:''}`;
   if(canCheck){
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${esc(med.icon)}</div><div class="drow-info"><div class="drow-name">${esc(med.name)}</div><div class="drow-time">${esc(timeHtml)}</div></div><div class="chk ${ok?'on':''}" style="width:32px;height:32px;font-size:14px" data-mid="${med.id}" data-key="${dateKey}" onclick="doCheckDate(this.dataset.mid,this.dataset.key,event)">${ok?'✓':''}</div>`;
   }else{
-    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${med.icon}</div><div class="drow-info"><div class="drow-name">${med.name}</div><div class="drow-time">${timeHtml}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
+    r.innerHTML=`<div class="drow-ic" style="background:${med.color||'#E8F8F0'};${ring}">${esc(med.icon)}</div><div class="drow-info"><div class="drow-name">${esc(med.name)}</div><div class="drow-time">${esc(timeHtml)}</div></div><div class="${ok?'dok':'dmiss'}">${ok?'✓':'—'}</div>`;
   }
   return r;
 }
@@ -1484,7 +1486,7 @@ const buildPartnerSections = function(){
     const pTodayMeds=pMedsOn(p.uid,dow);const pTodayLogs=(pLogs[p.uid]||{})[todayK]||{};
     const done=pTodayMeds.filter(m=>pTodayLogs[m.id]).length;
     const allDone=pTodayMeds.length>0&&done===pTodayMeds.length;
-    const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const avH=p.photoURL?`<img src="${esc(p.photoURL)}" alt="${esc(pn)}"/>`:`${esc(pn[0])}`;
     const sec=document.createElement('div');sec.className='partner-section';
     let medRows='';
     if(pMeds[p.uid]===undefined)medRows=`<div class="p-empty">불러오는 중...</div>`;
@@ -1495,12 +1497,12 @@ const buildPartnerSections = function(){
       const showC=p.showContra===true;
       const ring=showC?contraRing(m,new Date()):'';
       const pcLbl=showC?contraLabel(m,new Date()):'';
-      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'};${ring}">${m.icon}</div><div class="pm-info"><div class="pm-name">${m.name}</div><div class="pm-time">${fmtMedTime(m)}${pcLbl?` · ${pcLbl}`:''}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
+      medRows+=`<div class="p-med-row"><div class="pm-icon" style="background:${m.color||'#E8F8F0'};${ring}">${esc(m.icon)}</div><div class="pm-info"><div class="pm-name">${esc(m.name)}</div><div class="pm-time">${esc(fmtMedTime(m))}${pcLbl?` · ${pcLbl}`:''}</div></div><div class="${ok?'pm-ok':'pm-miss'}">${ok?'✓':'—'}</div></div>`;
     });
     sec.innerHTML=`
       <div class="p-sec-hdr">
         <div class="av-lg">${avH}</div>
-        <div class="p-sec-info"><div class="p-sec-name">${pn}<span style="font-size:12px;color:var(--tx3);font-weight:400;margin-left:4px">${rel}</span></div><div class="p-sec-sub">오늘 ${done}/${pTodayMeds.length}개 복용</div></div>
+        <div class="p-sec-info"><div class="p-sec-name">${esc(pn)}<span style="font-size:12px;color:var(--tx3);font-weight:400;margin-left:4px">${esc(rel)}</span></div><div class="p-sec-sub">오늘 ${done}/${pTodayMeds.length}개 복용</div></div>
         <div class="p-sec-btns">
           <button class="praise-btn" onclick="praisePartner('${p.uid}')" ${!allDone?'disabled':''} title="${allDone?'칭찬하기':'약을 모두 복용해야 칭찬할 수 있어요'}">⭐ 참 잘했어요!</button>
           <button class="poke-btn" onclick="pokePartner('${p.uid}')" ${allDone||!pTodayMeds.length?'disabled':''} title="${!pTodayMeds.length?'등록된 약이 없어요':allDone?'이미 모두 복용했어요':'쿡 찌르기'}">👉 쿡 찌르기</button>
@@ -1745,16 +1747,16 @@ const buildPartnersList = function(){
   list.innerHTML='';
   const iHaveContra=meds.some(m=>m.isContra); // 내가 피임약을 등록한 경우에만 공개 토글 노출
   partners.forEach(p=>{
-    const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const pn=getPDN(p);const avH=p.photoURL?`<img src="${esc(p.photoURL)}" alt="${esc(pn)}"/>`:`${esc(pn[0])}`;
     const contraToggle=iHaveContra?`
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--bd)">
         <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--tx)">💊 피임약 정보 공개</div><div style="font-size:12px;color:var(--tx3);line-height:1.4">해제하면 이 파트너에겐 피임약이라는 정보를 숨겨요<br>(약 이름 및 복용 여부는 보임)</div></div>
         <label class="toggle-wrap"><input type="checkbox" ${p.shareContra?'checked':''} onchange="toggleShareContra('${p.uid}',this.checked)"/><span class="toggle-slider"></span></label>
       </div>`:'';
     const el=document.createElement('div');el.className='rel-row';el.style.margin='6px 14px';
-    el.innerHTML=`<div class="rel-top"><div class="av-lg" style="width:40px;height:40px;border-radius:50%;background:var(--t100);border:2px solid var(--t200);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--t600)">${avH}</div><div style="flex:1;min-width:0"><div style="font-size:var(--fs-base);font-weight:700;color:var(--tx)">${pn}</div><div style="font-size:12px;color:var(--tx3)">코드 ${p.code||''}</div></div><button class="del-btn" onclick="removePartner('${p.uid}')">해제</button></div>
+    el.innerHTML=`<div class="rel-top"><div class="av-lg" style="width:40px;height:40px;border-radius:50%;background:var(--t100);border:2px solid var(--t200);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--t600)">${avH}</div><div style="flex:1;min-width:0"><div style="font-size:var(--fs-base);font-weight:700;color:var(--tx)">${esc(pn)}</div><div style="font-size:12px;color:var(--tx3)">코드 ${esc(p.code||'')}</div></div><button class="del-btn" onclick="removePartner('${p.uid}')">해제</button></div>
       <div class="rel-fields">
-        <input type="text" placeholder="별명 (예: 엄마💕)" value="${p.nickname||''}" oninput="updatePartnerLocal('${p.uid}','nickname',this.value)"/>
+        <input type="text" placeholder="별명 (예: 엄마💕)" value="${esc(p.nickname||'')}" oninput="updatePartnerLocal('${p.uid}','nickname',this.value)"/>
         <select onchange="updatePartnerLocal('${p.uid}','relation',this.value)">
           <option value="">관계 선택</option>
           <option value="가족" ${p.relation==='가족'?'selected':''}>가족</option>
@@ -1788,9 +1790,9 @@ const buildPartnerOrderList = function(){
   if(!partners.length){list.innerHTML='';return;}
   list.innerHTML='';
   partners.forEach((p,i)=>{
-    const pn=getPDN(p);const avH=p.photoURL?`<img src="${p.photoURL}" alt="${pn}"/>`:`${pn[0]}`;
+    const pn=getPDN(p);const avH=p.photoURL?`<img src="${esc(p.photoURL)}" alt="${esc(pn)}"/>`:`${esc(pn[0])}`;
     const el=document.createElement('div');el.className='order-row';
-    el.innerHTML=`<div class="order-av">${avH}</div><div class="order-name">${pn}</div><div class="order-btns"><button class="order-btn" onclick="movePartner(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="order-btn" onclick="movePartner(${i},1)" ${i===partners.length-1?'disabled':''}>↓</button></div>`;
+    el.innerHTML=`<div class="order-av">${avH}</div><div class="order-name">${esc(pn)}</div><div class="order-btns"><button class="order-btn" onclick="movePartner(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="order-btn" onclick="movePartner(${i},1)" ${i===partners.length-1?'disabled':''}>↓</button></div>`;
     list.appendChild(el);
   });
 }
