@@ -839,7 +839,7 @@ let partnersLoaded=false; // 파트너 스냅샷이 1번이라도 도착했는�
 let notif={partnerCheck:true,selfAlarm:false,selfMin:30,partnerMiss:false,partnerMissMin:60};
 let calMode='week',weekOff=0,mYear=new Date().getFullYear(),mMonth=new Date().getMonth();
 let selDate=null,selPanel='me',calPartnerIdx=-1;
-let unsubs=[],onboardStep=0,editMedId='',timeSkipMode=false,editTimeSkipMode=false;
+let unsubs=[],partnerUnsubs=[],onboardStep=0,editMedId='',timeSkipMode=false,editTimeSkipMode=false;
 const ONBOARD_TOTAL=5;
 
 const dKey=(y,m,d)=>`${y}-${m+1}-${d}`;
@@ -971,7 +971,7 @@ window.doAuth=async()=>{
   }catch(e){hideLoad();const M={'auth/email-already-in-use':'이미 가입된 이메일이에요.','auth/invalid-email':'이메일 형식을 확인해주세요.','auth/weak-password':'6자리 이상 입력해주세요.','auth/user-not-found':'가입되지 않은 이메일이에요.','auth/wrong-password':'비밀번호가 틀렸어요.','auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.','auth/too-many-requests':'잠시 후 다시 시도해주세요.'};errEl.textContent=M[e.code]||'오류: '+e.message;}
 };
 
-window.doLogout=async()=>{if(!confirm('로그아웃 할까요?'))return;unsubs.forEach(u=>u&&u());unsubs=[];await signOut(auth);};
+window.doLogout=async()=>{if(!confirm('로그아웃 할까요?'))return;unsubs.forEach(u=>u&&u());unsubs=[];partnerUnsubs.forEach(u=>u&&u());partnerUnsubs=[];await signOut(auth);};
 window.showResetModal=()=>{$('reset-email').value=$('a-email').value;$('reset-err').textContent='';$('modal-reset').style.display='flex';};
 window.doReset=async()=>{const email=$('reset-email').value.trim();if(!email){$('reset-err').textContent='이메일을 입력해주세요.';return;}showLoad('발송 중...');try{await sendPasswordResetEmail(auth,email);closeModal('modal-reset');toast('📧 재설정 링크를 이메일로 발송했어요!');}catch(e){$('reset-err').textContent='발송 실패';}finally{hideLoad();}};
 window.showChangePwModal=()=>{$('cur-pw').value='';$('new-pw').value='';$('new-pw2').value='';$('changepw-err').textContent='';$('modal-changepw').style.display='flex';};
@@ -1143,13 +1143,13 @@ onAuthStateChanged(auth,async user=>{
 if(!window._lastUid||window._lastUid!==uid){
   window._lastUid=uid;
   if(!window._firedNotifs)window._firedNotifs=new Set();
-  unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];
+  unsubs.forEach(u=>{try{u&&u();}catch(e){}});unsubs=[];partnerUnsubs.forEach(u=>{try{u&&u();}catch(e){}});partnerUnsubs=[];
   startListeners();
 }
     updateGuestBanner();
     hideLoad();hideSplash();
   }else{
-    unsubs.forEach(u=>u&&u());unsubs=[];meds=[];logs={};partners=[];partnersLoaded=false;pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
+    unsubs.forEach(u=>u&&u());unsubs=[];partnerUnsubs.forEach(u=>u&&u());partnerUnsubs=[];meds=[];logs={};partners=[];partnersLoaded=false;pMeds={};pLogs={};selDate=null;weekOff=0;isAnonymous=false;
     $('main-wrap').classList.remove('show');$('auth-wrap').classList.add('show');hideSplash();
   }
 });
@@ -1295,14 +1295,14 @@ window.previewCustomIcon=val=>{
 
 // ── 구독 ──
 const startListeners = function(){
-  unsubs.forEach(u=>u&&u());unsubs=[];partnersLoaded=false;buildPartnerSections();buildPartnersList();
+  unsubs.forEach(u=>u&&u());unsubs=[];partnerUnsubs.forEach(u=>u&&u());partnerUnsubs=[];partnersLoaded=false;buildPartnerSections();buildPartnersList();
   unsubs.push(onSnapshot(collection(db,'users',uid,'meds'),s=>{meds=s.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildMedList();buildMedManage();updateStats();}));
   unsubs.push(onSnapshot(collection(db,'users',uid,'logs'),s=>{logs={};s.docs.forEach(d=>{logs[d.id]=d.data();});rebuildCal();buildMedList();buildPartnerSections();updateStats();}));
   unsubs.push(onSnapshot(collection(db,'users',uid,'partners'),async s=>{
     const raw=s.docs.map(d=>({id:d.id,...d.data()}));raw.sort((a,b)=>(a.order??999)-(b.order??999));partners=raw;partnersLoaded=true;
     await Promise.all(partners.map(async p=>{try{const snap=await getDoc(doc(db,'users',p.uid));if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||p.photoURL||'';}}catch(e){};}));
     buildPartnerTabs();buildPartnerSections();buildPartnersList();buildPartnerOrderList();
-    unsubs.filter((_,i)=>i>=3).forEach(u=>{try{u&&u();}catch(e){}});unsubs=unsubs.slice(0,3);
+    partnerUnsubs.forEach(u=>{try{u&&u();}catch(e){}});partnerUnsubs=[];
     await Promise.all(partners.map(async p=>{
       if(pMeds[p.uid]!==undefined)return;
       try{
@@ -1315,9 +1315,9 @@ const startListeners = function(){
     }));
     buildPartnerSections();rebuildCal();buildDetailPanel();
     partners.forEach(p=>{
-      unsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
-      unsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
-      unsubs.push(onSnapshot(doc(db,'users',p.uid),snap=>{if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||'';buildPartnerTabs();buildPartnerSections();buildPartnersList();}}));
+      partnerUnsubs.push(onSnapshot(collection(db,'users',p.uid,'meds'),s2=>{pMeds[p.uid]=s2.docs.map(d=>({id:d.id,...d.data()}));rebuildCal();buildDetailPanel();buildPartnerSections();}));
+      partnerUnsubs.push(onSnapshot(collection(db,'users',p.uid,'logs'),s2=>{if(!pLogs[p.uid])pLogs[p.uid]={};s2.docs.forEach(d=>{pLogs[p.uid][d.id]=d.data();});p.todayLogs=pLogs[p.uid][todayKey()]||{};rebuildCal();buildDetailPanel();buildPartnerSections();}));
+      partnerUnsubs.push(onSnapshot(doc(db,'users',p.uid),snap=>{if(snap.exists()){const d=snap.data();p.name=d.name||p.name||'파트너';p.photoURL=d.photoURL||'';buildPartnerTabs();buildPartnerSections();buildPartnersList();}}));
     });
   }));
   if(!window._firedNotifs)window._firedNotifs=new Set();
